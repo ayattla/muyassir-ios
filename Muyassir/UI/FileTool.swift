@@ -63,17 +63,22 @@ struct FileTool<Options: View, After: View>: View {
                 }
             }
             if !inputs.isEmpty { options(inputs) }
-            if let error { Text(error).font(.plex(.subheadline)).foregroundStyle(.red) }
+            if let error { Text(error).font(.plex(.subheadline)).foregroundStyle(.red).accessibilityIdentifier("error") }
             if busy {
                 Panel {
                     Text(progress.label.isEmpty ? "جارٍ المعالجة…" : progress.label).font(.plex(.subheadline))
                     if progress.value >= 0 { ProgressView(value: progress.value) } else { ProgressView().frame(maxWidth: .infinity) }
                 }
             } else {
-                PrimaryButton(title: actionLabel, icon: "bolt.fill", enabled: !inputs.isEmpty) { start() }
+                PrimaryButton(title: actionLabel, icon: "bolt.fill", enabled: !inputs.isEmpty) { start() }.accessibilityIdentifier("action")
             }
             if !results.isEmpty { ResultFiles(files: results) }
             after()
+        }
+        .task {
+            #if DEBUG
+            if inputs.isEmpty, let spec = ProcessInfo.processInfo.environment["MYS_TEST_INPUTS"] { inputs = TestInputs.make(spec) }
+            #endif
         }
         .fileImporter(isPresented: $picking, allowedContentTypes: types, allowsMultipleSelection: multiple) { r in
             guard case let .success(urls) = r else { return }

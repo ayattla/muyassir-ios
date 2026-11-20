@@ -45,6 +45,7 @@ struct RootView: View {
         .onAppear {
             // The UI test and screenshots pass `-tool <id>` to open one tool directly.
             if let i = CommandLine.arguments.firstIndex(of: "-tool"), i + 1 < CommandLine.arguments.count, let t = Tools.byId[CommandLine.arguments[i + 1]] { path.append(t) }
+            if let i = CommandLine.arguments.firstIndex(of: "-cat"), i + 1 < CommandLine.arguments.count, let c = Tools.categories.first(where: { $0.id == CommandLine.arguments[i + 1] }) { path.append(c) }
         }
     }
 }

@@ -13,7 +13,7 @@ struct HomeView: View {
                     Section { ForEach(res) { t in NavigationLink(value: t) { ToolRow(tool: t) }.buttonStyle(.plain) } } header: { header(res.isEmpty ? "لا توجد أداة بهذا الاسم" : "\(res.count) نتيجة") }
                 } else {
                     Section { EmptyView() } header: { quick }
-                    Section { ForEach(Tools.categories) { c in NavigationLink(value: c) { CategoryCard(cat: c) }.buttonStyle(.plain) } } header: { header("التصنيفات") }
+                    Section { ForEach(Tools.categories) { c in NavigationLink(value: c) { CategoryCard(cat: c) }.buttonStyle(.plain).accessibilityIdentifier("cat-\(c.id)") } } header: { header("التصنيفات") }
                     let favs = store.favorites.compactMap { Tools.byId[$0] }
                     if !favs.isEmpty { Section { ForEach(favs) { t in NavigationLink(value: t) { ToolRow(tool: t, compact: true) }.buttonStyle(.plain) } } header: { header("المفضلة") } }
                     let most = store.usage.sorted { $0.value > $1.value }.prefix(6).compactMap { Tools.byId[$0.key] }
@@ -89,7 +89,7 @@ struct CategoryView: View {
     var body: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 10)], spacing: 10) {
-                ForEach(Tools.inCat(cat.id)) { t in NavigationLink(value: t) { ToolRow(tool: t) }.buttonStyle(.plain) }
+                ForEach(Tools.inCat(cat.id)) { t in NavigationLink(value: t) { ToolRow(tool: t) }.buttonStyle(.plain).accessibilityIdentifier("tool-\(t.id)") }
             }.padding(16).frame(maxWidth: 1100).frame(maxWidth: .infinity)
         }
         .background(Color(.systemGroupedBackground))

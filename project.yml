@@ -37,11 +37,24 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         BUNDLE_LOADER: $(TEST_HOST)
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/Muyassir.app/Muyassir
+  MuyassirUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: MuyassirUITests
+      - path: Muyassir/App/Tools.swift
+    dependencies:
+      - target: Muyassir
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Muyassir
 schemes:
   Muyassir:
     build:
       targets:
         Muyassir: all
         MuyassirTests: [test]
+        MuyassirUITests: [test]
     test:
-      targets: [MuyassirTests]
+      targets: [MuyassirTests, MuyassirUITests]

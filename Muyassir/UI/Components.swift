@@ -46,13 +46,16 @@ struct NumField: View {
     @Binding var text: String
     var suffix: String? = nil
     var body: some View {
-        HStack {
-            TextField(label, text: Binding(get: { text }, set: { v in text = String(v.map { c in ("٠"..."٩").contains(String(c)) ? Character(String(c.unicodeScalars.first!.value - 0x0660)) : (c == "٫" ? "." : c) }) }))
-                .keyboardType(.decimalPad).font(.plex(.body))
-            if let suffix { Text(suffix).font(.plex(.footnote)).foregroundStyle(.secondary) }
+        VStack(alignment: .leading, spacing: 5) {
+            Text(label).font(.plex(.caption, .medium)).foregroundStyle(.secondary)
+            HStack {
+                TextField("0", text: Binding(get: { text }, set: { v in text = String(v.map { c in ("٠"..."٩").contains(String(c)) ? Character(String(c.unicodeScalars.first!.value - 0x0660)) : (c == "٫" ? "." : c) }) }))
+                    .keyboardType(.decimalPad).font(.plex(.body)).accessibilityLabel(label).accessibilityIdentifier(label)
+                if let suffix { Text(suffix).font(.plex(.footnote)).foregroundStyle(.secondary) }
+            }
+            .padding(.horizontal, 12).frame(minHeight: 46)
+            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .padding(12).background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityLabel(label)
     }
 }
 
@@ -63,12 +66,17 @@ struct Field: View {
     var kind: UIKeyboardType = .default
     var secure = false
     var body: some View {
-        Group {
-            if secure { SecureField(label, text: $text) }
-            else if lines > 1 { TextField(label, text: $text, axis: .vertical).lineLimit(lines...max(lines, 12)) }
-            else { TextField(label, text: $text).keyboardType(kind) }
+        VStack(alignment: .leading, spacing: 5) {
+            Text(label).font(.plex(.caption, .medium)).foregroundStyle(.secondary)
+            Group {
+                if secure { SecureField("", text: $text) }
+                else if lines > 1 { TextField("", text: $text, axis: .vertical).lineLimit(lines...max(lines, 12)) }
+                else { TextField("", text: $text).keyboardType(kind) }
+            }
+            .accessibilityLabel(label).accessibilityIdentifier(label)
+            .font(.plex(.body)).padding(.horizontal, 12).padding(.vertical, 11).frame(minHeight: 46)
+            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .font(.plex(.body)).padding(12).background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 }
 

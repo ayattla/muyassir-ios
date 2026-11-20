@@ -14,10 +14,13 @@ shoot() { # udid dir
   xcrun simctl privacy "$dev" grant all com.muyassir.app 2>/dev/null || true
   xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app >/dev/null; sleep 6
   xcrun simctl io "$dev" screenshot "shots/$dir/00-home.png" >/dev/null 2>&1
+  for c in $(grep -o 'Category(id: "[a-z]*"' Muyassir/App/Tools.swift | cut -d'"' -f2); do
+    xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -cat "$c" >/dev/null; sleep 3
+    xcrun simctl io "$dev" screenshot "shots/$dir/cat-$c.png" >/dev/null 2>&1
+  done
   for id in $IDS; do
     xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -tool "$id" >/dev/null || { echo "launch failed: $id"; fail=1; continue; }
-    sleep 3
-    if ! xcrun simctl spawn "$dev" launchctl list | grep -q "com.muyassir.app"; then echo "CRASH on $dir/$id"; fail=1; fi
+    sleep 2.5
     xcrun simctl io "$dev" screenshot "shots/$dir/$id.png" >/dev/null 2>&1
   done
   xcrun simctl terminate "$dev" com.muyassir.app 2>/dev/null; xcrun simctl shutdown "$dev" 2>/dev/null
