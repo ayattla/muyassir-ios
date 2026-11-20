@@ -21,9 +21,20 @@ enum TestInputs {
             ("Muyassir 2026" as NSString).draw(at: CGPoint(x: 60, y: 60), withAttributes: [.font: UIFont.boldSystemFont(ofSize: 80), .foregroundColor: UIColor.black])
         }
     }
+    /// A simple portrait: a dark figure on a light studio-like background.
+    static func person() -> UIImage {
+        ImageEngine.redraw(CGSize(width: 800, height: 1000)) { c in
+            let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [UIColor(white: 0.93, alpha: 1).cgColor, UIColor(white: 0.80, alpha: 1).cgColor] as CFArray, locations: [0, 1])!
+            c.drawLinearGradient(g, start: .zero, end: CGPoint(x: 0, y: 1000), options: [])
+            UIColor(red: 0.85, green: 0.65, blue: 0.5, alpha: 1).setFill(); c.fillEllipse(in: CGRect(x: 290, y: 180, width: 220, height: 270))
+            UIColor(red: 0.15, green: 0.2, blue: 0.45, alpha: 1).setFill()
+            c.addPath(UIBezierPath(roundedRect: CGRect(x: 160, y: 470, width: 480, height: 600), cornerRadius: 200).cgPath); c.fillPath()
+        }
+    }
     private static func one(_ k: String, _ base: URL) throws -> URL {
         switch k {
         case let s where s.hasPrefix("pdf"): return try pdf(Int(s.dropFirst(3)) ?? 1, base.appendingPathExtension("pdf"))
+        case "person": return try ImageEngine.save(person(), .png, quality: 1, to: base.appendingPathExtension("png"))
         case "png": return try ImageEngine.save(image(), .png, quality: 1, to: base.appendingPathExtension("png"))
         case "docx": let u = base.appendingPathExtension("docx"); try Office.writeDocx(u, [.text("عنوان", heading: 1), .text("فقرة عربية")]); return u
         case "xlsx": let u = base.appendingPathExtension("xlsx"); try Office.writeXlsx(u, [("ورقة", [["الاسم", "المبلغ"], ["سارة", "10"]])]); return u

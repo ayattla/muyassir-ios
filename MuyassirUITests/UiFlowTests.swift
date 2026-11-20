@@ -22,10 +22,15 @@ final class UiFlowTests: XCTestCase {
         let e = app.descendants(matching: .any).matching(p).firstMatch
         XCTAssertTrue(e.waitForExistence(timeout: t), "text not shown: \(s)", file: file, line: line)
     }
-    func type(_ label: String, _ v: String) {
-        let f = app.descendants(matching: .any).matching(identifier: label).firstMatch
-        reveal(f); f.tap()
-        if let cur = f.value as? String, !cur.isEmpty, cur != label { f.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: cur.count)) }
+    func field(_ label: String) -> XCUIElement {
+        for q in [app.textFields, app.secureTextFields, app.textViews] { let e = q.matching(identifier: label).firstMatch; if e.exists { return e } }
+        return app.textFields.matching(NSPredicate(format: "label == %@", label)).firstMatch
+    }
+    func type(_ label: String, _ v: String, file: StaticString = #filePath, line: UInt = #line) {
+        let f = field(label)
+        XCTAssertTrue(f.waitForExistence(timeout: 5), "field missing: \(label)", file: file, line: line)
+        reveal(f, file: file, line: line); f.tap()
+        if let cur = f.value as? String, !cur.isEmpty, cur != label, cur != "0" { f.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: cur.count)) }
         f.typeText(v)
     }
     func back() { app.navigationBars.buttons.element(boundBy: 0).tap() }
@@ -124,6 +129,6 @@ final class UiFlowTests: XCTestCase {
     func testImgRotate() { run("img_rotate", "png") }
     func testImgEnhance() { run("img_enhance", "png") }
     func testImgBatch() { run("img_batch", "png,png,png") }
-    func testIdPhoto() { run("id_photo", "png") }
-    func testImgBackground() { run("img_bg", "png", timeout: 120) }
+    func testIdPhoto() { run("id_photo", "person") }
+    func testImgBackground() { run("img_bg", "person", timeout: 120) }
 }

@@ -191,9 +191,9 @@ struct IdPhoto: View {
                 if removeBg { HStack { ForEach(bgs.indices, id: \.self) { i in Chip(text: bgs[i].0, selected: i == bg) { bg = i } } } }
                 Hint(text: "تأكد من متطلبات الجهة (لون الخلفية والمقاس) قبل الطباعة. الدقة 300 نقطة لكل بوصة.")
             }
-        }) { ins, out, _ in
+        }) { ins, out, p in
             guard var img = ImageEngine.load(ins[0], maxSide: 2400) else { throw UserError("تعذّر فتح الصورة") }
-            if removeBg { img = ImageEngine.flatten(try ImageEngine.removeBackground(img), bgs[bg].1) }
+            if removeBg { if let cut = try? ImageEngine.removeBackground(img) { img = ImageEngine.flatten(cut, bgs[bg].1) } else { p.say("لم يُعثر على شخص واضح، فحُفظت الصورة بخلفيتها الأصلية") } }
             let s = sizes[size]
             return [try ImageEngine.save(ImageEngine.idPhoto(img, wMm: s.1, hMm: s.2, bg: bgs[bg].1), .jpg, quality: 0.97, to: out.appendingPathComponent("صورة-وثيقة-\(Int(s.1))x\(Int(s.2)).jpg"))]
         }
