@@ -38,13 +38,15 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild -project Muyassir.xcodeproj -scheme Muyassir -destination "id=$IPHONE" -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee build.log | grep -E "error:|warning: unre|Test Case.*(passed|failed)|\*\* (TEST|BUILD)" || true
+            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee build.log | grep -iE "error:|test case.*(passed|failed)|executed [0-9]+ test|\*\* (TEST|BUILD)" || true
           grep -q "\*\* TEST SUCCEEDED \*\*" build.log
       - name: Show errors
         if: failure()
         run: grep -E "error:|failed" build.log | head -80 || true
       - name: Open every tool on iPhone and iPad and capture screenshots
-        run: bash tools/shots.sh
+        run: |
+          bash tools/shots.sh
+          grep -iE "test case.*(passed|failed)|executed [0-9]+ test" build.log > shots/tests.txt || true
       - name: Unsigned app archive (for inspection)
         run: |
           xcodebuild -project Muyassir.xcodeproj -scheme Muyassir -configuration Release -sdk iphoneos -derivedDataPath build-dev CODE_SIGNING_ALLOWED=NO build | tail -3

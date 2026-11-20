@@ -286,7 +286,7 @@ struct ScientificCalc: View {
                     GridRow { ForEach(row, id: \.self) { k in
                         let op = ["÷", "×", "−", "+", "="].contains(k)
                         Button { press(k) } label: {
-                            Text(k == "√(" ? "√" : k.replacingOccurrences(of: "(", with: "")).font(.system(.title3, design: .rounded).weight(.semibold)).frame(maxWidth: .infinity, minHeight: 50)
+                            Text(k == "√(" ? "√" : k.count > 1 ? k.replacingOccurrences(of: "(", with: "") : k).font(.system(.title3, design: .rounded).weight(.semibold)).frame(maxWidth: .infinity, minHeight: 50)
                                 .background(k == "=" ? Brand.lapis : op ? Brand.lapis.opacity(0.14) : Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
                                 .foregroundStyle(k == "=" ? .white : k == "AC" ? .red : .primary)
                         }.buttonStyle(.plain).accessibilityLabel(k == "⌫" ? "حذف" : k)
