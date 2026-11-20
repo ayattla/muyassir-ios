@@ -280,7 +280,7 @@ struct CalendarTool: View {
         let cal = Calendar(identifier: .gregorian)
         let events = allEvents()
         let len = cal.range(of: .day, in: .month, for: month)!.count, first = cal.component(.weekday, from: month) - 1
-        func on(_ d: Int) -> [Ev] { events.filter { let e = Date(timeIntervalSince1970: $0.1); return cal.isDate(e, equalTo: month, toGranularity: .month) && cal.component(.day, from: e) == d } }
+        let on: (Int) -> [Ev] = { d in events.filter { let e = Date(timeIntervalSince1970: $0.1); return cal.isDate(e, equalTo: month, toGranularity: .month) && cal.component(.day, from: e) == d } }
         ToolScreen(tool: tool) {
             HStack {
                 Button { month = cal.date(byAdding: .month, value: -1, to: month)! } label: { Image(systemName: "chevron.forward") }.accessibilityLabel("السابق")
