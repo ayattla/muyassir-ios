@@ -13,7 +13,7 @@ struct QrMake: View {
     let kinds = ["نص/رابط", "شبكة Wi‑Fi", "اتصال", "بريد", "رسالة SMS"]
     var payload: String {
         switch kind {
-        case 1: let esc = { (s: String) in s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: ";", with: "\;").replacingOccurrences(of: ",", with: "\\,").replacingOccurrences(of: ":", with: "\\:") }
+        case 1: let esc = { (s: String) in s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: ";", with: "\\;").replacingOccurrences(of: ",", with: "\\,").replacingOccurrences(of: ":", with: "\\:") }
             return "WIFI:T:\(["WPA", "WEP", "nopass"][c]);S:\(esc(a));P:\(c == 2 ? "" : esc(b));;"
         case 2: return "tel:\(a.filter { $0.isNumber || $0 == "+" })"
         case 3: return "mailto:\(a)" + (b.isEmpty ? "" : "?subject=\(b.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")")
