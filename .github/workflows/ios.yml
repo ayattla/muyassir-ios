@@ -1,0 +1,64 @@
+# Free GitHub-hosted macOS build for the public Muyassir iOS repo (no signing; simulator only).
+name: iOS
+
+on:
+  push:
+    branches-ignore: [ci-shots]
+    paths-ignore: ['**.md', 'docs/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - name: Toolchain
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          xcodebuild -version
+          brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Pick simulators
+        run: |
+          IPHONE=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];l=[x for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')];print(sorted(l,key=lambda x:x['name'])[-1]['udid'])")
+          IPAD=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];l=[x for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPad')];print(l[0]['udid'] if l else '')")
+          echo "IPHONE=$IPHONE" >> "$GITHUB_ENV"; echo "IPAD=$IPAD" >> "$GITHUB_ENV"
+          xcrun simctl list devices available | grep -E "$IPHONE|$IPAD"
+      - name: Build and unit tests (calculations, OOXML, ZIP, PDF, images, QR, Hijri)
+        run: |
+          set -o pipefail
+          xcodebuild -project Muyassir.xcodeproj -scheme Muyassir -destination "id=$IPHONE" -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee build.log | grep -E "error:|warning: unre|Test Case.*(passed|failed)|\*\* (TEST|BUILD)" || true
+          grep -q "\*\* TEST SUCCEEDED \*\*" build.log
+      - name: Show errors
+        if: failure()
+        run: grep -E "error:|failed" build.log | head -80 || true
+      - name: Open every tool on iPhone and iPad and capture screenshots
+        run: bash tools/shots.sh
+      - name: Unsigned app archive (for inspection)
+        run: |
+          xcodebuild -project Muyassir.xcodeproj -scheme Muyassir -configuration Release -sdk iphoneos -derivedDataPath build-dev CODE_SIGNING_ALLOWED=NO build | tail -3
+          cd build-dev/Build/Products/Release-iphoneos && zip -qry "$GITHUB_WORKSPACE/Muyassir-unsigned.zip" Muyassir.app
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: muyassir-ios
+          path: |
+            Muyassir-unsigned.zip
+            shots/
+            build.log
+      - name: Publish screenshots to the ci-shots branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd shots && git init -q -b ci-shots && git add . && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "iOS screenshots ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci-shots
