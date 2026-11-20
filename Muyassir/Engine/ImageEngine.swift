@@ -120,14 +120,22 @@ enum ImageEngine {
         guard let o = f.outputImage else { return UIImage() }
         let scaled = o.transformed(by: CGAffineTransform(scaleX: size / o.extent.width, y: size / o.extent.height))
         guard let cg = ci.createCGImage(scaled, from: scaled.extent) else { return UIImage() }
-        return UIImage(cgImage: cg)
+        let pad = size * 0.08
+        return redraw(CGSize(width: size + 2 * pad, height: size + 2 * pad)) { c in
+            c.setFillColor(UIColor.white.cgColor); c.fill(CGRect(x: 0, y: 0, width: size + 2 * pad, height: size + 2 * pad))
+            c.interpolationQuality = .none; UIImage(cgImage: cg).draw(in: CGRect(x: pad, y: pad, width: size, height: size))
+        }
     }
 
     static func readCodes(_ img: UIImage) throws -> [String] {
         guard let cg = img.cgImage else { return [] }
         let req = VNDetectBarcodesRequest()
         try VNImageRequestHandler(cgImage: cg).perform([req])
-        return (req.results ?? []).compactMap { $0.payloadStringValue }
+        let found = (req.results ?? []).compactMap { $0.payloadStringValue }
+        if !found.isEmpty { return found }
+        // Fallback for QR codes (Core Image detector; also works where Vision's barcode model is unavailable).
+        let det = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+        return (det?.features(in: CIImage(cgImage: cg)) ?? []).compactMap { ($0 as? CIQRCodeFeature)?.messageString }
     }
 }
 

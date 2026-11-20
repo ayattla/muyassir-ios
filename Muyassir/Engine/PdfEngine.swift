@@ -6,6 +6,9 @@ enum PdfEngine {
         var errorDescription: String? { switch self { case .open: "تعذّر فتح ملف PDF"; case .password: "الملف محمي بكلمة مرور أو كلمة المرور غير صحيحة"; case .empty: "لا يمكن حذف جميع الصفحات" } }
     }
 
+    /// Page text with Arabic presentation forms folded back to normal letters (NFKC).
+    static func text(_ page: PDFPage) -> String { (page.string ?? "").precomposedStringWithCompatibilityMapping }
+
     static func open(_ url: URL, password: String? = nil) throws -> PDFDocument {
         guard let d = PDFDocument(url: url) else { throw Failure.open }
         if d.isLocked { guard let p = password, d.unlock(withPassword: p) else { throw Failure.password } }

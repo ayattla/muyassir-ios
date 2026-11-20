@@ -28,4 +28,6 @@ open Muyassir.xcodeproj
 | `Muyassir/Tools` | شاشات الأدوات حسب الأقسام الثمانية |
 | `MuyassirTests` | اختبارات الوحدة والمحركات |
 
+التوثيق: [قائمة الأدوات وحالتها](docs/TOOLS.md) • [الخصوصية والأداء والتراخيص](docs/PRIVACY.md) • [نتائج الاختبارات](docs/TESTING.md)
+
 فتح أداة مباشرة (للاختبار): تشغيل التطبيق بالوسيط `-tool <id>` مثل `-tool vat`.

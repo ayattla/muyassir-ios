@@ -11,7 +11,7 @@ func pdfLines(_ url: URL, ocr: Bool, _ p: Progress) throws -> [[String]] {
     let d = try PdfEngine.open(url)
     return try (0..<d.pageCount).map { i in
         guard let page = d.page(at: i) else { return [] }
-        if !ocr { return (page.string ?? "").components(separatedBy: "\n") }
+        if !ocr { return PdfEngine.text(page).components(separatedBy: "\n") }
         p.update(i, d.pageCount, "التعرف على الصفحة \(i + 1) من \(d.pageCount)")
         return try Ocr.recognize(PdfEngine.render(page, dpi: 200), .ar).components(separatedBy: "\n")
     }

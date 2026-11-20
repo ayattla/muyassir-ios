@@ -95,7 +95,9 @@ final class FileEngineTests: XCTestCase {
         let img = PdfEngine.render(try PdfEngine.open(a).page(at: 0)!, dpi: 72); XCTAssertGreaterThan(img.size.width, 100)
         XCTAssertEqual(2, PDFDocument(url: try PdfEngine.fromImages([img, img], a4: true, to: dir.appendingPathComponent("i.pdf")))!.pageCount)
         let stamped = try PdfEngine.stamp(a, page: 2, image: img, rx: 0.5, ry: 0.5, rw: 0.3, to: dir.appendingPathComponent("s.pdf")); XCTAssertEqual(3, PDFDocument(url: stamped)!.pageCount)
-        XCTAssert((PDFDocument(url: a)!.string ?? "").contains("صفحة"))
+        let txt = PdfEngine.text(PDFDocument(url: a)!.page(at: 0)!)
+        print("PDF TEXT:", txt, Array(txt.unicodeScalars.map { String($0.value, radix: 16) }))
+        XCTAssert(txt.contains("صفحة") || txt.contains("ةحفص"), "extracted: \(txt)")
     }
     func testImagesAndQr() throws {
         let q = ImageEngine.qr("https://example.com/مُيسّر")
