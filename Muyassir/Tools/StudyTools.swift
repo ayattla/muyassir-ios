@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import AudioToolbox
+import UniformTypeIdentifiers
 
 struct GpaTool: View {
     let tool: Tool
@@ -174,6 +175,7 @@ struct QuizMaker: View {
     @EnvironmentObject var store: Store
     struct Q: Identifiable { let id = UUID(); var type = 0; var text = ""; var opts = ["", "", "", ""]; var ans = 0; var lines = "3"; var mark = "1" }
     @State var title = "اختبار قصير"; @State var school = ""; @State var subject = ""; @State var qs: [Q] = []; @State var withKey = true; @State var result: [URL] = []
+    @State var bankMsg: String?; @State var showBank = false; @State var bank: [Rec] = []; @State var picked = Set<Int>()
     var body: some View {
         ToolScreen(tool: tool) {
             Panel { Field(label: "عنوان الاختبار", text: $title); Field(label: "المدرسة/الجهة", text: $school); Field(label: "المادة والصف", text: $subject) }
@@ -189,6 +191,16 @@ struct QuizMaker: View {
                 }
             }
             SecondaryButton(title: "إضافة سؤال", icon: "plus") { qs.append(Q()) }
+            HStack {
+                SecondaryButton(title: "حفظ في بنك الأسئلة", icon: "archivebox") {
+                    let old = store.list("qbank"), have = Set(old.map { $0.s("q") })
+                    let add: [Rec] = qs.filter { !$0.text.trimmingCharacters(in: .whitespaces).isEmpty && !have.contains($0.text) }
+                        .map { ["type": $0.type, "q": $0.text, "opts": $0.opts, "ans": $0.ans, "lines": $0.lines, "mark": $0.mark, "subject": subject] }
+                    store.saveList("qbank", old + add); bankMsg = "أُضيف \(add.count) سؤالًا إلى البنك (\(old.count + add.count) إجمالًا)"
+                }
+                SecondaryButton(title: "من البنك", icon: "tray.and.arrow.down") { bank = store.list("qbank"); picked = []; showBank = true }
+            }
+            if let bankMsg { Text(bankMsg).font(.plex(.caption)).foregroundStyle(Brand.mint) }
             Toggle("إنشاء نموذج إجابة منفصل", isOn: $withKey).font(.plex(.subheadline))
             TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext", enabled: !qs.isEmpty) {
@@ -211,6 +223,33 @@ struct QuizMaker: View {
                 result = [build(false), withKey ? build(true) : nil].compactMap { $0 }; store.used(tool.id, title)
             }
             if !result.isEmpty { ResultFiles(files: result) }
+        }
+        .sheet(isPresented: $showBank) {
+            NavigationStack {
+                List {
+                    if bank.isEmpty { Text("البنك فارغ. احفظ أسئلة اختبار لتعيد استخدامها لاحقًا.") }
+                    ForEach(bank.indices, id: \.self) { i in
+                        Button { if picked.contains(i) { picked.remove(i) } else { picked.insert(i) } } label: {
+                            Label(bank[i].s("q") + (bank[i].s("subject").isEmpty ? "" : " — \(bank[i].s("subject"))"), systemImage: picked.contains(i) ? "checkmark.circle.fill" : "circle")
+                        }.foregroundStyle(Brand.text1)
+                    }
+                    .onDelete { idx in bank.remove(atOffsets: idx); store.saveList("qbank", bank); picked = [] }
+                }
+                .navigationTitle("بنك الأسئلة (\(bank.count))").navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("إلغاء") { showBank = false } }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("إضافة \(picked.count)") {
+                            for i in picked.sorted() {
+                                let r = bank[i]; var q = Q(); q.type = r["type"] as? Int ?? 0; q.text = r.s("q"); q.opts = (r["opts"] as? [String]) ?? ["", "", "", ""]
+                                if q.opts.count < 4 { q.opts += Array(repeating: "", count: 4 - q.opts.count) }
+                                q.ans = r["ans"] as? Int ?? 0; q.lines = r.s("lines").isEmpty ? "3" : r.s("lines"); q.mark = r.s("mark").isEmpty ? "1" : r.s("mark"); qs.append(q)
+                            }
+                            showBank = false
+                        }.disabled(picked.isEmpty)
+                    }
+                }
+            }
         }
     }
 }
@@ -242,6 +281,7 @@ struct CertificateTool: View {
     let kinds = ["شهادة شكر وتقدير", "شهادة تفوق", "شهادة إتمام", "شهادة حضور"]
     let colors: [(String, UIColor)] = [("أزرق", UIColor(red: 0.18, green: 0.29, blue: 1, alpha: 1)), ("ذهبي", UIColor(red: 0.72, green: 0.53, blue: 0.04, alpha: 1)), ("أخضر", UIColor(red: 0.08, green: 0.5, blue: 0.24, alpha: 1)), ("عنابي", UIColor(red: 0.5, green: 0.11, blue: 0.23, alpha: 1))]
     @State var kind = 0; @State var name = ""; @State var reason = ""; @State var org = ""; @State var signer = ""; @State var date = Date(); @State var color = 0; @State var result: [URL] = []
+    @State var bulk = false; @State var names = ""; @State var importing = false
     var body: some View {
         ToolScreen(tool: tool) {
             Panel {
@@ -250,18 +290,40 @@ struct CertificateTool: View {
                 DatePicker("التاريخ", selection: $date, displayedComponents: .date)
                 HStack { ForEach(colors.indices, id: \.self) { i in Chip(text: colors[i].0, selected: i == color) { color = i } } }
             }
+            Panel {
+                Toggle("شهادات جماعية من قائمة أسماء", isOn: $bulk).font(.plex(.subheadline)).accessibilityIdentifier("bulkToggle")
+                if bulk {
+                    Field(label: "الأسماء (اسم في كل سطر)", text: $names, lines: 6)
+                    SecondaryButton(title: "استيراد الأسماء من Excel أو CSV", icon: "tablecells") { importing = true }
+                    let n = nameList.count
+                    Text("\(n) اسمًا\(Plus.shared.unlocked ? "" : " • المجاني حتى 10 أسماء في المرة")").font(.plex(.caption)).foregroundStyle(Brand.text2)
+                }
+            }
             TemplatePanel(styles: false)
-            PrimaryButton(title: "إنشاء الشهادة", icon: "rosette", enabled: !name.isEmpty) {
+            PrimaryButton(title: bulk ? "إنشاء الشهادات" : "إنشاء الشهادة", icon: "rosette", enabled: bulk ? !nameList.isEmpty : !name.isEmpty) {
+                let list = bulk ? nameList : [name.trimmingCharacters(in: .whitespaces)]
+                if list.count > 10 && !Plus.shared.allow(.files) { return }
                 let b = Templates.apply(DocBuilder(landscape: true)); b.border = colors[color].1; b.layoutStyle = 0; b.accent = colors[color].1; b.pageNumbers = false
-                b.add([.space(30), .para(org, size: 14, center: true, color: DocBuilder.muted), .para(kinds[kind], size: 34, bold: true, center: true, color: colors[color].1), .space(10),
-                       .para("يسرّنا أن نقدّم هذه الشهادة إلى", size: 14, center: true), .para(name, size: 28, bold: true, center: true)])
-                if !reason.isEmpty { b.add(.para(reason, size: 14, center: true)) }
-                b.add([.space(30), .para("\(dayFmt.string(from: date))\n\(signer)\n...............................", size: 12, center: true, color: DocBuilder.muted)])
-                result = [try? b.save(to: FilesX.outDir().appendingPathComponent("شهادة-\(name).pdf"))].compactMap { $0 }; store.used(tool.id, name)
+                for (i, who) in list.enumerated() {
+                    if i > 0 { b.add(.pageBreak) }
+                    b.add([.space(30), .para(org, size: 14, center: true, color: DocBuilder.muted), .para(kinds[kind], size: 34, bold: true, center: true, color: colors[color].1), .space(10),
+                           .para("يسرّنا أن نقدّم هذه الشهادة إلى", size: 14, center: true), .para(who, size: 28, bold: true, center: true)])
+                    if !reason.isEmpty { b.add(.para(reason, size: 14, center: true)) }
+                    b.add([.space(30), .para("\(dayFmt.string(from: date))\n\(signer)\n...............................", size: 12, center: true, color: DocBuilder.muted)])
+                }
+                let file = list.count > 1 ? "شهادات-\(kinds[kind])-\(list.count).pdf" : "شهادة-\(list[0]).pdf"
+                result = [try? b.save(to: FilesX.outDir().appendingPathComponent(file))].compactMap { $0 }; store.used(tool.id, list[0])
+            }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "xlsx") ?? .data, .commaSeparatedText, .plainText]) { r in
+                if case .success(let u) = r { names = readNames(u).joined(separator: "\n") }
             }
             if !result.isEmpty { ResultFiles(files: result) }
         }
     }
+}
+
+extension CertificateTool {
+    var nameList: [String] { var seen = Set<String>(); return names.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty && seen.insert($0).inserted } }
 }
 
 struct CalendarTool: View {

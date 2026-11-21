@@ -24,7 +24,7 @@ final class Plus: ObservableObject {
         "pdf_word", "word_pdf", "pdf_excel", "excel_pdf", "pdf_ppt", "ppt_pdf", "pdf_img", "img_pdf", "pdf_merge", "pdf_split",
         "pdf_compress", "pdf_reorder", "pdf_delete", "pdf_extract", "pdf_rotate", "ocr", "pdf_protect", "pdf_unlock",
         "zip", "unzip", "img_convert", "img_compress", "img_resize", "img_crop", "img_rotate", "img_enhance", "img_bg",
-        "img_batch", "id_photo",
+        "img_batch", "id_photo", "pdf_edit",
     ]
 
     enum Reason: String, Identifiable, CaseIterable {
@@ -139,6 +139,15 @@ final class Plus: ObservableObject {
 
     func counted(_ tool: String) { if Self.isMetered(tool) && !active { rollDay(); usedToday += 1; save() } }
     func toggleNotify() { notifyWhenLive.toggle(); save() }
+
+    /// Smart text tools (summary, review questions): one free use a day, unlimited with Plus.
+    func useAi() -> Bool {
+        if unlocked { return true }
+        rollDay()
+        let o = Store.shared.obj("plus_ai"), used = (o["day"] as? String) == day ? (o["n"] as? Int ?? 0) : 0
+        if used >= 1 { paywall = .ai; return false }
+        Store.shared.saveObj("plus_ai", ["day": day, "n": used + 1]); return true
+    }
 
     // MARK: StoreKit 2
 

@@ -16,6 +16,7 @@ enum Tools {
     ]
 
     static let all: [Tool] = [
+        Tool(id: "pdf_edit", cats: ["files"], title: "محرر PDF", sub: "كتابة وتظليل وإخفاء وتعبئة النماذج", icon: "pencil.and.outline", keys: "تعديل pdf كتابة تظليل نموذج تعبئة توقيع"),
         Tool(id: "pdf_word", cats: ["files"], title: "PDF إلى Word", sub: "استخراج النص إلى ملف DOCX قابل للتعديل", icon: "doc.richtext", keys: "pdf word docx تحويل وورد"),
         Tool(id: "word_pdf", cats: ["files"], title: "Word إلى PDF", sub: "تحويل DOCX إلى PDF بخط عربي سليم", icon: "doc.text", keys: "word pdf docx وورد"),
         Tool(id: "pdf_excel", cats: ["files"], title: "PDF إلى Excel", sub: "الأسطر والجداول إلى XLSX", icon: "tablecells", keys: "pdf excel xlsx اكسل جدول"),
@@ -52,11 +53,12 @@ enum Tools {
         Tool(id: "exams", cats: ["study"], title: "جدول الاختبارات", sub: "مع عدّ تنازلي وتذكير", icon: "calendar.badge.clock", keys: "اختبارات امتحانات"),
         Tool(id: "homework", cats: ["study"], title: "تنظيم الواجبات", sub: "حسب المادة وموعد التسليم", icon: "checklist", keys: "واجبات"),
         Tool(id: "attendance", cats: ["study"], title: "متابعة الحضور", sub: "سجل حضور وغياب الطلاب", icon: "person.crop.circle.badge.checkmark", keys: "حضور غياب طلاب"),
+        Tool(id: "grades", cats: ["study"], title: "كشف الدرجات", sub: "رصد درجات الطلاب وتصديرها Excel وPDF", icon: "list.number", keys: "درجات كشف رصد طلاب معلم"),
         Tool(id: "quiz_maker", cats: ["study"], title: "إنشاء الاختبارات", sub: "أسئلة اختيار وصح وخطأ إلى PDF", icon: "questionmark.square.dashed", keys: "انشاء اختبار اسئلة"),
         Tool(id: "worksheet", cats: ["study"], title: "أوراق العمل", sub: "ورقة عمل جاهزة للطباعة", icon: "doc.plaintext", keys: "ورقة عمل"),
         Tool(id: "flashcards", cats: ["study"], title: "بطاقات المراجعة", sub: "احفظ بالتكرار المتباعد", icon: "rectangle.on.rectangle.angled", keys: "بطاقات مراجعة"),
         Tool(id: "study_timer", cats: ["study"], title: "مؤقت المذاكرة", sub: "جلسات تركيز واستراحات", icon: "timer", keys: "مؤقت مذاكرة بومودورو"),
-        Tool(id: "certificate", cats: ["study", "docs"], title: "شهادات الإنجاز", sub: "شهادة شكر أو تفوق بصيغة PDF", icon: "rosette", keys: "شهادة شكر تقدير"),
+        Tool(id: "certificate", cats: ["study", "docs"], title: "شهادات الإنجاز", sub: "شهادة واحدة أو شهادات جماعية من قائمة أسماء", icon: "rosette", keys: "شهادة شكر تقدير"),
         Tool(id: "vat", cats: ["saudi", "calc"], title: "ضريبة القيمة المضافة", sub: "15% إضافة أو استخراج", icon: "doc.text.below.ecg", keys: "ضريبة vat قيمة مضافة"),
         Tool(id: "salary", cats: ["saudi"], title: "حاسبة الراتب", sub: "الإجمالي وخصم التأمينات والصافي", icon: "banknote", keys: "راتب تأمينات gosi"),
         Tool(id: "eos", cats: ["saudi"], title: "مكافأة نهاية الخدمة", sub: "وفق المادتين 84 و85", icon: "briefcase", keys: "نهاية خدمة مكافأة"),
@@ -70,6 +72,10 @@ enum Tools {
         Tool(id: "overtime", cats: ["saudi"], title: "العمل الإضافي", sub: "وفق المادة 107 من نظام العمل", icon: "clock.badge", keys: "اضافي اوفر تايم overtime ساعات"),
         Tool(id: "electricity", cats: ["saudi", "calc"], title: "فاتورة الكهرباء", sub: "تقدير بالتعرفة السكنية الحالية والجديدة", icon: "bolt.fill", keys: "كهرباء فاتوره استهلاك كيلو"),
         Tool(id: "date_diff", cats: ["calc", "saudi"], title: "حساب العمر والمدة", sub: "الفرق بين تاريخين بالميلادي والهجري", icon: "birthday.cake", keys: "عمر مده فرق تاريخين ميلاد"),
+        Tool(id: "translate", cats: ["smart", "study"], title: "الترجمة على الجهاز", sub: "عربي وإنجليزي لنص أو صورة أو ملف", icon: "translate", keys: "ترجمه ترجم translate انجليزي عربي"),
+        Tool(id: "summarize", cats: ["smart", "study"], title: "التلخيص الذكي", sub: "أهم الجمل والكلمات المفتاحية من أي نص أو ملف", icon: "text.badge.star", keys: "تلخيص ملخص لخص summary"),
+        Tool(id: "quiz_gen", cats: ["study", "smart"], title: "مولّد أسئلة المراجعة", sub: "أسئلة اختيار من ملاحظاتك وبطاقات مراجعة", icon: "questionmark.bubble", keys: "اسئله مراجعه اختبار توليد بطاقات"),
+        Tool(id: "read_aloud", cats: ["smart", "study"], title: "اقرأ لي", sub: "صوّر ورقة أو اختر ملفًا ليُقرأ بصوت عربي", icon: "speaker.wave.2", keys: "اقرا صوت قراءه نطق مكفوفين"),
         Tool(id: "documents", cats: ["saudi", "productivity"], title: "الوثائق والمواعيد", sub: "تنبيه قبل انتهاء الوثائق", icon: "folder.badge.person.crop", keys: "وثائق انتهاء هوية جواز موعد"),
         Tool(id: "notes", cats: ["productivity"], title: "المفكرة", sub: "ملاحظات سريعة محفوظة على جهازك", icon: "note.text", keys: "مفكرة ملاحظات"),
         Tool(id: "tasks", cats: ["productivity"], title: "المهام", sub: "قائمة مهام بأولويات", icon: "checklist.checked", keys: "مهام todo"),
@@ -147,7 +153,7 @@ enum Tools {
     /// What each kind of user reaches for first (chosen on first run, changeable in Settings).
     static let byRole: [String: [String]] = [
         "student": ["gpa", "flashcards", "study_timer", "exams", "ocr", "scan"],
-        "teacher": ["quiz_maker", "worksheet", "attendance", "certificate", "scan", "pdf_merge"],
+        "teacher": ["quiz_maker", "grades", "attendance", "certificate", "quiz_gen", "pdf_edit"],
         "employee": ["salary", "overtime", "eos", "letter", "sign_pdf", "pdf_compress"],
         "business": ["invoice", "quote", "vat", "sign_pdf", "expenses", "scan"],
     ]

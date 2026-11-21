@@ -216,6 +216,7 @@ struct SettingsView: View {
                 }
                 if let done { Text(done).foregroundStyle(Brand.mint) }
             } header: { Text("الخصوصية والتخزين") } footer: { Text("كل المعالجة على جهازك، ولا تُرفع ملفاتك إلى أي خادم. النتائج تُحذف تلقائيًا بعد 24 ساعة.") }
+            BackupSection()
             Section {
                 Button { contactSupport(openURL) } label: { Label("تواصل مع الدعم", systemImage: "questionmark.bubble") }
             } header: { Text("الدعم والملاحظات") } footer: { Text(plus.active ? "مشتركو بلس تصل رسائلهم بعلامة «بلس» ويُرد عليها أولًا." : "أرسل اقتراحك أو بلّغ عن مشكلة.") }

@@ -94,7 +94,7 @@ final class UiFlowTests: XCTestCase {
         app.tabBars.buttons["نشاطي"].tap(); XCTAssertTrue(app.navigationBars["نشاطي"].waitForExistence(timeout: 5))
         app.tabBars.buttons["الإعدادات"].tap(); XCTAssertTrue(app.navigationBars["الإعدادات"].waitForExistence(timeout: 5))
         app.buttons["داكن"].firstMatch.tap(); app.buttons["فاتح"].firstMatch.tap()
-        app.tabBars.buttons["الرئيسية"].tap(); XCTAssertTrue(app.buttons["cat-files"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["الرئيسية"].tap(); XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 5))
     }
 
     // MARK: calculators
