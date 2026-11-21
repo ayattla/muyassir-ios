@@ -131,7 +131,10 @@ struct FileTool<Options: View, After: View>: View {
             do {
                 let out = FilesX.outDir()
                 let started = Date()
-                results = try await Task.detached(priority: .userInitiated) { try await run(ins, out, progress) }.value
+                let r = try await Task.detached(priority: .userInitiated) { try await run(ins, out, progress) }.value
+                // Nothing came out: the inputs could not be read (broken or of another type). Say so instead of an empty result.
+                if r.isEmpty { throw UserError("تعذّر فتح الملف. تأكد أنه سليم ومن النوع المطلوب.") }
+                results = r
                 store.used(tool.id, results.first?.lastPathComponent ?? "")
                 plus.counted(tool.id)
                 ReviewAsk.success()
