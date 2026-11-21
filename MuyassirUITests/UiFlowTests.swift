@@ -95,7 +95,7 @@ final class UiFlowTests: XCTestCase {
     func testWordCount() { launch(tool: "word_count"); type("الصق النص هنا", "مرحبا بك في ميسر"); waitText("4") }
     func testQrMake() { launch(tool: "qr_make"); type("النص أو الرابط", "https://example.com"); let b = app.buttons["حفظ صورة PNG"]; reveal(b); b.tap(); waitText("الناتج") }
     func testNotesPersist() {
-        launch(tool: "notes"); app.buttons["إضافة"].tap(); type("العنوان", "ملاحظة اختبار"); app.buttons["حفظ"].tap(); waitText("ملاحظة اختبار")
+        launch(tool: "notes"); app.buttons["إضافة"].firstMatch.tap(); type("العنوان", "ملاحظة اختبار"); app.buttons["حفظ"].firstMatch.tap(); waitText("ملاحظة اختبار")
         app.terminate(); launch(tool: "notes"); waitText("ملاحظة اختبار")
     }
 
@@ -139,5 +139,13 @@ final class UiFlowTests: XCTestCase {
     func testImgEnhance() { run("img_enhance", "png") }
     func testImgBatch() { run("img_batch", "png,png,png") }
     func testIdPhoto() { run("id_photo", "person") }
-    func testImgBackground() { run("img_bg", "person", timeout: 120) }
+    func testImgBackground() throws {
+        #if targetEnvironment(simulator)
+        // Apple's subject-lifting and person-segmentation models need a real device (Neural Engine); in the Simulator
+        // Vision returns no subject. The tool screen itself is covered by the navigation test.
+        throw XCTSkip("Vision subject lifting is not available in the iOS Simulator")
+        #else
+        run("img_bg", "person", timeout: 120)
+        #endif
+    }
 }
