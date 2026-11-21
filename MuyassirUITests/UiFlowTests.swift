@@ -37,9 +37,9 @@ final class UiFlowTests: XCTestCase {
     /// Closes the keyboard (toolbar "تم" button, else the return key) so buttons below are reachable.
     func dismissKeyboard() {
         guard app.keyboards.count > 0 else { return }
-        let done = app.buttons["تم"]
+        let done = app.buttons["تم"].firstMatch
         if done.exists && done.isHittable { done.tap() }
-        else { for k in ["Return", "return", "Done", "done"] where app.keyboards.buttons[k].exists { app.keyboards.buttons[k].tap(); break } }
+        else { for k in ["Return", "return", "Done", "done"] where app.keyboards.buttons[k].firstMatch.exists { app.keyboards.buttons[k].firstMatch.tap(); break } }
         _ = app.keyboards.firstMatch.waitForNonExistence(timeout: 2)
     }
     func back() { app.navigationBars.buttons.element(boundBy: 0).tap() }
@@ -111,6 +111,15 @@ final class UiFlowTests: XCTestCase {
         if err.exists { XCTFail("\(id) failed: \(err.label)") }
         XCTAssertTrue(ok.exists, "\(id): no result")
     }
+    // MARK: failure handling
+    func testUnsupportedFileShowsClearError() {
+        launch(tool: "pdf_merge", inputs: "png")
+        let a = app.buttons["action"]; reveal(a); a.tap()
+        XCTAssertTrue(app.staticTexts["error"].waitForExistence(timeout: 30), "a PNG given to PDF merge must show an error")
+        XCTAssertTrue(app.buttons["action"].exists, "the user can retry")
+    }
+    func testCurrencyOfflinePeggedRate() { launch(tool: "currency"); waitText("3.75") }
+
     func testPdfToWord() { run("pdf_word", "pdf2") }
     func testWordToPdf() { run("word_pdf", "docx") }
     func testPdfToExcel() { run("pdf_excel", "pdf1") }
