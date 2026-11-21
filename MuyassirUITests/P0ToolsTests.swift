@@ -119,4 +119,25 @@ final class P0ToolsTests: XCTestCase {
 
     // MARK: smart tools
     func testQrReadFromImage() { launch("qr_read", inputs: "qr"); waitText("ayattla.com/muyassir") }
+
+    // MARK: broken and large inputs
+    func expectError(_ tool: String, _ input: String, file: StaticString = #filePath, line: UInt = #line) {
+        launch(tool, inputs: input); tap("action")
+        let err = app.staticTexts["error"]
+        let ok = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'الناتج'")).firstMatch
+        let deadline = Date().addingTimeInterval(60)
+        while Date() < deadline && !err.exists && !ok.exists { _ = err.waitForExistence(timeout: 1) }
+        XCTAssertTrue(err.exists, "\(tool) gave no clear message for a broken file", file: file, line: line)
+    }
+    func testBrokenPdfIsRejected() { expectError("pdf_word", "bad-pdf") }
+    func testBrokenWordIsRejected() { expectError("word_pdf", "bad-docx") }
+    func testBrokenExcelIsRejected() { expectError("excel_pdf", "bad-xlsx") }
+    func testBrokenZipIsRejected() { expectError("unzip", "bad-zip") }
+    func testBrokenImageIsRejected() { expectError("img_compress", "bad-png") }
+    func testLargePdfMergeAndCompress() {
+        let t0 = Date(); launch("pdf_merge", inputs: "pdf60,pdf2"); tap("action"); waitResults(180)
+        let merge = Date().timeIntervalSince(t0)
+        let t1 = Date(); launch("pdf_compress", inputs: "pdf60"); tap("action"); waitResults(300)
+        print("MuyassirTiming merge 62 pages: \(Int(merge * 1000)) ms, compress 60 pages: \(Int(Date().timeIntervalSince(t1) * 1000)) ms")
+    }
 }
