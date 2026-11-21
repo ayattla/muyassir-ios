@@ -249,7 +249,6 @@ struct TemplatePanel: View {
                 }
             }
         }
-        .accessibilityIdentifier("templates")
         .onChange(of: item) { _, it in
             Task {
                 guard let d = try? await it?.loadTransferable(type: Data.self), let img = UIImage(data: d), let png = img.pngData() else { return }
