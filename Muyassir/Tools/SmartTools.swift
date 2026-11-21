@@ -110,7 +110,7 @@ struct TextCompare: View {
             Panel { Field(label: "النص الأول", text: $a, lines: 5); Field(label: "النص الثاني", text: $b, lines: 5); Seg(options: ["كلمات", "أسطر"], selection: $byWord) }
             if !a.isEmpty || !b.isEmpty {
                 let p = TextTools.diff(a, b, byWord: byWord == 0)
-                ResultCard(main: ("نسبة التشابه", "\(fmt(TextTools.similarity(p) * 100, 1))%"), rows: [("مضاف", "\(p.filter { $0.op == .added }.count)"), ("محذوف", "\(p.filter { $0.op == .removed }.count)")])
+                ResultCard(main: ("نسبة التطابق", "\(fmt(TextTools.similarity(p) * 100, 1))%"), rows: [("إضافات", "\(p.filter { $0.op == .added }.count)"), ("حذف", "\(p.filter { $0.op == .removed }.count)")])
                 Panel(title: "الفروق") {
                     p.reduce(Text("")) { t, x in
                         t + Text(x.text + (byWord == 0 ? " " : "\n")).foregroundColor(x.op == .added ? Color(hex: 0x15803D) : x.op == .removed ? .red : .primary)

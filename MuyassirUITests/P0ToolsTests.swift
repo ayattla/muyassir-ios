@@ -75,7 +75,11 @@ final class P0ToolsTests: XCTestCase {
     func testBudgetRemaining() { launch("budget"); type("الدخل الشهري", "5000"); waitText("المتبقي هذا الشهر") }
 
     // MARK: study and teacher pack
-    func testTimetableCell() { launch("timetable"); let c = app.buttons["cell-0-0"]; reveal(c); c.tap(); type("المادة", "رياضيات"); app.buttons["حفظ"].firstMatch.tap(); waitText("رياضيات") }
+    func testTimetableCell() {
+        launch("timetable"); let c = app.buttons["cell-0-0"]; reveal(c); c.tap()
+        let f = app.alerts.textFields.firstMatch; XCTAssertTrue(f.waitForExistence(timeout: 5)); f.tap(); f.typeText("رياضيات")
+        app.alerts.buttons["حفظ"].tap(); waitText("رياضيات")
+    }
     func testExamsSave() { launch("exams"); addRecord([("المادة", "فيزياء")]); waitText("فيزياء") }
     func testHomeworkSave() { launch("homework"); addRecord([("المادة", "لغتي"), ("الواجب", "تمرين 3")]); waitText("تمرين 3") }
     func testFlashcardsReview() { launch("flashcards"); type("الوجه (سؤال أو كلمة)", "عاصمة السعودية"); type("الظهر (الإجابة)", "الرياض"); tap("إضافة البطاقة"); tap("ابدأ المراجعة"); waitText("عاصمة السعودية") }
