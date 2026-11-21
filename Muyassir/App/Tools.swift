@@ -5,14 +5,14 @@ struct Tool: Identifiable, Hashable { let id: String; let cats: [String]; let ti
 
 enum Tools {
     static let categories: [Category] = [
-        Category(id: "files", title: "تحويل الملفات", blurb: "PDF وWord وExcel وPowerPoint والضغط", icon: "arrow.left.arrow.right.square", hex: 0x2F4BFF),
-        Category(id: "images", title: "الصور والتصميم", blurb: "ضغط وقص وإزالة خلفية وتحسين", icon: "photo", hex: 0x7A5CFF),
-        Category(id: "study", title: "الطالب والمعلم", blurb: "المعدل والجداول والاختبارات", icon: "graduationcap", hex: 0x0FA98A),
-        Category(id: "saudi", title: "خدمات سعودية", blurb: "الضريبة والرواتب ونهاية الخدمة", icon: "building.columns", hex: 0x15803D),
-        Category(id: "productivity", title: "الإنتاجية والتنظيم", blurb: "مفكرة ومهام وميزانية وتذكيرات", icon: "checklist", hex: 0xE08A00),
-        Category(id: "docs", title: "إنشاء المستندات", blurb: "سيرة ذاتية وفواتير وخطابات وتوقيع", icon: "doc.badge.plus", hex: 0xE8487A),
-        Category(id: "calc", title: "الحسابات والمحولات", blurb: "علمية ووحدات وعملات ومساحات", icon: "function", hex: 0x1A9BD7),
-        Category(id: "smart", title: "أدوات ذكية", blurb: "QR ونصوص وصوت", icon: "sparkles", hex: 0x5B4BDB),
+        Category(id: "files", title: "تحويل الملفات", blurb: "PDF وWord وExcel وPowerPoint والضغط", icon: "arrow.left.arrow.right.square", hex: 0x3346D3),
+        Category(id: "images", title: "الصور والتصميم", blurb: "ضغط وقص وإزالة خلفية وتحسين", icon: "photo", hex: 0x7340D0),
+        Category(id: "study", title: "الطالب والمعلم", blurb: "المعدل والجداول والاختبارات", icon: "graduationcap", hex: 0x0B7F7A),
+        Category(id: "saudi", title: "خدمات سعودية", blurb: "الضريبة والرواتب ونهاية الخدمة", icon: "building.columns", hex: 0x23814A),
+        Category(id: "productivity", title: "الإنتاجية والتنظيم", blurb: "مفكرة ومهام وميزانية وتذكيرات", icon: "checklist", hex: 0xB0600A),
+        Category(id: "docs", title: "إنشاء المستندات", blurb: "سيرة ذاتية وفواتير وخطابات وتوقيع", icon: "doc.badge.plus", hex: 0xC02A63),
+        Category(id: "calc", title: "الحسابات والمحولات", blurb: "علمية ووحدات وعملات ومساحات", icon: "function", hex: 0x1F6FB8),
+        Category(id: "smart", title: "أدوات ذكية", blurb: "QR ونصوص وصوت", icon: "sparkles", hex: 0xA14522),
     ]
 
     static let all: [Tool] = [
@@ -102,11 +102,42 @@ enum Tools {
             .replacingOccurrences(of: "[أإآ]", with: "ا", options: .regularExpression).replacingOccurrences(of: "ى", with: "ي").replacingOccurrences(of: "ة", with: "ه")
     }
 
+    static func hex(_ t: Tool) -> UInt32 { category(t.cats[0]).hex }
+
+    /// Words people type → words the tools are described with (Arabic and English), same table as Android.
+    static let synonymGroups: [[String]] = [
+        ["تصغير", "ضغط", "تقليل", "صغر", "حجم", "compress", "shrink", "reduce", "smaller"], ["دمج", "جمع", "ضم", "merge", "combine", "join"],
+        ["تحويل", "حول", "convert"], ["تقسيم", "فصل", "قسم", "split"], ["صوره", "صور", "image", "photo", "picture", "jpg", "png"],
+        ["pdf", "بي دي اف", "مستند"], ["ورد", "word", "docx"], ["اكسل", "excel", "xlsx", "جدول"], ["بوربوينت", "powerpoint", "pptx", "عرض"],
+        ["نص", "كتابه", "ocr", "text", "استخراج"], ["مسح", "سكانر", "scan", "scanner", "كاميرا"], ["خلفيه", "background", "bg"],
+        ["ابعاد", "مقاس", "resize", "size", "تكبير"], ["قص", "crop"], ["تدوير", "rotate", "قلب"], ["حمايه", "قفل", "كلمه مرور", "password", "protect", "lock", "تشفير"],
+        ["ضريبه", "vat", "قيمه مضافه"], ["راتب", "رواتب", "salary", "تامينات", "gosi"], ["معدل", "gpa", "درجات", "نسبه"], ["هجري", "تاريخ", "hijri", "ميلادي"],
+        ["qr", "كيو ار", "باركود", "barcode", "رمز"], ["صوت", "اقرا", "tts", "speech", "نطق"], ["املاء", "تفريغ", "stt", "dictation"],
+        ["فاتوره", "invoice"], ["سيره", "cv", "resume"], ["توقيع", "sign", "signature"], ["عمله", "عملات", "currency", "دولار", "صرف"],
+        ["وحدات", "units"], ["ملاحظه", "ملاحظات", "notes", "مفكره"], ["مهام", "tasks", "todo"], ["تذكير", "منبه", "reminder"],
+    ].map { $0.map(norm) }
+    static func expand(_ w: String) -> [String] {
+        if let g = synonymGroups.first(where: { $0.contains(w) }) { return g + [w] }
+        if let g = synonymGroups.first(where: { g in g.contains { $0.count > 2 && (w.hasPrefix($0) || $0.hasPrefix(w)) } }) { return g + [w] }
+        return [w]
+    }
+    private static let stop: Set<String> = ["ال", "من", "في", "على", "الى", "ملف", "ملفات", "اريد", "ابي", "ابغى", "كيف"]
+
+    /// Instant search by name, purpose or synonym; best matches first.
     static func search(_ q: String, usage: [String: Int]) -> [Tool] {
         let n = norm(q.trimmingCharacters(in: .whitespaces)); if n.isEmpty { return [] }
-        let words = n.split(separator: " ").map(String.init)
-        return all.filter { t in let h = norm("\(t.title) \(t.sub) \(t.keys)"); return words.allSatisfy { h.contains($0) } }
-            .sorted { (norm($0.title).hasPrefix(n) ? 10 : 0) + (usage[$0.id] ?? 0) > (norm($1.title).hasPrefix(n) ? 10 : 0) + (usage[$1.id] ?? 0) }
+        var words = n.split(separator: " ").map(String.init).filter { !stop.contains($0) || n.count <= 3 }
+        if words.isEmpty { words = [n] }
+        func score(_ t: Tool) -> Int {
+            let h = norm("\(t.title) \(t.sub) \(t.keys) \(t.id.replacingOccurrences(of: "_", with: " "))"), title = norm(t.title)
+            var s = 0, hits = 0
+            for w in words { let alts = expand(w); if alts.contains(where: { h.contains($0) }) { hits += 1; s += alts.contains(where: { title.contains($0) }) ? 6 : 3 } }
+            if hits == 0 { return 0 }
+            if hits == words.count { s += 10 }
+            if title.hasPrefix(n) { s += 12 }
+            return s + min(usage[t.id] ?? 0, 5)
+        }
+        return all.map { ($0, score($0)) }.filter { $0.1 > 0 }.sorted { $0.1 > $1.1 }.map { $0.0 }
     }
 
     static func suggestions(last: String?) -> [Tool] {

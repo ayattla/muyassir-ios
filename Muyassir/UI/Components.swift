@@ -8,19 +8,24 @@ struct ToolScreen<Content: View>: View {
     @EnvironmentObject var store: Store
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                Text(tool.sub).font(.plex(.subheadline)).foregroundStyle(.secondary)
-                content
+            VStack(spacing: Space.m) {
+                // Centred header: the tool's mark and what it does.
+                VStack(spacing: 6) {
+                    Image(systemName: tool.icon).font(.system(size: 24, weight: .semibold)).foregroundStyle(Brand.tone(Tools.hex(tool)))
+                        .frame(width: 52, height: 52).background(Brand.toneSoft(Tools.hex(tool)), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    Text(tool.sub).font(.plex(.subheadline)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
+                }.frame(maxWidth: .infinity).padding(.bottom, Space.xs)
+                VStack(alignment: .leading, spacing: Space.m) { content }
             }
-            .padding(16).frame(maxWidth: 720).frame(maxWidth: .infinity)
+            .padding(Space.l).frame(maxWidth: 720).frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(Color(.systemGroupedBackground))
+        .background(Brand.bg)
         .navigationTitle(tool.title).navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { store.toggleFavorite(tool.id) } label: {
-                    Image(systemName: store.favorites.contains(tool.id) ? "star.fill" : "star").foregroundStyle(store.favorites.contains(tool.id) ? Brand.saffron : .secondary)
+                    Image(systemName: store.favorites.contains(tool.id) ? "star.fill" : "star").foregroundStyle(store.favorites.contains(tool.id) ? Brand.saffron : Brand.text3)
                 }.accessibilityLabel(store.favorites.contains(tool.id) ? "إزالة من المفضلة" : "إضافة إلى المفضلة")
             }
             ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("تم") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) } }
@@ -32,12 +37,11 @@ struct Panel<Content: View>: View {
     var title: String? = nil
     @ViewBuilder var content: Content
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if let title { Text(title).font(.plex(.headline, .semibold)) }
+        VStack(alignment: .leading, spacing: Space.m) {
+            if let title { Text(title).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text1).frame(maxWidth: .infinity) }
             content
         }
-        .padding(16).frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(Space.l).frame(maxWidth: .infinity, alignment: .leading).card()
     }
 }
 
@@ -47,14 +51,14 @@ struct NumField: View {
     var suffix: String? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(label).font(.plex(.caption, .medium)).foregroundStyle(.secondary)
+            Text(label).font(.plex(.caption, .medium)).foregroundStyle(Brand.text2)
             HStack {
                 TextField("0", text: Binding(get: { text }, set: { v in text = String(v.map { c in ("٠"..."٩").contains(String(c)) ? Character(String(c.unicodeScalars.first!.value - 0x0660)) : (c == "٫" ? "." : c) }) }))
                     .keyboardType(.decimalPad).font(.plex(.body)).accessibilityLabel(label).accessibilityIdentifier(label)
                 if let suffix { Text(suffix).font(.plex(.footnote)).foregroundStyle(.secondary) }
             }
             .padding(.horizontal, 12).frame(minHeight: 46)
-            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(Brand.sunken, in: RoundedRectangle(cornerRadius: 12, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Brand.border, lineWidth: 1))
         }
     }
 }
@@ -67,7 +71,7 @@ struct Field: View {
     var secure = false
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(label).font(.plex(.caption, .medium)).foregroundStyle(.secondary)
+            Text(label).font(.plex(.caption, .medium)).foregroundStyle(Brand.text2)
             Group {
                 if secure { SecureField("", text: $text) }
                 else if lines > 1 { TextField("", text: $text, axis: .vertical).lineLimit(lines...max(lines, 12)) }
@@ -75,7 +79,7 @@ struct Field: View {
             }
             .accessibilityLabel(label).accessibilityIdentifier(label)
             .font(.plex(.body)).padding(.horizontal, 12).padding(.vertical, 11).frame(minHeight: 46)
-            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(Brand.sunken, in: RoundedRectangle(cornerRadius: 12, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Brand.border, lineWidth: 1))
         }
     }
 }
@@ -97,20 +101,23 @@ struct ResultCard: View {
     var rows: [(String, String)] = []
     var note: String? = nil
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(spacing: Space.s) {
             if let main {
-                Text(main.0).font(.plex(.subheadline, .semibold)).foregroundStyle(Color(hex: 0xB7BFDB))
-                Text(main.1).font(.plex(.title, .bold)).foregroundStyle(.white).minimumScaleFactor(0.6).lineLimit(2)
-                if !rows.isEmpty { Divider().overlay(Color.white.opacity(0.2)) }
+                Text(main.0).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text2)
+                Text(main.1).font(.plex(.title, .bold)).foregroundStyle(Brand.accent).minimumScaleFactor(0.6).lineLimit(2)
+                if !rows.isEmpty { Divider().overlay(Brand.accent.opacity(0.15)) }
             }
             ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
-                HStack { Text(r.0).foregroundStyle(Color(hex: 0xB7BFDB)); Spacer(); Text(r.1).foregroundStyle(.white).fontWeight(.semibold) }.font(.plex(.subheadline))
+                HStack { Text(r.0).foregroundStyle(Brand.text2); Spacer(); Text(r.1).foregroundStyle(Brand.text1).fontWeight(.semibold) }.font(.plex(.subheadline))
             }
-            if let note { Text(note).font(.plex(.caption)).foregroundStyle(Color(hex: 0x9AA3C2)) }
+            if let note { Text(note).font(.plex(.caption)).foregroundStyle(Brand.text3) }
         }
-        .padding(18).frame(maxWidth: .infinity, alignment: .leading)
-        .background(Brand.ink, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .multilineTextAlignment(.center)
+        .padding(Space.l).frame(maxWidth: .infinity)
+        .background(Brand.accentSoft, in: RoundedRectangle(cornerRadius: Radius.l, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Radius.l, style: .continuous).stroke(Brand.accent.opacity(0.18), lineWidth: 1))
         .accessibilityElement(children: .combine)
+        .transition(.opacity.combined(with: .scale(scale: 0.98)))
     }
 }
 
@@ -119,9 +126,9 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: action) {
             Label { Text(title).font(.plex(.headline, .semibold)) } icon: { if let icon { Image(systemName: icon) } }
-                .frame(maxWidth: .infinity, minHeight: 50)
+                .frame(maxWidth: .infinity, minHeight: 52)
         }
-        .buttonStyle(.borderedProminent).buttonBorderShape(.roundedRectangle(radius: 14)).disabled(!enabled)
+        .buttonStyle(.borderedProminent).tint(Brand.accent).buttonBorderShape(.roundedRectangle(radius: Radius.m)).disabled(!enabled)
     }
 }
 
@@ -129,10 +136,12 @@ struct SecondaryButton: View {
     let title: String; var icon: String? = nil; let action: () -> Void
     var body: some View {
         Button(action: action) {
-            Label { Text(title).font(.plex(.subheadline, .semibold)) } icon: { if let icon { Image(systemName: icon) } }
-                .frame(maxWidth: .infinity, minHeight: 44)
+            Label { Text(title).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text1) } icon: { if let icon { Image(systemName: icon).foregroundStyle(Brand.accent) } }
+                .frame(maxWidth: .infinity, minHeight: 46)
+                .background(Brand.surface, in: RoundedRectangle(cornerRadius: Radius.m, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: Radius.m, style: .continuous).stroke(Brand.borderStrong, lineWidth: 1))
         }
-        .buttonStyle(.bordered).buttonBorderShape(.roundedRectangle(radius: 14))
+        .buttonStyle(PressStyle())
     }
 }
 
@@ -147,11 +156,11 @@ struct Hint: View {
     let text: String
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "info.circle").foregroundStyle(Brand.lapis)
-            Text(text).font(.plex(.footnote)).foregroundStyle(.secondary)
+            Image(systemName: "info.circle").foregroundStyle(Brand.text3)
+            Text(text).font(.plex(.footnote)).foregroundStyle(Brand.text2)
         }
         .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-        .background(Brand.lapis.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
+        .background(Brand.sunken, in: RoundedRectangle(cornerRadius: Radius.m))
     }
 }
 
@@ -167,8 +176,9 @@ struct Chip: View {
     var body: some View {
         Button(action: action) {
             Text(text).font(.plex(.subheadline, .semibold)).padding(.horizontal, 14).padding(.vertical, 8)
-                .background(selected ? Brand.lapis : Color(.secondarySystemGroupedBackground), in: Capsule())
-                .foregroundStyle(selected ? .white : .primary)
+                .background(selected ? Brand.accent : Brand.surface, in: Capsule())
+                .overlay(Capsule().stroke(selected ? Color.clear : Brand.borderStrong, lineWidth: 1))
+                .foregroundStyle(selected ? Brand.onAccent : Brand.text1)
         }.buttonStyle(.plain)
     }
 }
@@ -194,20 +204,33 @@ struct TextResult: View {
 }
 
 struct ToolRow: View {
-    let tool: Tool; var compact = false
+    let tool: Tool; var compact = false; var plain = false
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: tool.icon).font(.system(size: 18, weight: .semibold)).foregroundStyle(Tools.color(tool))
-                .frame(width: 42, height: 42).background(Tools.color(tool).opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        let row = HStack(spacing: 12) {
+            Image(systemName: tool.icon).font(.system(size: 17, weight: .semibold)).foregroundStyle(Brand.tone(Tools.hex(tool)))
+                .frame(width: 38, height: 38).background(Brand.toneSoft(Tools.hex(tool)), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
-                Text(tool.title).font(.plex(.subheadline, .semibold)).foregroundStyle(.primary)
-                if !compact { Text(tool.sub).font(.plex(.caption)).foregroundStyle(.secondary).lineLimit(2) }
+                Text(tool.title).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text1)
+                if !compact { Text(tool.sub).font(.plex(.caption)).foregroundStyle(Brand.text2).lineLimit(2) }
             }
             Spacer(minLength: 0)
-            Image(systemName: "chevron.forward").font(.caption).foregroundStyle(.tertiary)
+            if !plain { Image(systemName: "chevron.backward").font(.caption).foregroundStyle(Brand.text3) }
+        }.contentShape(Rectangle())
+        if plain { row } else { row.padding(12).card(Radius.m) }
+    }
+}
+
+/// Grid card: centred icon, name and purpose.
+struct ToolCard: View {
+    let tool: Tool
+    var body: some View {
+        VStack(spacing: 6) {
+            Image(systemName: tool.icon).font(.system(size: 21, weight: .semibold)).foregroundStyle(Brand.tone(Tools.hex(tool)))
+                .frame(width: 46, height: 46).background(Brand.toneSoft(Tools.hex(tool)), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            Text(tool.title).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text1).lineLimit(2)
+            Text(tool.sub).font(.plex(.caption2)).foregroundStyle(Brand.text2).lineLimit(2, reservesSpace: true)
         }
-        .padding(12).background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .contentShape(Rectangle())
+        .multilineTextAlignment(.center).padding(Space.m).frame(maxWidth: .infinity, minHeight: 150).card().contentShape(Rectangle())
     }
 }
 

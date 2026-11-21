@@ -28,6 +28,15 @@ enum Notify {
         }
     }
     static func cancel(_ id: String) { UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id]) }
+    /// Completion notice for long operations; shown only if the user already allowed notifications.
+    static func done(_ tool: String, _ n: Int) {
+        let c = UNUserNotificationCenter.current()
+        c.getNotificationSettings { st in
+            guard st.authorizationStatus == .authorized else { return }
+            let content = UNMutableNotificationContent(); content.title = "اكتملت العملية: \(tool)"; content.body = "\(n) \(n == 1 ? "ملف جاهز" : "ملفات جاهزة") في مُيسّر"
+            c.add(UNNotificationRequest(identifier: "done-\(UUID().uuidString)", content: content, trigger: nil))
+        }
+    }
 }
 
 /// Generic on-device list: add / edit / delete / tick, optional reminders and Excel export.

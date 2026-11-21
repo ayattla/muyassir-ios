@@ -62,6 +62,20 @@ enum FilesX {
         try? FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
         return d
     }
+    /// Every result file still on the device, newest first.
+    static func outputs() -> [URL] {
+        let root = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("out")
+        let e = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey, .contentModificationDateKey])
+        var list: [URL] = []
+        while let u = e?.nextObject() as? URL { if (try? u.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true { list.append(u) } }
+        return list.sorted { date($0) > date($1) }
+    }
+    static func date(_ u: URL) -> Date { (try? u.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast }
+    static func clearAll() {
+        let fm = FileManager.default
+        try? fm.removeItem(at: fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("out"))
+        try? fm.removeItem(at: fm.temporaryDirectory.appendingPathComponent("in"))
+    }
     static func cleanOld() {
         let fm = FileManager.default
         let root = fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("out")

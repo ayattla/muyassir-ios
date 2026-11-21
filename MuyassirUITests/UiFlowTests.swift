@@ -72,11 +72,29 @@ final class UiFlowTests: XCTestCase {
         XCTAssert(problems.isEmpty, problems.joined(separator: "\n"))
     }
 
-    func testSearchFindsTool() {
+    func testSearchFindsToolByPurpose() {
         launch()
-        let s = app.searchFields.firstMatch; XCTAssertTrue(s.waitForExistence(timeout: 5)); s.tap(); s.typeText("ضريبة")
-        app.buttons.matching(NSPredicate(format: "label CONTAINS 'ضريبة القيمة المضافة'")).firstMatch.tap()
-        XCTAssertTrue(app.navigationBars["ضريبة القيمة المضافة"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["البحث"].tap()
+        let s = app.searchFields.firstMatch; XCTAssertTrue(s.waitForExistence(timeout: 5)); s.tap(); s.typeText("تصغير ملف")
+        waitText("ضغط PDF"); waitText("ضغط الصور")
+        app.buttons.matching(NSPredicate(format: "label CONTAINS 'ضغط PDF'")).firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["ضغط PDF"].waitForExistence(timeout: 5))
+    }
+
+    func testAssistantSuggestsStepsInOrder() {
+        launch()
+        app.tabBars.buttons["المساعد"].tap()
+        type("طلبك", "أريد تحويل خمس صور إلى PDF وتقليل حجمه")
+        app.buttons["اقترح الأدوات"].firstMatch.tap()
+        waitText("صور إلى PDF"); waitText("ضغط PDF")
+    }
+
+    func testTabsAndDarkMode() {
+        launch()
+        app.tabBars.buttons["نشاطي"].tap(); XCTAssertTrue(app.navigationBars["نشاطي"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["الإعدادات"].tap(); XCTAssertTrue(app.navigationBars["الإعدادات"].waitForExistence(timeout: 5))
+        app.buttons["داكن"].firstMatch.tap(); app.buttons["فاتح"].firstMatch.tap()
+        app.tabBars.buttons["الرئيسية"].tap(); XCTAssertTrue(app.buttons["cat-files"].waitForExistence(timeout: 5))
     }
 
     // MARK: calculators

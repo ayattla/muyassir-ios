@@ -23,6 +23,17 @@ shoot() { # udid dir
     sleep 2.5
     xcrun simctl io "$dev" screenshot "shots/$dir/$id.png" >/dev/null 2>&1
   done
+  for t in search assistant activity settings; do
+    xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -tab "$t" >/dev/null; sleep 3
+    xcrun simctl io "$dev" screenshot "shots/$dir/tab-$t.png" >/dev/null 2>&1
+  done
+  # Dark mode (then back to the light default)
+  xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -theme dark >/dev/null; sleep 4
+  xcrun simctl io "$dev" screenshot "shots/$dir/dark-home.png" >/dev/null 2>&1
+  for c in files study; do xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -cat "$c" >/dev/null; sleep 3; xcrun simctl io "$dev" screenshot "shots/$dir/dark-cat-$c.png" >/dev/null 2>&1; done
+  for t in vat pdf_merge; do xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -tool "$t" >/dev/null; sleep 3; xcrun simctl io "$dev" screenshot "shots/$dir/dark-$t.png" >/dev/null 2>&1; done
+  xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -tab settings >/dev/null; sleep 3; xcrun simctl io "$dev" screenshot "shots/$dir/dark-settings.png" >/dev/null 2>&1
+  xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -theme light >/dev/null; sleep 2
   xcrun simctl terminate "$dev" com.muyassir.app 2>/dev/null; xcrun simctl shutdown "$dev" 2>/dev/null
 }
 shoot "$IPHONE" iphone
