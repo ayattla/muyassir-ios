@@ -23,7 +23,7 @@ struct SearchView: View {
                     let list = res.filter { $0.cats[0] == c.id }
                     if !list.isEmpty {
                         Section(c.title) {
-                            ForEach(list) { t in NavigationLink(value: t) { ToolRow(tool: t, compact: true, plain: true) }.simultaneousGesture(TapGesture().onEnded { remember() }) }
+                            ForEach(list) { t in NavigationLink(value: t) { ToolRow(tool: t, compact: true, plain: true) }.accessibilityIdentifier("result-\(t.id)") }
                         }
                     }
                 }
@@ -33,6 +33,7 @@ struct SearchView: View {
         .navigationTitle("البحث")
         .searchable(text: $q, placement: .navigationBarDrawer(displayMode: .always), prompt: "تصغير ملف، صور إلى PDF، راتب…")
         .onSubmit(of: .search) { remember() }
+        .onDisappear { remember() }
     }
     private func chips(_ items: [String]) -> some View {
         FlowChips(items: items) { q = $0 }.listRowBackground(Color.clear).listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))

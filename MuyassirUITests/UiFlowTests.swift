@@ -77,7 +77,7 @@ final class UiFlowTests: XCTestCase {
         app.tabBars.buttons["البحث"].tap()
         let s = app.searchFields.firstMatch; XCTAssertTrue(s.waitForExistence(timeout: 5)); s.tap(); s.typeText("تصغير ملف")
         waitText("ضغط PDF"); waitText("ضغط الصور")
-        app.buttons.matching(NSPredicate(format: "label CONTAINS 'ضغط PDF'")).firstMatch.tap()
+        let r = app.buttons["result-pdf_compress"]; XCTAssertTrue(r.waitForExistence(timeout: 5)); r.tap()
         XCTAssertTrue(app.navigationBars["ضغط PDF"].waitForExistence(timeout: 5))
     }
 
