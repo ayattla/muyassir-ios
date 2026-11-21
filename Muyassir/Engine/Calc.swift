@@ -86,4 +86,72 @@ enum Calc {
         return (scale5 ? five : four)[l] ?? 0
     }
     static func gradeWord(_ p: Double) -> String { p >= 90 ? "ممتاز" : p >= 80 ? "جيد جدًا" : p >= 70 ? "جيد" : p >= 60 ? "مقبول" : "راسب" }
+
+    // Zakat: 2.5% of zakatable wealth held a lunar year, when it reaches the nisab (value of 85 g gold or 595 g silver).
+    struct Zakat: Equatable { let wealth, nisab, due: Double; let reached: Bool }
+    static func zakat(cash: Double, gold: Double, silver: Double, trade: Double, receivables: Double, debts: Double, nisab: Double) -> Zakat {
+        let w = max(0, cash + gold + silver + trade + receivables - debts)
+        let ok = nisab > 0 && w >= nisab
+        return Zakat(wealth: w, nisab: nisab, due: ok ? w * 0.025 : 0, reached: ok)
+    }
+
+    // Overtime, Saudi Labor Law article 107: hourly wage + 50% of the basic hourly wage.
+    struct Overtime: Equatable { let hourly, basicHourly, perHour, total: Double }
+    static func overtime(basic: Double, allowances: Double, dailyHours: Double, hours: Double) -> Overtime {
+        let dh = dailyHours > 0 ? dailyHours : 8
+        let h = (basic + allowances) / 30 / dh, bh = basic / 30 / dh, per = h + bh * 0.5
+        return Overtime(hourly: h, basicHourly: bh, perHour: per, total: per * hours)
+    }
+
+    // Residential electricity estimate: two tiers at 6,000 kWh; rates in halalas; fixed fee in riyals.
+    struct Power: Equatable { let tier1, tier2, fixed, vat, total: Double }
+    static func electricity(kwh: Double, rate1: Double, rate2: Double, fixed: Double = 0, vatRate: Double = vatRate) -> Power {
+        let t1 = max(0, min(kwh, 6000)) * rate1 / 100, t2 = max(0, kwh - 6000) * rate2 / 100
+        let net = t1 + t2 + fixed, v = net * vatRate / 100
+        return Power(tier1: t1, tier2: t2, fixed: fixed, vat: v, total: net + v)
+    }
+
+    struct Span: Equatable { let years, months, days, totalDays: Int }
+    static func span(_ a: Date, _ b: Date) -> Span {
+        let (x, y) = a < b ? (a, b) : (b, a)
+        var cal = Calendar(identifier: .gregorian); cal.timeZone = TimeZone(identifier: "Asia/Riyadh")!
+        let c = cal.dateComponents([.year, .month, .day], from: cal.startOfDay(for: x), to: cal.startOfDay(for: y))
+        let total = cal.dateComponents([.day], from: cal.startOfDay(for: x), to: cal.startOfDay(for: y)).day ?? 0
+        return Span(years: c.year ?? 0, months: c.month ?? 0, days: c.day ?? 0, totalDays: total)
+    }
+}
+
+/// Finds dates in OCR text of IDs, passports and licences (yyyy/mm/dd or dd/mm/yyyy; Hijri years 1350–1500).
+enum DateFinder {
+    struct Found: Equatable { let date: Date; let text: String; let hijri: Bool }
+    static func digits(_ s: String) -> String {
+        String(s.map { c -> Character in
+            if let v = "٠١٢٣٤٥٦٧٨٩".firstIndex(of: c) { return Character(String("٠١٢٣٤٥٦٧٨٩".distance(from: "٠١٢٣٤٥٦٧٨٩".startIndex, to: v))) }
+            if let v = "۰۱۲۳۴۵۶۷۸۹".firstIndex(of: c) { return Character(String("۰۱۲۳۴۵۶۷۸۹".distance(from: "۰۱۲۳۴۵۶۷۸۹".startIndex, to: v))) }
+            return c
+        })
+    }
+    static func find(_ raw: String) -> [Found] {
+        let s = digits(raw)
+        var out: [Found] = []
+        func scan(_ pattern: String, _ order: (Int, Int, Int)) {
+            guard let re = try? NSRegularExpression(pattern: pattern) else { return }
+            for m in re.matches(in: s, range: NSRange(s.startIndex..., in: s)) {
+                let g = (1...3).map { Int((s as NSString).substring(with: m.range(at: $0))) ?? 0 }
+                let y = g[order.0], mo = g[order.1], d = g[order.2]
+                if let f = make(y, mo, d, (s as NSString).substring(with: m.range)) { out.append(f) }
+            }
+        }
+        scan(#"\b(1[34]\d\d|19\d\d|20\d\d)[/\-.](\d{1,2})[/\-.](\d{1,2})\b"#, (0, 1, 2))
+        scan(#"\b(\d{1,2})[/\-.](\d{1,2})[/\-.](1[34]\d\d|19\d\d|20\d\d)\b"#, (2, 1, 0))
+        var seen = Set<Date>(); return out.filter { seen.insert($0.date).inserted }.sorted { $0.date < $1.date }
+    }
+    private static func make(_ y: Int, _ m: Int, _ d: Int, _ text: String) -> Found? {
+        guard (1...12).contains(m), (1...31).contains(d) else { return nil }
+        let hijri = (1350...1500).contains(y)
+        let g = hijri ? Hijri.toGregorian(y, m, d) : Hijri.D(y: y, m: m, d: d, weekday: 0)
+        guard let g, let date = Hijri.greg.date(from: DateComponents(year: g.y, month: g.m, day: g.d, hour: 9)) else { return nil }
+        return Found(date: date, text: text, hijri: hijri)
+    }
+    static func expiry(_ raw: String) -> Found? { find(raw).max { $0.date < $1.date } }
 }

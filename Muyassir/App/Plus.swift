@@ -29,7 +29,7 @@ final class Plus: ObservableObject {
 
     enum Reason: String, Identifiable, CaseIterable {
         case daily = "Daily", files = "Files", size = "Size", ocr = "Ocr", template = "Template", quality = "Quality", sizes = "Sizes"
-        case sign = "Sign", export = "Export", lock = "Lock", look = "Look", support = "Support", menu = "Menu"
+        case sign = "Sign", export = "Export", lock = "Lock", look = "Look", support = "Support", recipe = "Recipe", ai = "Ai", backup = "Backup", menu = "Menu"
         var id: String { rawValue }
         var title: String {
             switch self {
@@ -45,6 +45,9 @@ final class Plus: ObservableObject {
             case .lock: "قفل الملاحظات والوثائق من ميزات بلس"
             case .look: "تخصيص المظهر من ميزات بلس"
             case .support: "الدعم ذو الأولوية من ميزات بلس"
+            case .recipe: "الوصفات المخصصة من ميزات بلس"
+            case .ai: "المساعد الذكي من ميزات بلس"
+            case .backup: "النسخ الاحتياطي من ميزات بلس"
             case .menu: "مُيسّر بلس"
             }
         }
@@ -62,6 +65,9 @@ final class Plus: ObservableObject {
             case .lock: "احمِ ملاحظاتك ووثائقك ببصمة الوجه أو الإصبع."
             case .look: "اختر لونًا مميزًا للتطبيق وأيقونة بديلة."
             case .support: "رسائلك تصل بعلامة «بلس» ويُرد عليها أولًا."
+            case .recipe: "الوصفات الجاهزة مجانية للجميع. مع بلس اصنع وصفاتك الخاصة واحفظها."
+            case .ai: "جرّب التلخيص والتدقيق مرة يوميًا مجانًا. مع بلس بلا حدود."
+            case .backup: "احفظ نسخة مشفّرة من بياناتك في المكان الذي تختاره، واستعدها على جهاز جديد."
             case .menu: ""
             }
         }
@@ -118,8 +124,10 @@ final class Plus: ObservableObject {
     @discardableResult func allow(_ r: Reason) -> Bool { if unlocked { return true }; paywall = r; return false }
 
     /// Check a metered run before it starts. Returns why it is blocked, or nil.
+    static func isMetered(_ tool: String) -> Bool { metered.contains(tool) || tool.hasPrefix("recipe:") }
+
     func check(_ tool: String, sizes: [Int64]) -> Reason? {
-        guard Self.metered.contains(tool) else { return nil }
+        guard Self.isMetered(tool) else { return nil }
         if !unlocked { rollDay(); if usedToday >= Self.freeOpsPerDay { return .daily } }
         guard !unlocked || live else { return nil } // before launch: no limits at all
         let maxFiles = unlocked ? Self.plusFiles : Self.freeFiles
@@ -129,7 +137,7 @@ final class Plus: ObservableObject {
         return nil
     }
 
-    func counted(_ tool: String) { if Self.metered.contains(tool) && !active { rollDay(); usedToday += 1; save() } }
+    func counted(_ tool: String) { if Self.isMetered(tool) && !active { rollDay(); usedToday += 1; save() } }
     func toggleNotify() { notifyWhenLive.toggle(); save() }
 
     // MARK: StoreKit 2

@@ -292,23 +292,40 @@ struct ScanTool: View {
     let tool: Tool
     @EnvironmentObject var store: Store
     @State var showing = false; @State var results: [URL] = []; @State var error: String?
+    @State var autoText = true; @State var working = false
     var body: some View {
         ToolScreen(tool: tool) {
             Panel {
                 Text("صوّر المستند وسيُقص ويُحسَّن تلقائيًا، ويمكنك إضافة عدة صفحات.").font(.plex(.subheadline))
+                Toggle("استخراج النص وتسمية الملف تلقائيًا", isOn: $autoText).font(.plex(.subheadline))
                 PrimaryButton(title: "بدء المسح", icon: "doc.viewfinder") { if VNDocumentCameraViewController.isSupported { showing = true } else { error = "الماسح غير متاح على هذا الجهاز (يتطلب كاميرا)." } }
                 Hint(text: "الماسح من Apple ويعمل على الجهاز دون رفع الصور.")
             }
+            if working { HStack { ProgressView(); Text("جارٍ قراءة النص على جهازك…").font(.plex(.subheadline)) }.frame(maxWidth: .infinity) }
             if let error { Text(error).foregroundStyle(.red).font(.plex(.subheadline)) }
             if !results.isEmpty { ResultFiles(files: results) }
         }
         .fullScreenCover(isPresented: $showing) {
             DocScanner { imgs in
-                let out = FilesX.outDir()
-                var r: [URL] = []
-                if let pdf = try? PdfEngine.fromImages(imgs, a4: false, to: out.appendingPathComponent("مستند-ممسوح.pdf")) { r.append(pdf) }
-                for (i, img) in imgs.enumerated() { if let u = try? ImageEngine.save(img, .jpg, quality: 0.9, to: out.appendingPathComponent("صفحة-\(i + 1).jpg")) { r.append(u) } }
-                results = r; store.used(tool.id, r.first?.lastPathComponent ?? "")
+                let read = autoText; working = true
+                Task.detached {
+                    let out = FilesX.outDir()
+                    var r: [URL] = [], title = "مستند-ممسوح"
+                    // Optional: read the text on the device, and name the PDF after the document's first line.
+                    if read {
+                        let text = imgs.compactMap { try? Ocr.recognize($0, .ar) }.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !text.isEmpty {
+                            let t = out.appendingPathComponent("نص-المستند.txt"); try? text.write(to: t, atomically: true, encoding: .utf8); r.append(t)
+                            if let line = text.components(separatedBy: .newlines).map({ $0.trimmingCharacters(in: .whitespaces) }).first(where: { (3...60).contains($0.count) }) {
+                                title = String(line.components(separatedBy: CharacterSet(charactersIn: "/\\:*?\"<>|")).joined(separator: " ").prefix(40))
+                            }
+                        }
+                    }
+                    if let pdf = try? PdfEngine.fromImages(imgs, a4: false, to: out.appendingPathComponent("\(title).pdf")) { r.insert(pdf, at: 0) }
+                    for (i, img) in imgs.enumerated() { if let u = try? ImageEngine.save(img, .jpg, quality: 0.9, to: out.appendingPathComponent("صفحة-\(i + 1).jpg")) { r.append(u) } }
+                    let done = r
+                    await MainActor.run { results = done; working = false; store.used(tool.id, done.first?.lastPathComponent ?? "") }
+                }
             }.ignoresSafeArea()
         }
     }

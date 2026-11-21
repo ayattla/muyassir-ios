@@ -56,7 +56,14 @@ struct FileTool<Options: View, After: View>: View {
                     .background(Brand.accentSoft.opacity(0.6), in: RoundedRectangle(cornerRadius: Radius.l))
                     .overlay(RoundedRectangle(cornerRadius: Radius.l).strokeBorder(Brand.accent.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, dash: [7, 5])))
                 }.buttonStyle(PressStyle())
-                if Plus.metered.contains(tool.id) && !plus.unlocked {
+                // iPad split view / Stage Manager: files can be dragged in from another app.
+                .dropDestination(for: URL.self) { urls, _ in
+                    let copied = urls.compactMap { try? FilesX.toTemp($0) }
+                    guard !copied.isEmpty else { return false }
+                    if multiple { inputs += copied } else { inputs = Array(copied.prefix(1)) }
+                    results = []; return true
+                }
+                if Plus.isMetered(tool.id) && !plus.unlocked {
                     HStack(spacing: 6) {
                         Text(plus.opsLeft > 0 ? "متبقٍ لك اليوم \(plus.opsLeft) من \(Plus.freeOpsPerDay) عمليات مجانية" : "انتهت عملياتك المجانية لليوم").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
                         Button("بلا حدود مع بلس") { plus.paywall = .menu }.font(.plex(.caption, .semibold))
@@ -103,6 +110,7 @@ struct FileTool<Options: View, After: View>: View {
             #if DEBUG
             if inputs.isEmpty, let spec = ProcessInfo.processInfo.environment["MYS_TEST_INPUTS"] { inputs = TestInputs.make(spec) }
             #endif
+            if inputs.isEmpty, let l = Incoming.shared.take() { inputs = multiple ? l : Array(l.prefix(1)) }
         }
         .fileImporter(isPresented: $picking, allowedContentTypes: types, allowsMultipleSelection: multiple) { r in
             guard case let .success(urls) = r else { return }
@@ -126,6 +134,7 @@ struct FileTool<Options: View, After: View>: View {
                 results = try await Task.detached(priority: .userInitiated) { try await run(ins, out, progress) }.value
                 store.used(tool.id, results.first?.lastPathComponent ?? "")
                 plus.counted(tool.id)
+                ReviewAsk.success()
                 if Date().timeIntervalSince(started) > 6 { Notify.done(tool.title, results.count) }
             } catch { self.error = friendly(error) }
             busy = false

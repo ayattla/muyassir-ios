@@ -6,13 +6,17 @@ struct HomeView: View {
     @AppStorage("theme") private var theme = "light"
     @AppStorage("name") private var name = ""
     @AppStorage("hidden") private var hidden = ""
+    @AppStorage("role") private var role = ""
     @Environment(\.horizontalSizeClass) private var hsize
     var go: (String) -> Void = { _ in }
+    @Binding var path: NavigationPath
     @State private var outputs: [URL] = []
 
     private var cols: [GridItem] { Array(repeating: GridItem(.flexible(), spacing: Space.m), count: hsize == .regular ? 4 : 2) }
     private func shows(_ id: String) -> Bool { !hidden.split(separator: ",").contains(Substring(id)) }
-    private let featured = ["pdf_word", "pdf_merge", "img_compress", "ocr", "scan", "img_convert"]
+    private let general = ["pdf_word", "pdf_merge", "img_compress", "ocr", "scan", "img_convert"]
+    /// Quick tools: the user's role first, then the general favourites.
+    private var featured: [String] { var seen = Set<String>(); return ((Tools.byRole[role] ?? []).prefix(4) + general).filter { seen.insert($0).inserted }.prefix(6).map { $0 } }
 
     var body: some View {
         ScrollView {
@@ -20,10 +24,17 @@ struct HomeView: View {
                 header
                 greeting
                 searchEntry
+                if role.isEmpty { RoleCard() }
                 if shows("quick") {
                     SectionHead(title: "أدوات سريعة", sub: "أكثر ما يحتاجه الناس يوميًا")
                     LazyVGrid(columns: hsize == .regular ? Array(repeating: GridItem(.flexible(), spacing: Space.m), count: 6) : cols, spacing: Space.m) {
                         ForEach(featured, id: \.self) { id in if let t = Tools.byId[id] { NavigationLink(value: t) { FeaturedCard(tool: t) }.buttonStyle(PressStyle()).accessibilityIdentifier("quick-\(id)") } }
+                    }
+                }
+                if shows("recipes") {
+                    SectionHead(title: "الوصفات", sub: "عدة أدوات بلمسة واحدة", action: ("الكل", { path.append(RecipesRoute()) }))
+                    LazyVGrid(columns: cols, spacing: Space.m) {
+                        ForEach(Recipes.builtIn.prefix(hsize == .regular ? 4 : 2)) { r in NavigationLink(value: RecipeRoute(id: r.id)) { RecipeCard(recipe: r) }.buttonStyle(PressStyle()).accessibilityIdentifier("recipe-\(r.id)") }
                     }
                 }
                 if shows("cats") {

@@ -66,6 +66,10 @@ enum Tools {
         Tool(id: "hijri", cats: ["saudi", "calc"], title: "التاريخ الهجري والميلادي", sub: "تقويم أم القرى الرسمي", icon: "calendar", keys: "هجري ميلادي تحويل تاريخ"),
         Tool(id: "gov_dir", cats: ["saudi"], title: "دليل المنصات الحكومية", sub: "روابط المنصات الرسمية", icon: "building.columns", keys: "منصات حكومية ابشر توكلنا"),
         Tool(id: "emergency", cats: ["saudi"], title: "أرقام الطوارئ", sub: "اتصال مباشر بلمسة", icon: "cross.case", keys: "طوارئ اسعاف شرطة"),
+        Tool(id: "zakat", cats: ["saudi", "calc"], title: "حاسبة الزكاة", sub: "النقد والذهب والتجارة مع النصاب", icon: "hands.and.sparkles", keys: "زكاه زكاة نصاب ذهب"),
+        Tool(id: "overtime", cats: ["saudi"], title: "العمل الإضافي", sub: "وفق المادة 107 من نظام العمل", icon: "clock.badge", keys: "اضافي اوفر تايم overtime ساعات"),
+        Tool(id: "electricity", cats: ["saudi", "calc"], title: "فاتورة الكهرباء", sub: "تقدير بالتعرفة السكنية الحالية والجديدة", icon: "bolt.fill", keys: "كهرباء فاتوره استهلاك كيلو"),
+        Tool(id: "date_diff", cats: ["calc", "saudi"], title: "حساب العمر والمدة", sub: "الفرق بين تاريخين بالميلادي والهجري", icon: "birthday.cake", keys: "عمر مده فرق تاريخين ميلاد"),
         Tool(id: "documents", cats: ["saudi", "productivity"], title: "الوثائق والمواعيد", sub: "تنبيه قبل انتهاء الوثائق", icon: "folder.badge.person.crop", keys: "وثائق انتهاء هوية جواز موعد"),
         Tool(id: "notes", cats: ["productivity"], title: "المفكرة", sub: "ملاحظات سريعة محفوظة على جهازك", icon: "note.text", keys: "مفكرة ملاحظات"),
         Tool(id: "tasks", cats: ["productivity"], title: "المهام", sub: "قائمة مهام بأولويات", icon: "checklist.checked", keys: "مهام todo"),
@@ -140,10 +144,19 @@ enum Tools {
         return all.map { ($0, score($0)) }.filter { $0.1 > 0 }.sorted { $0.1 > $1.1 }.map { $0.0 }
     }
 
+    /// What each kind of user reaches for first (chosen on first run, changeable in Settings).
+    static let byRole: [String: [String]] = [
+        "student": ["gpa", "flashcards", "study_timer", "exams", "ocr", "scan"],
+        "teacher": ["quiz_maker", "worksheet", "attendance", "certificate", "scan", "pdf_merge"],
+        "employee": ["salary", "overtime", "eos", "letter", "sign_pdf", "pdf_compress"],
+        "business": ["invoice", "quote", "vat", "sign_pdf", "expenses", "scan"],
+    ]
+    static let roles: [(String, String)] = [("student", "طالب"), ("teacher", "معلم"), ("employee", "موظف"), ("business", "صاحب منشأة")]
+
     static func suggestions(last: String?) -> [Tool] {
         let follow: [String: [String]] = ["scan": ["ocr", "pdf_compress", "sign_pdf"], "pdf_merge": ["pdf_compress", "pdf_protect"], "img_bg": ["id_photo", "img_resize"],
             "ocr": ["word_count", "tts"], "invoice": ["vat", "sign_pdf"], "pdf_word": ["word_pdf"], "salary": ["eos", "leave"], "gpa": ["percent", "study_timer"]]
-        var ids = (last.flatMap { follow[$0] } ?? []) + ["scan", "pdf_merge", "img_bg", "vat", "qr_make", "gpa"]
+        var ids = (last.flatMap { follow[$0] } ?? []) + (byRole[UserDefaults.standard.string(forKey: "role") ?? ""] ?? ["scan", "pdf_merge", "img_bg", "vat", "qr_make", "gpa"])
         var seen = Set<String>(); ids = ids.filter { $0 != last && seen.insert($0).inserted }
         return ids.prefix(6).compactMap { byId[$0] }
     }

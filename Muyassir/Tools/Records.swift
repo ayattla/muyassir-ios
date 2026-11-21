@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 import UserNotifications
 
 enum FType { case text, multi, num, date, datetime, choice([String]), bool }
@@ -57,6 +58,7 @@ struct RecordList<Header: View>: View {
     @State var editing: Rec?
     @State var exportURL: URL?
 
+    @ObservedObject private var draft = RecordDraft.shared
     var body: some View {
         ToolScreen(tool: tool) {
             header(items)
@@ -90,6 +92,7 @@ struct RecordList<Header: View>: View {
             }
         }
         .onAppear { items = store.list(storeName) }
+        .onReceive(draft.$pending) { r in if let r { editing = r; draft.pending = nil } }
         .sheet(item: Binding(get: { editing.map { EditBox(rec: $0) } }, set: { editing = $0?.rec })) { box in
             RecordForm(fields: fields, rec: box.rec, isNew: !items.contains { $0.id == box.rec.id }) { r in
                 save(items.filter { $0.id != r.id } + [r])
@@ -234,6 +237,7 @@ struct DocumentsTool: View {
             reminder: { r in (Date(timeIntervalSince1970: r.d("expiry") - (r.s("days").num > 0 ? r.s("days").num : 30) * 86400).addingTimeInterval(9 * 3600), "تنتهي \(r.s("kind")) قريبًا — جدّدها عبر المنصة الرسمية") },
             header: { list in
                 if !list.isEmpty { ResultCard(main: nil, rows: [("تنتهي خلال 30 يومًا", "\(list.filter { (0...30).contains(daysUntil($0.d("expiry"))) }.count)"), ("منتهية", "\(list.filter { daysUntil($0.d("expiry")) < 0 }.count)")]) }
+                ExpiryFromPhoto()
                 Hint(text: "لا تكتب أرقام الوثائق الكاملة. البيانات تبقى على جهازك فقط. التجديد يتم عبر أبشر أو المنصة المختصة.")
             }) }
     }
@@ -356,4 +360,45 @@ func exportTablePdf(_ title: String, header: [String], rows: [[String]], dir: UR
     let b = DocBuilder(landscape: header.count > 5)
     b.add(.title(title, sub: dayFmt.string(from: Date()))); b.add(.table(header: header, rows: rows))
     return try? b.save(to: (dir ?? FilesX.outDir()).appendingPathComponent("\(title).pdf"))
+}
+
+/// A pre-filled new record (e.g. from a photo of a document) that the open list shows in its form.
+final class RecordDraft: ObservableObject { static let shared = RecordDraft(); @Published var pending: Rec? }
+
+/// Reads the expiry date from a photo of an ID, passport or licence, on the device. Only the date is kept.
+struct ExpiryFromPhoto: View {
+    @State private var item: PhotosPickerItem?
+    @State private var busy = false
+    @State private var found: [DateFinder.Found]?
+    var body: some View {
+        VStack(spacing: Space.s) {
+            PhotosPicker(selection: $item, matching: .images) {
+                Label(busy ? "جارٍ القراءة…" : "قراءة تاريخ الانتهاء من صورة الوثيقة", systemImage: "doc.viewfinder").font(.plex(.subheadline, .semibold)).frame(maxWidth: .infinity, minHeight: 44)
+            }.accessibilityIdentifier("expiryPhoto")
+            if let found {
+                if found.isEmpty { Text("لم أجد تاريخًا واضحًا في الصورة. جرّب صورة أوضح أو أدخله يدويًا.").font(.plex(.caption)).foregroundStyle(.red) }
+                else {
+                    Text("اختر تاريخ الانتهاء:").font(.plex(.caption, .semibold))
+                    ForEach(found.sorted { $0.date > $1.date }, id: \.date) { f in
+                        Chip(text: dayFmt.string(from: f.date) + (f.hijri ? " (\(f.text) هـ)" : ""), selected: false) {
+                            RecordDraft.shared.pending = ["id": Date().timeIntervalSince1970 * 1000, "expiry": f.date.timeIntervalSince1970, "days": "30"]; self.found = nil
+                        }
+                    }
+                }
+            }
+            Text("تُقرأ الصورة على جهازك ولا تُحفظ؛ يُحفظ التاريخ فقط.").font(.plex(.caption2)).foregroundStyle(Brand.text3)
+        }
+        .onChange(of: item) { _, it in
+            guard let it else { return }
+            busy = true
+            Task {
+                let data = try? await it.loadTransferable(type: Data.self)
+                let list = await Task.detached { () -> [DateFinder.Found] in
+                    guard let d = data, let img = UIImage(data: d), let t = try? Ocr.recognize(img, .ar) else { return [] }
+                    return DateFinder.find(t)
+                }.value
+                found = list; busy = false; item = nil
+            }
+        }
+    }
 }

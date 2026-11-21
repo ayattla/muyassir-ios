@@ -54,4 +54,14 @@ enum Assistant {
         }
         return Plan(steps: steps, note: steps.count > 1 ? "نفّذ الخطوات بالترتيب. افتح كل أداة واختر ملفاتك فيها." : nil)
     }
+
+    /// A built-in recipe that does the whole plan in one tap, if there is one.
+    static func recipeFor(_ ids: [String]) -> String? {
+        let set = Set(ids)
+        if set.contains("img_pdf") && set.contains("pdf_compress") { return "doc" }
+        if set.contains("pdf_merge") && set.contains("pdf_compress") { return "merge" }
+        if set == ["ocr"] { return "text" }
+        if !set.isEmpty && set.isSubset(of: ["img_compress", "img_resize"]) { return "light" }
+        return nil
+    }
 }

@@ -73,6 +73,10 @@ struct AssistantView: View {
                 PrimaryButton(title: "اقترح الأدوات", icon: "lightbulb", enabled: !q.trimmingCharacters(in: .whitespaces).isEmpty) { withAnimation { plan = Assistant.plan(q) } }
                 if let plan {
                     if let note = plan.note { Text(note).font(.plex(.subheadline)).foregroundStyle(Brand.text2).multilineTextAlignment(.center) }
+                    if let rid = Assistant.recipeFor(plan.steps.map(\.tool.id)), let r = Recipes.shared.byId(rid) {
+                        Text("أو نفّذها كلها بلمسة واحدة:").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
+                        NavigationLink(value: RecipeRoute(id: r.id)) { RecipeCard(recipe: r) }.buttonStyle(PressStyle()).accessibilityIdentifier("assistantRecipe")
+                    }
                     ForEach(Array(plan.steps.enumerated()), id: \.element.id) { i, s in
                         NavigationLink(value: s.tool) {
                             HStack(spacing: Space.m) {
@@ -101,6 +105,7 @@ struct ActivityView: View {
     @State private var files: [URL] = []
     @State private var preview: URL?
     @State private var share: URL?
+    @State private var fileQuery = ""
     @ObservedObject private var plus = Plus.shared
     var body: some View {
         List {
@@ -117,11 +122,16 @@ struct ActivityView: View {
                 ForEach(store.recents) { r in if let t = Tools.byId[r.tool] { NavigationLink(value: t) { ActivityRow(icon: t.icon, hex: Tools.hex(t), title: t.title, detail: r.detail.isEmpty ? t.sub : r.detail, date: r.time, action: "إعادة") } } }
                 if !store.recents.isEmpty { Button("مسح السجل", role: .destructive) { store.clearRecents() }.frame(maxWidth: .infinity) }
             case 1:
-                if files.isEmpty { ContentUnavailableView("لا توجد ملفات ناتجة", systemImage: "folder", description: Text("نتائج التحويل والضغط تبقى هنا 24 ساعة ثم تُحذف تلقائيًا.")) }
-                ForEach(files, id: \.self) { u in
-                    Button { preview = u } label: { ActivityRow(icon: fileIcon(u), hex: 0x3346D3, title: u.lastPathComponent, detail: FilesX.human(FilesX.size(u)), date: FilesX.date(u), action: "معاينة") }
+                if files.isEmpty { ContentUnavailableView("لا توجد ملفات ناتجة", systemImage: "folder", description: Text("نتائج التحويل والضغط تبقى هنا 24 ساعة ثم تُحذف تلقائيًا، إلا ما تختار إبقاءه.")) }
+                else { TextField("ابحث في ملفاتك", text: $fileQuery).textFieldStyle(.roundedBorder) }
+                ForEach(files.filter { fileQuery.isEmpty || Tools.norm($0.lastPathComponent).contains(Tools.norm(fileQuery)) }, id: \.self) { u in
+                    Button { preview = u } label: { ActivityRow(icon: fileIcon(u), hex: 0x3346D3, title: u.lastPathComponent, detail: FilesX.human(FilesX.size(u)) + (FilesX.isKept(u) ? " • محفوظ" : " • يُحذف بعد 24 ساعة"), date: FilesX.date(u), action: "معاينة") }
                         .buttonStyle(.plain)
-                        .swipeActions { Button(role: .destructive) { try? FileManager.default.removeItem(at: u); files = FilesX.outputs() } label: { Label("حذف", systemImage: "trash") }; Button { share = u } label: { Label("مشاركة", systemImage: "square.and.arrow.up") }.tint(Brand.accent) }
+                        .swipeActions {
+                            Button(role: .destructive) { try? FileManager.default.removeItem(at: u); files = FilesX.outputs() } label: { Label("حذف", systemImage: "trash") }
+                            Button { share = u } label: { Label("مشاركة", systemImage: "square.and.arrow.up") }.tint(Brand.accent)
+                            if !FilesX.isKept(u) { Button { FilesX.keep(u); files = FilesX.outputs() } label: { Label("إبقاء", systemImage: "pin") }.tint(Brand.mint) }
+                        }
                 }
             default:
                 let favs = store.favorites.compactMap { Tools.byId[$0] }
@@ -150,7 +160,8 @@ struct SettingsView: View {
     @AppStorage("accent") private var accent = 0
     @State private var icon = UIApplication.shared.alternateIconName
     @Environment(\.openURL) private var openURL
-    private let sections = [("quick", "الأدوات السريعة"), ("cats", "الأقسام"), ("favs", "المفضلة"), ("most", "الأكثر استخدامًا"), ("rec", "مقترحة لك"), ("recent", "آخر العمليات"), ("files", "الملفات الناتجة")]
+    @AppStorage("role") private var role = ""
+    private let sections = [("quick", "الأدوات السريعة"), ("recipes", "الوصفات"), ("cats", "الأقسام"), ("favs", "المفضلة"), ("most", "الأكثر استخدامًا"), ("rec", "مقترحة لك"), ("recent", "آخر العمليات"), ("files", "الملفات الناتجة")]
     var body: some View {
         Form {
             Section { PlusCard().listRowInsets(EdgeInsets()).listRowBackground(Color.clear) }
@@ -177,7 +188,10 @@ struct SettingsView: View {
                     }
                 }.frame(maxWidth: .infinity)
             }
-            Section("الترحيب") { TextField("اسمك (اختياري) يظهر في التحية", text: $name) }
+            Section("الترحيب") {
+                TextField("اسمك (اختياري) يظهر في التحية", text: $name)
+                Picker("ما يصفك", selection: $role) { ForEach(Tools.roles, id: \.0) { Text($0.1).tag($0.0) }; Text("بلا تخصيص").tag("none") }
+            }
             Section("أقسام الصفحة الرئيسية") {
                 ForEach(sections, id: \.0) { id, label in
                     Toggle(label, isOn: Binding(get: { !hidden.split(separator: ",").contains(Substring(id)) }, set: { on in

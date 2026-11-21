@@ -28,6 +28,24 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_STYLE: Automatic
         ENABLE_PREVIEWS: YES
+    dependencies:
+      - target: MuyassirWidget
+  MuyassirWidget:
+    type: app-extension
+    platform: iOS
+    sources: [MuyassirWidget]
+    info:
+      path: MuyassirWidget/Info.plist
+      properties:
+        CFBundleDisplayName: مُيسّر
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.muyassir.app.widget
+        PRODUCT_NAME: MuyassirWidget
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
   MuyassirTests:
     type: bundle.unit-test
     platform: iOS

@@ -31,6 +31,8 @@ final class DocBuilder {
     var accent: UIColor = DocBuilder.lapis
     var layoutStyle = 0
     var logo: UIImage? = nil
+    /// Left-to-right document (English CV): text starts on the left and the accent bar sits on the left.
+    var ltr = false
     private var blocks: [Block] = []
 
     init(landscape: Bool = false) { pw = landscape ? 842 : 595; ph = landscape ? 595 : 842 }
@@ -44,7 +46,7 @@ final class DocBuilder {
 
     private func attr(_ s: String, _ size: CGFloat, _ bold: Bool, _ color: UIColor, _ align: NSTextAlignment) -> NSAttributedString {
         let ps = NSMutableParagraphStyle()
-        ps.baseWritingDirection = .rightToLeft
+        ps.baseWritingDirection = ltr ? .leftToRight : .rightToLeft
         ps.alignment = align
         ps.lineHeightMultiple = 1.15
         return NSAttributedString(string: s, attributes: [.font: Self.font(size, bold: bold), .foregroundColor: color, .paragraphStyle: ps])
@@ -123,7 +125,7 @@ final class DocBuilder {
                 case let .title(t, sub):
                     text(attr(t, 22, true, Self.ink, .natural)); y += 4
                     if !sub.isEmpty { text(attr(sub, 10.5, false, Self.muted, .natural)) }
-                    ensure(10); accent.setFill(); UIRectFill(CGRect(x: pw - margin - 56, y: y + 6, width: 56, height: 4)); y += 22; titled = true
+                    ensure(10); accent.setFill(); UIRectFill(CGRect(x: ltr ? margin : pw - margin - 56, y: y + 6, width: 56, height: 4)); y += 22; titled = true
                 case let .heading(t): y += 6; text(attr(t, 14, true, accent, layoutStyle == 3 ? .center : .natural)); y += 6
                 case let .para(t, size, bold, center, color): text(attr(t.isEmpty ? " " : t, size, bold, color, center ? .center : .natural)); y += 6
                 case let .keyValues(rows):

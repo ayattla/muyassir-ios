@@ -18,6 +18,7 @@ struct CvTool: View {
     @EnvironmentObject var store: Store
     @StateObject var f = FormState("cv")
     @State var result: [URL] = []
+    @State var lang = 0
     var body: some View {
         ToolScreen(tool: tool) {
             Panel(title: "البيانات الشخصية") {
@@ -30,20 +31,23 @@ struct CvTool: View {
                 Field(label: "الخبرات العملية", text: f.bind("exp"), lines: 4); Field(label: "التعليم", text: f.bind("edu"), lines: 3)
                 Field(label: "المهارات", text: f.bind("skills"), lines: 3); Field(label: "الشهادات والدورات", text: f.bind("certs"), lines: 3); Field(label: "اللغات", text: f.bind("langs"), lines: 2)
             }
+            Panel { Seg(options: ["سيرة عربية", "English CV"], selection: $lang); if lang == 1 { Hint(text: "اكتب البيانات بالإنجليزية؛ تُكتب العناوين بالإنجليزية ويُحاذى النص لليسار.") } }
             TemplatePanel(useLogo: false)
             PrimaryButton(title: "إنشاء السيرة الذاتية PDF", icon: "doc.richtext", enabled: !f["name"].isEmpty) {
                 f.save()
-                let b = Templates.apply(DocBuilder(), logo: false)
+                let en = lang == 1
+                let h: [String: String] = en ? ["نبذة": "Summary", "الخبرات العملية": "Experience", "التعليم": "Education", "المهارات": "Skills", "الشهادات والدورات": "Courses & certificates", "اللغات": "Languages"] : [:]
+                let b = Templates.apply(DocBuilder(), logo: false); b.ltr = en
                 b.add(.title(f["name"], sub: f["title"]))
                 b.add(.para([f["phone"], f["email"], f["city"], f["link"]].filter { !$0.isEmpty }.joined(separator: "   |   "), size: 10, color: DocBuilder.muted))
                 b.add(.rule)
-                func sec(_ h: String, _ k: String, bullets: Bool = true) {
+                func sec(_ title: String, _ k: String, bullets: Bool = true) {
                     let lines = f[k].components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
                     guard !lines.isEmpty else { return }
-                    b.add(.heading(h)); for l in lines { b.add(.para(bullets ? "• \(l)" : l)) }
+                    b.add(.heading(h[title] ?? title)); for l in lines { b.add(.para(bullets ? "• \(l)" : l)) }
                 }
                 sec("نبذة", "summary", bullets: false); sec("الخبرات العملية", "exp"); sec("التعليم", "edu"); sec("المهارات", "skills"); sec("الشهادات والدورات", "certs"); sec("اللغات", "langs")
-                result = [try? b.save(to: FilesX.outDir().appendingPathComponent("السيرة-الذاتية-\(f["name"]).pdf"))].compactMap { $0 }; store.used(tool.id, f["name"])
+                result = [try? b.save(to: FilesX.outDir().appendingPathComponent((en ? "CV-" : "السيرة-الذاتية-") + "\(f["name"]).pdf"))].compactMap { $0 }; store.used(tool.id, f["name"])
             }
             if !result.isEmpty { ResultFiles(files: result) }
         }
@@ -56,14 +60,22 @@ struct BillingDoc: View {
     @StateObject var f: FormState
     struct Item: Identifiable { let id = UUID(); var d = ""; var q = "1"; var p = "" }
     @State var items = [Item()]; @State var withVat = true; @State var result: [URL] = []
+    @State var clients: [[String: String]] = (UserDefaults.standard.array(forKey: "clients") as? [[String: String]]) ?? []
+    @State var toInvoice = false
     init(tool: Tool, quote: Bool) { self.tool = tool; self.quote = quote; _f = StateObject(wrappedValue: FormState(quote ? "quote" : "invoice")) }
     var body: some View {
         let sub = items.reduce(0) { $0 + $1.q.num * $1.p.num }
         let v = withVat ? Calc.vat(sub, inclusive: false) : Calc.Vat(net: sub, vat: 0, total: sub)
         ToolScreen(tool: tool) {
             Panel(title: "البائع") { Field(label: "اسم المنشأة", text: f.bind("seller")); Field(label: "الرقم الضريبي", text: f.bind("vatNo"), kind: .numberPad); Field(label: "العنوان والتواصل", text: f.bind("sellerInfo"), lines: 2) }
-            Panel(title: "العميل") { Field(label: "اسم العميل", text: f.bind("buyer")); Field(label: "بيانات العميل (اختياري)", text: f.bind("buyerInfo"), lines: 2) }
-            Panel { Field(label: quote ? "رقم العرض" : "رقم الفاتورة", text: f.bind("no")); Field(label: quote ? "الشروط ومدة صلاحية العرض" : "ملاحظات وطريقة الدفع", text: f.bind("notes"), lines: 3) }
+            Panel(title: "العميل") {
+                if !clients.isEmpty {
+                    Text("عملاء سابقون").font(.plex(.caption, .semibold))
+                    ScrollView(.horizontal, showsIndicators: false) { HStack { ForEach(clients.prefix(12), id: \.self) { c in Chip(text: c["buyer"] ?? "", selected: false) { f.v["buyer"] = c["buyer"]; f.v["buyerInfo"] = c["buyerInfo"] } } } }
+                }
+                Field(label: "اسم العميل", text: f.bind("buyer")); Field(label: "بيانات العميل (اختياري)", text: f.bind("buyerInfo"), lines: 2)
+            }
+            Panel { Field(label: quote ? "رقم العرض (فارغ = ترقيم تلقائي)" : "رقم الفاتورة (فارغ = ترقيم تلقائي)", text: f.bind("no")); Field(label: quote ? "الشروط ومدة صلاحية العرض" : "ملاحظات وطريقة الدفع", text: f.bind("notes"), lines: 3) }
             Panel(title: "البنود") {
                 ForEach($items) { $it in
                     HStack {
@@ -77,10 +89,18 @@ struct BillingDoc: View {
             ResultCard(main: ("الإجمالي", money(v.total)), rows: [("المجموع قبل الضريبة", money(v.net)), ("الضريبة", money(v.vat))])
             TemplatePanel()
             PrimaryButton(title: quote ? "إنشاء عرض السعر" : "إنشاء الفاتورة", icon: "doc.richtext", enabled: sub > 0) {
-                f.save()
+                // automatic numbering and the saved clients list
+                let key = quote ? "counter_q" : "counter_i", n = UserDefaults.standard.integer(forKey: key) + 1
+                let number = f["no"].isEmpty ? (quote ? "Q-" : "INV-") + String(format: "%04d", n) : f["no"]
+                if f["no"].isEmpty { UserDefaults.standard.set(n, forKey: key) }
+                if !f["buyer"].isEmpty {
+                    clients.removeAll { $0["buyer"] == f["buyer"] }; clients.insert(["buyer": f["buyer"], "buyerInfo": f["buyerInfo"]], at: 0)
+                    clients = Array(clients.prefix(30)); UserDefaults.standard.set(clients, forKey: "clients")
+                }
+                let typed = f["no"]; f.v["no"] = ""; f.save(); f.v["no"] = typed
                 let b = Templates.apply(DocBuilder())
                 b.add(.title(quote ? "عرض سعر" : withVat ? "فاتورة ضريبية مبسطة" : "فاتورة", sub: f["seller"] + (f["vatNo"].isEmpty ? "" : "  •  الرقم الضريبي: \(f["vatNo"])")))
-                var kv: [(String, String)] = [(quote ? "رقم العرض" : "رقم الفاتورة", f["no"].isEmpty ? "\(Int(Date().timeIntervalSince1970) % 100000)" : f["no"]), ("التاريخ", dayFmt.string(from: Date())), ("العميل", f["buyer"])]
+                var kv: [(String, String)] = [(quote ? "رقم العرض" : "رقم الفاتورة", number), ("التاريخ", dayFmt.string(from: Date())), ("العميل", f["buyer"])]
                 if !f["buyerInfo"].isEmpty { kv.append(("بيانات العميل", f["buyerInfo"])) }
                 if !f["sellerInfo"].isEmpty { kv.append(("بيانات البائع", f["sellerInfo"])) }
                 b.add(.keyValues(kv))
@@ -94,10 +114,25 @@ struct BillingDoc: View {
                 let name = "\(quote ? "عرض-سعر" : "فاتورة")-\(f["buyer"].isEmpty ? "عميل" : f["buyer"]).pdf"
                 result = [try? b.save(to: FilesX.outDir().appendingPathComponent(name))].compactMap { $0 }; store.used(tool.id, f["buyer"])
             }
-            if !result.isEmpty { ResultFiles(files: result) }
+            if !result.isEmpty {
+                ResultFiles(files: result)
+                if quote {
+                    SecondaryButton(title: "تحويل العرض إلى فاتورة", icon: "doc.text") {
+                        BillingDraft.pending = (["seller": f["seller"], "vatNo": f["vatNo"], "sellerInfo": f["sellerInfo"], "buyer": f["buyer"], "buyerInfo": f["buyerInfo"]], items.map { ($0.d, $0.q, $0.p) })
+                        toInvoice = true
+                    }.accessibilityIdentifier("quoteToInvoice")
+                }
+            }
+        }
+        .navigationDestination(isPresented: $toInvoice) { if let t = Tools.byId["invoice"] { InvoiceTool(tool: t) } }
+        .onAppear {
+            // A quote turned into an invoice arrives with its items.
+            if !quote, let d = BillingDraft.pending { BillingDraft.pending = nil; d.0.forEach { f.v[$0.key] = $0.value }; items = d.1.map { Item(d: $0.0, q: $0.1, p: $0.2) } }
         }
     }
 }
+/// Hands a quote's details to the invoice screen.
+enum BillingDraft { static var pending: ([String: String], [(String, String, String)])? }
 struct InvoiceTool: View { let tool: Tool; var body: some View { BillingDoc(tool: tool, quote: false) } }
 struct QuoteTool: View { let tool: Tool; var body: some View { BillingDoc(tool: tool, quote: true) } }
 

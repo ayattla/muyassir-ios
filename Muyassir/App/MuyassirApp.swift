@@ -110,19 +110,24 @@ extension Font {
 }
 
 struct RootView: View {
+    @ObservedObject private var incoming = Incoming.shared
+    @ObservedObject private var deepLink = DeepLink.shared
     @State private var tab = "home"
     @State private var homePath = NavigationPath()
     var body: some View {
         TabView(selection: $tab) {
             NavigationStack(path: $homePath) {
-                HomeView(go: { tab = $0 })
+                HomeView(go: { tab = $0 }, path: $homePath)
                     .navigationDestination(for: Tool.self) { ToolHost(tool: $0) }
                     .navigationDestination(for: Category.self) { CategoryView(cat: $0) }
+                    .navigationDestination(for: RecipeRoute.self) { RecipeRunView(id: $0.id) }
+                    .navigationDestination(for: RecipesRoute.self) { _ in RecipesView() }
+                    .navigationDestination(for: IncomingRoute.self) { _ in IncomingView() }
             }
             .tabItem { Label("الرئيسية", systemImage: "house") }.tag("home")
             NavigationStack { SearchView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) } }
                 .tabItem { Label("البحث", systemImage: "magnifyingglass") }.tag("search")
-            NavigationStack { AssistantView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) } }
+            NavigationStack { AssistantView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) }.navigationDestination(for: RecipeRoute.self) { RecipeRunView(id: $0.id) } }
                 .tabItem { Label("المساعد", systemImage: "sparkles") }.tag("assistant")
             NavigationStack { ActivityView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) } }
                 .tabItem { Label("نشاطي", systemImage: "clock.arrow.circlepath") }.tag("activity")
@@ -136,6 +141,26 @@ struct RootView: View {
             if let t = arg("-tool").flatMap({ Tools.byId[$0] }) { homePath.append(t) }
             if let c = arg("-cat").flatMap({ id in Tools.categories.first { $0.id == id } }) { homePath.append(c) }
             if let t = arg("-tab") { tab = t }
+            if arg("-screen") == "recipes" { homePath.append(RecipesRoute()) }
+        }
+        // «فتح في مُيسّر» from Files/Mail/WhatsApp, and muyassir://tool/<id> links from the widget and shortcuts.
+        .onOpenURL { open($0) }
+        .onChange(of: incoming.version) { _, _ in tab = "home"; homePath.append(IncomingRoute()) }
+        .onChange(of: deepLink.target) { _, t in
+            guard let t, let u = URL(string: "muyassir://\(t)") else { return }
+            deepLink.target = nil; open(u)
+        }
+    }
+
+    private func open(_ url: URL) {
+        if url.isFileURL { Incoming.shared.receive(url); return }
+        guard url.scheme == "muyassir" else { return }
+        tab = "home"; homePath = NavigationPath()
+        switch url.host() {
+        case "tool": if let t = Tools.byId[url.lastPathComponent] { homePath.append(t) }
+        case "recipes": homePath.append(RecipesRoute())
+        case "recipe": homePath.append(RecipeRoute(id: url.lastPathComponent))
+        default: break
         }
     }
 }
