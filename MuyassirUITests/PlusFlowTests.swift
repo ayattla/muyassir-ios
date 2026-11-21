@@ -55,7 +55,7 @@ final class PlusFlowTests: XCTestCase {
 
     func testTemplatesLockedForFree() {
         launch("free", tool: "invoice")
-        let t = app.buttons["قالب ترويسة ملوّنة"]
+        let t = app.buttons["layout-1"]
         var n = 0; while !(t.exists && t.isHittable) && n < 12 { app.swipeUp(); n += 1 }
         t.tap()
         waitText("القوالب الاحترافية")

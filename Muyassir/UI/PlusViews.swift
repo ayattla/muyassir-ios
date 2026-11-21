@@ -220,7 +220,7 @@ struct TemplatePanel: View {
                             }
                             .padding(6).frame(maxWidth: .infinity)
                             .overlay(RoundedRectangle(cornerRadius: Radius.s).stroke(shown / Templates.palettes.count == li ? Brand.accent : Brand.border, lineWidth: shown / Templates.palettes.count == li ? 2 : 1))
-                        }.buttonStyle(.plain).accessibilityLabel("قالب \(Templates.layouts[li])")
+                        }.buttonStyle(.plain).accessibilityLabel("قالب \(Templates.layouts[li])").accessibilityIdentifier("layout-\(li)")
                     }
                 }
                 HStack {
