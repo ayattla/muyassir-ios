@@ -34,6 +34,7 @@ enum TestInputs {
     private static func one(_ k: String, _ base: URL) throws -> URL {
         switch k {
         case let s where s.hasPrefix("pdf"): return try pdf(Int(s.dropFirst(3)) ?? 1, base.appendingPathExtension("pdf"))
+        case "qr": return try ImageEngine.save(ImageEngine.qr("https://ayattla.com/muyassir", size: 600), .png, quality: 1, to: base.appendingPathExtension("png"))
         case "person": return try ImageEngine.save(person(), .png, quality: 1, to: base.appendingPathExtension("png"))
         case "png": return try ImageEngine.save(image(), .png, quality: 1, to: base.appendingPathExtension("png"))
         case "docx": let u = base.appendingPathExtension("docx"); try Office.writeDocx(u, [.text("عنوان", heading: 1), .text("فقرة عربية")]); return u

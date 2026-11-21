@@ -168,6 +168,11 @@ struct RecordForm: View {
                 ToolbarItem(placement: .cancellationAction) { Button("إلغاء", action: cancel) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("حفظ") {
+                        // A date the user left as shown is the one on screen, not "missing".
+                        for f in fields where rec.d(f.key) == 0 {
+                            if case .datetime = f.type { rec[f.key] = Date().addingTimeInterval(3600).timeIntervalSince1970 }
+                            if case .date = f.type { rec[f.key] = Date().timeIntervalSince1970 }
+                        }
                         if fields.contains(where: { $0.required && rec.s($0.key).isEmpty && rec.d($0.key) == 0 }) { error = "أكمل الحقول المطلوبة"; return }
                         for f in fields { if case let .choice(o) = f.type, rec.s(f.key).isEmpty { rec[f.key] = o[0] }
                             if case .date = f.type, rec.d(f.key) == 0 { rec[f.key] = Date().timeIntervalSince1970 } }

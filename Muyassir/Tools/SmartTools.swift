@@ -89,6 +89,14 @@ struct QrRead: View {
         .sheet(isPresented: $scanning) {
             LiveScanner { v in value = v; error = nil; scanning = false; store.used(tool.id) }.ignoresSafeArea()
         }
+        .onAppear {
+            var img: UIImage?
+            #if DEBUG
+            if let spec = ProcessInfo.processInfo.environment["MYS_TEST_INPUTS"], let u = TestInputs.make(spec).first { img = UIImage(contentsOfFile: u.path) }
+            #endif
+            if img == nil, let u = Incoming.shared.take()?.first { img = ImageEngine.load(u, maxSide: 2000) }
+            if let img { let codes = (try? ImageEngine.readCodes(img)) ?? []; if let f = codes.first { value = f; store.used(tool.id) } else { error = "لم يُعثر على رمز في الصورة" } }
+        }
     }
 }
 

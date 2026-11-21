@@ -238,6 +238,7 @@ struct SignPdfTool: View {
                 }
                 .frame(height: 180)
                 .background(GeometryReader { g in Color.clear.onAppear { padSize = g.size } })
+                .accessibilityElement().accessibilityIdentifier("signPad")
                 .gesture(DragGesture(minimumDistance: 0).onChanged { current.append($0.location) }.onEnded { _ in strokes.append(current); current = [] })
                 .environment(\.layoutDirection, .leftToRight)
                 HStack {
@@ -270,7 +271,7 @@ struct SignPdfTool: View {
                 guard let pdf, let img = chosen else { return }
                 do { result = [try PdfEngine.stamp(pdf, page: page - 1, image: img, rx: x, ry: y, rw: w, to: FilesX.outDir().appendingPathComponent("مستند-موقع.pdf"))]; store.used(tool.id); error = nil }
                 catch { self.error = friendly(error) }
-            }
+            }.accessibilityIdentifier("action")
             if !result.isEmpty { ResultFiles(files: result) }
         }
         .fileImporter(isPresented: $picking, allowedContentTypes: [.pdf]) { r in
@@ -278,6 +279,15 @@ struct SignPdfTool: View {
             pdf = t; pages = d.pageCount; page = d.pageCount; render()
         }
         .onChange(of: page) { render() }
+        .onAppear {
+            guard pdf == nil else { return }
+            var l: [URL]? = nil
+            #if DEBUG
+            if let spec = ProcessInfo.processInfo.environment["MYS_TEST_INPUTS"] { l = TestInputs.make(spec) }
+            #endif
+            if l == nil { l = Incoming.shared.take() }
+            if let u = l?.first(where: { $0.pathExtension.lowercased() == "pdf" }), let d = PDFDocument(url: u) { pdf = u; pages = d.pageCount; page = d.pageCount; render() }
+        }
         .onChange(of: stampItem) { _, it in Task { if let d = try? await it?.loadTransferable(type: Data.self) { stampImg = UIImage(data: d) } } }
     }
     func render() { guard let pdf, let d = PDFDocument(url: pdf), let p = d.page(at: page - 1) else { return }; preview = PdfEngine.render(p, dpi: 60) }

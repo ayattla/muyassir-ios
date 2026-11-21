@@ -72,7 +72,7 @@ struct TimetableTool: View {
                                 Button { text = v; edit = (d, p) } label: {
                                     Text(v).font(.plex(.caption)).lineLimit(2).frame(width: 90, height: 52)
                                         .background(v.isEmpty ? Color(.secondarySystemGroupedBackground) : Brand.lapis.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-                                }.buttonStyle(.plain).accessibilityLabel("\(days[d]) الحصة \(p + 1) \(v)")
+                                }.buttonStyle(.plain).accessibilityLabel("\(days[d]) الحصة \(p + 1) \(v)").accessibilityIdentifier("cell-\(d)-\(p)")
                             }
                         }
                     }
