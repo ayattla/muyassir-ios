@@ -24,7 +24,7 @@ final class Plus: ObservableObject {
         "pdf_word", "word_pdf", "pdf_excel", "excel_pdf", "pdf_ppt", "ppt_pdf", "pdf_img", "img_pdf", "pdf_merge", "pdf_split",
         "pdf_compress", "pdf_reorder", "pdf_delete", "pdf_extract", "pdf_rotate", "ocr", "pdf_protect", "pdf_unlock",
         "zip", "unzip", "img_convert", "img_compress", "img_resize", "img_crop", "img_rotate", "img_enhance", "img_bg",
-        "img_batch", "id_photo", "pdf_edit",
+        "img_batch", "id_photo", "pdf_edit", "img_word", "exam_doc", "pdf_pages",
     ]
 
     enum Reason: String, Identifiable, CaseIterable {

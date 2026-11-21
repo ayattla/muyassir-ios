@@ -16,6 +16,9 @@ enum Tools {
     ]
 
     static let all: [Tool] = [
+        Tool(id: "img_word", cats: ["files", "docs"], title: "صور إلى Word", sub: "نص وعناوين وجداول قابلة للتعديل من الصور", icon: "doc.text.viewfinder", keys: "صور الى وورد word تحويل صوره مستند جدول"),
+        Tool(id: "exam_doc", cats: ["study", "files"], title: "اختبار مصوّر إلى مستند", sub: "يستخرج الأسئلة والاختيارات من صورة الاختبار", icon: "checklist", keys: "اختبار مصور اسئلة استخراج تحويل ورقة"),
+        Tool(id: "pdf_pages", cats: ["files"], title: "ترويسة وتذييل وترقيم", sub: "أضفها لكل صفحات ملف PDF", icon: "list.number", keys: "ترقيم صفحات ترويسة تذييل header footer"),
         Tool(id: "pdf_edit", cats: ["files"], title: "محرر PDF", sub: "كتابة وتظليل وإخفاء وتعبئة النماذج", icon: "pencil.and.outline", keys: "تعديل pdf كتابة تظليل نموذج تعبئة توقيع"),
         Tool(id: "pdf_word", cats: ["files"], title: "PDF إلى Word", sub: "استخراج النص إلى ملف DOCX قابل للتعديل", icon: "doc.richtext", keys: "pdf word docx تحويل وورد"),
         Tool(id: "word_pdf", cats: ["files"], title: "Word إلى PDF", sub: "تحويل DOCX إلى PDF بخط عربي سليم", icon: "doc.text", keys: "word pdf docx وورد"),
@@ -153,7 +156,7 @@ enum Tools {
     /// What each kind of user reaches for first (chosen on first run, changeable in Settings).
     static let byRole: [String: [String]] = [
         "student": ["gpa", "flashcards", "study_timer", "exams", "ocr", "scan"],
-        "teacher": ["quiz_maker", "grades", "attendance", "certificate", "quiz_gen", "pdf_edit"],
+        "teacher": ["quiz_maker", "worksheet", "exam_doc", "grades", "certificate", "quiz_gen"],
         "employee": ["salary", "overtime", "eos", "letter", "sign_pdf", "pdf_compress"],
         "business": ["invoice", "quote", "vat", "sign_pdf", "expenses", "scan"],
     ]

@@ -140,4 +140,20 @@ final class P0ToolsTests: XCTestCase {
         let t1 = Date(); launch("pdf_compress", inputs: "pdf60"); tap("action"); waitResults(300)
         print("MuyassirTiming merge 62 pages: \(Int(merge * 1000)) ms, compress 60 pages: \(Int(Date().timeIntervalSince(t1) * 1000)) ms")
     }
+
+    // MARK: P1 document and education studios
+    func testImagesToWordWithReview() {
+        launch("img_word", inputs: "png"); tap("action"); waitResults(180)
+        let save = app.buttons["saveReviewed"]; reveal(save); save.tap(); waitText("مراجع.docx")
+    }
+    func testPdfHeaderFooter() { launch("pdf_pages", inputs: "pdf3"); type("الترويسة (أعلى كل صفحة)", "مدرسة الاختبار"); tap("action"); waitResults() }
+    func testQuizMakerWordExport() {
+        launch("quiz_maker"); tap("إضافة سؤال"); type("نص السؤال", "كم عدد أيام الأسبوع؟"); type("الخيار أ", "سبعة")
+        tap("action"); waitResults(); waitText(".docx")
+    }
+    func testWorksheetTemplate() {
+        launch("worksheet"); let p = app.buttons["template"]; reveal(p); p.tap()
+        let item = app.buttons["مستويات بلوم"].firstMatch; XCTAssertTrue(item.waitForExistence(timeout: 5)); item.tap()
+        tap("action"); waitResults(); waitText(".docx")
+    }
 }

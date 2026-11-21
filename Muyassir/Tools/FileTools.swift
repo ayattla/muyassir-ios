@@ -24,13 +24,22 @@ struct PageCountLabel: View {
 
 struct PdfToWord: View {
     let tool: Tool; @State var ocr = false
+    @StateObject private var review = ReviewState()
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تحويل إلى Word", options: { _ in
-            Panel { Toggle("التعرف الضوئي على الصفحات (للمسح الضوئي وأدق للعربية)", isOn: $ocr).font(.plex(.subheadline))
-                Hint(text: "يُستخرج النص والفقرات مع اتجاه عربي صحيح. التنسيق المعقد والصور لا تُنقل؛ لنسخة مطابقة للشكل استخدم «PDF إلى صور» أو «PDF إلى PowerPoint».") }
-        }) { ins, out, p in
+            Panel { Toggle("إعادة بناء العناوين والجداول بالتعرف الضوئي (للمسح الضوئي والجداول، أبطأ)", isOn: $ocr).font(.plex(.subheadline))
+                Hint(text: "بدونه يُستخرج النص والفقرات من طبقة النص مع اتجاه عربي صحيح. معه تُقرأ كل صفحة كصورة ويُعاد بناء الجداول والعناوين، وتظهر الكلمات غير المؤكدة لمراجعتها قبل الحفظ.") }
+        }, after: { ReviewPanel(state: review) }) { ins, out, p in
+            if await MainActor.run(body: { ocr }) {
+                let budget = await MainActor.run { min(Plus.shared.ocrPages, 80) }
+                let pages = try ocrPages(ins, p, max: budget)
+                let o = out.appendingPathComponent(FilesX.base(ins[0]) + ".docx"); try Office.writeDocx(o, docxFrom(pages))
+                let text = pages.map { $0.plain() }.joined(separator: "\n\n"); var seen = Set<String>(); let un = pages.flatMap(\.unsure).filter { seen.insert($0).inserted }
+                await MainActor.run { review.name = FilesX.base(ins[0]); review.text = text; review.unsure = un; review.ready = true }
+                return [o]
+            }
             var paras: [Office.Para] = []
-            for (i, lines) in try pdfLines(ins[0], ocr: ocr, p).enumerated() {
+            for (i, lines) in try pdfLines(ins[0], ocr: false, p).enumerated() {
                 if i > 0 { paras.append(.pageBreak) }
                 var buf = ""
                 for l in lines { if l.trimmingCharacters(in: .whitespaces).isEmpty { if !buf.isEmpty { paras.append(.text(buf.trimmingCharacters(in: .whitespaces))); buf = "" } } else { buf += l.trimmingCharacters(in: .whitespaces) + " " } }
