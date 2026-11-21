@@ -107,6 +107,27 @@ enum PdfEngine {
     }
 
     /// Re-draws every page (vectors kept) and stamps an image on one page at a relative position.
+    /// Diagonal semi-transparent text watermark on every page (Core Text shapes Arabic correctly).
+    static func watermark(_ url: URL, text: String, to out: URL) throws -> URL {
+        let d = try open(url)
+        let r = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 595, height: 842))
+        try r.writePDF(to: out) { ctx in
+            for i in 0..<d.pageCount {
+                guard let p = d.page(at: i) else { continue }
+                let box = p.bounds(for: .mediaBox)
+                ctx.beginPage(withBounds: CGRect(origin: .zero, size: box.size), pageInfo: [:])
+                let cg = ctx.cgContext
+                cg.saveGState(); cg.translateBy(x: 0, y: box.height); cg.scaleBy(x: 1, y: -1); p.draw(with: .mediaBox, to: cg); cg.restoreGState()
+                let a = NSAttributedString(string: text, attributes: [.font: UIFont.boldSystemFont(ofSize: min(box.width, box.height) / 8),
+                                                                      .foregroundColor: UIColor(red: 0.08, green: 0.1, blue: 0.18, alpha: 0.18)])
+                let sz = a.size()
+                cg.saveGState(); cg.translateBy(x: box.width / 2, y: box.height / 2); cg.rotate(by: -.pi / 5)
+                a.draw(at: CGPoint(x: -sz.width / 2, y: -sz.height / 2)); cg.restoreGState()
+            }
+        }
+        return out
+    }
+
     static func stamp(_ url: URL, page: Int, image: UIImage, rx: CGFloat, ry: CGFloat, rw: CGFloat, to out: URL) throws -> URL {
         let d = try open(url)
         let r = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 595, height: 842))

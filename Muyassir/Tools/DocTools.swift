@@ -1,5 +1,6 @@
 import SwiftUI
 import PDFKit
+import PhotosUI
 import UniformTypeIdentifiers
 
 /// Text form whose values are remembered on the device between visits.
@@ -29,9 +30,10 @@ struct CvTool: View {
                 Field(label: "الخبرات العملية", text: f.bind("exp"), lines: 4); Field(label: "التعليم", text: f.bind("edu"), lines: 3)
                 Field(label: "المهارات", text: f.bind("skills"), lines: 3); Field(label: "الشهادات والدورات", text: f.bind("certs"), lines: 3); Field(label: "اللغات", text: f.bind("langs"), lines: 2)
             }
+            TemplatePanel(useLogo: false)
             PrimaryButton(title: "إنشاء السيرة الذاتية PDF", icon: "doc.richtext", enabled: !f["name"].isEmpty) {
                 f.save()
-                let b = DocBuilder()
+                let b = Templates.apply(DocBuilder(), logo: false)
                 b.add(.title(f["name"], sub: f["title"]))
                 b.add(.para([f["phone"], f["email"], f["city"], f["link"]].filter { !$0.isEmpty }.joined(separator: "   |   "), size: 10, color: DocBuilder.muted))
                 b.add(.rule)
@@ -73,9 +75,10 @@ struct BillingDoc: View {
                 Toggle("إضافة ضريبة القيمة المضافة 15%", isOn: $withVat).font(.plex(.subheadline))
             }
             ResultCard(main: ("الإجمالي", money(v.total)), rows: [("المجموع قبل الضريبة", money(v.net)), ("الضريبة", money(v.vat))])
+            TemplatePanel()
             PrimaryButton(title: quote ? "إنشاء عرض السعر" : "إنشاء الفاتورة", icon: "doc.richtext", enabled: sub > 0) {
                 f.save()
-                let b = DocBuilder()
+                let b = Templates.apply(DocBuilder())
                 b.add(.title(quote ? "عرض سعر" : withVat ? "فاتورة ضريبية مبسطة" : "فاتورة", sub: f["seller"] + (f["vatNo"].isEmpty ? "" : "  •  الرقم الضريبي: \(f["vatNo"])")))
                 var kv: [(String, String)] = [(quote ? "رقم العرض" : "رقم الفاتورة", f["no"].isEmpty ? "\(Int(Date().timeIntervalSince1970) % 100000)" : f["no"]), ("التاريخ", dayFmt.string(from: Date())), ("العميل", f["buyer"])]
                 if !f["buyerInfo"].isEmpty { kv.append(("بيانات العميل", f["buyerInfo"])) }
@@ -112,9 +115,10 @@ struct LetterTool: View {
                 Field(label: "نص الخطاب", text: f.bind("body"), lines: 8); Field(label: "الاسم والصفة للتوقيع", text: f.bind("sign"))
             }
             Hint(text: "اختر نوع الخطاب لملء نص مقترح، ثم عدّله كما تريد.")
+            TemplatePanel()
             PrimaryButton(title: "إنشاء الخطاب PDF", icon: "doc.richtext", enabled: !f["body"].isEmpty) {
                 f.save()
-                let b = DocBuilder()
+                let b = Templates.apply(DocBuilder())
                 if !f["from"].isEmpty { b.add(.para(f["from"], size: 13, bold: true)) }
                 b.add(.para("التاريخ: \(dayFmt.string(from: Date()))", size: 10, color: DocBuilder.muted)); b.add(.rule)
                 if !f["to"].isEmpty { b.add(.para("\(f["to"])     المحترم", size: 12, bold: true)); b.add(.para("السلام عليكم ورحمة الله وبركاته،")) }
@@ -146,8 +150,9 @@ struct TextPdfTool: View {
     var body: some View {
         ToolScreen(tool: tool) {
             Panel { Field(label: "العنوان (اختياري)", text: $title); Field(label: "النص", text: $text, lines: 12); Seg(options: ["صغير", "متوسط", "كبير"], selection: $size) }
+            TemplatePanel()
             PrimaryButton(title: "تحويل إلى PDF", icon: "doc.richtext", enabled: !text.isEmpty) {
-                let b = DocBuilder(); if !title.isEmpty { b.add(.title(title)) }
+                let b = Templates.apply(DocBuilder()); if !title.isEmpty { b.add(.title(title)) }
                 for p in text.components(separatedBy: "\n\n") { b.add(.para(p, size: [10, 12, 14][size])) }
                 result = [try? b.save(to: FilesX.outDir().appendingPathComponent("\(title.isEmpty ? "مستند" : title).pdf"))].compactMap { $0 }; store.used(tool.id, title)
             }
@@ -163,9 +168,33 @@ struct SignPdfTool: View {
     @State var pdf: URL?; @State var pages = 0; @State var page = 1; @State var preview: UIImage?
     @State var x = 0.6; @State var y = 0.8; @State var w = 0.28
     @State var picking = false; @State var result: [URL] = []; @State var error: String?
+    // Plus: a saved signature and stamps (any image, e.g. a company stamp)
+    @ObservedObject private var plus = Plus.shared
+    @State var source = 0; @State var saved: UIImage? = UIImage(contentsOfFile: SignPdfTool.sigURL.path); @State var stampImg: UIImage?; @State var stampItem: PhotosPickerItem?
+    static var sigURL: URL { FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("data/signature.png") }
+    private var chosen: UIImage? { source == 1 ? saved : source == 2 ? stampImg : (strokes.isEmpty ? nil : signature()) }
+    private var ratio: CGFloat { (source == 1 ? saved : source == 2 ? stampImg : nil).map { $0.size.height / max($0.size.width, 1) } ?? padSize.height / max(padSize.width, 1) }
     var body: some View {
         ToolScreen(tool: tool) {
-            Panel(title: "ارسم توقيعك") {
+            Panel {
+                Seg(options: ["ارسم توقيعًا", "توقيعي المحفوظ", "ختم أو صورة"], selection: Binding(get: { source }, set: { v in if v == 0 || plus.allow(.sign) { source = v } }))
+                PlusBadge().frame(maxWidth: .infinity)
+            }
+            if source == 1 {
+                Panel(title: "توقيعي المحفوظ") {
+                    if let saved { Image(uiImage: saved).resizable().scaledToFit().frame(height: 120).frame(maxWidth: .infinity).background(.white, in: RoundedRectangle(cornerRadius: 14)) }
+                    else { Hint(text: "لا يوجد توقيع محفوظ بعد. ارسم توقيعك في «ارسم توقيعًا» ثم اضغط «حفظ هذا التوقيع».") }
+                }
+            }
+            if source == 2 {
+                Panel(title: "الختم") {
+                    if let stampImg { Image(uiImage: stampImg).resizable().scaledToFit().frame(height: 140).frame(maxWidth: .infinity) }
+                    PhotosPicker(selection: $stampItem, matching: .images) {
+                        Label(stampImg == nil ? "اختر صورة الختم (PNG شفاف أفضل)" : "تغيير الصورة", systemImage: "seal").font(.plex(.subheadline, .semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                }
+            }
+            if source == 0 { Panel(title: "ارسم توقيعك") {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14).fill(.white).overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(.separator)))
                     Path { p in for s in strokes + [current] where s.count > 1 { p.move(to: s[0]); for q in s.dropFirst() { p.addLine(to: q) } } }
@@ -176,8 +205,16 @@ struct SignPdfTool: View {
                 .background(GeometryReader { g in Color.clear.onAppear { padSize = g.size } })
                 .gesture(DragGesture(minimumDistance: 0).onChanged { current.append($0.location) }.onEnded { _ in strokes.append(current); current = [] })
                 .environment(\.layoutDirection, .leftToRight)
-                Button("مسح التوقيع") { strokes = [] }
-            }
+                HStack {
+                    Button("مسح التوقيع") { strokes = [] }
+                    Spacer()
+                    Button("حفظ هذا التوقيع") {
+                        guard plus.allow(.sign), let png = signature().pngData() else { return }
+                        try? FileManager.default.createDirectory(at: Self.sigURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+                        try? png.write(to: Self.sigURL); saved = UIImage(data: png); error = nil
+                    }.disabled(strokes.isEmpty)
+                }
+            } }
             Panel(title: "المستند") {
                 SecondaryButton(title: pdf == nil ? "اختر ملف PDF" : "تغيير الملف", icon: "doc") { picking = true }
                 if pdf != nil {
@@ -185,8 +222,8 @@ struct SignPdfTool: View {
                     if let preview {
                         Image(uiImage: preview).resizable().scaledToFit().overlay(GeometryReader { g in
                             Rectangle().stroke(Brand.lapis, lineWidth: 2).background(Brand.lapis.opacity(0.12))
-                                .frame(width: g.size.width * w, height: g.size.width * w * padSize.height / max(padSize.width, 1))
-                                .position(x: g.size.width * (x + w / 2), y: g.size.height * y + g.size.width * w * padSize.height / max(padSize.width, 1) / 2)
+                                .frame(width: g.size.width * w, height: g.size.width * w * ratio)
+                                .position(x: g.size.width * (x + w / 2), y: g.size.height * y + g.size.width * w * ratio / 2)
                         }).environment(\.layoutDirection, .leftToRight)
                     }
                     VStack(alignment: .leading) { Text("الموضع الأفقي").font(.plex(.caption)); Slider(value: $x, in: 0...0.95).environment(\.layoutDirection, .leftToRight)
@@ -194,9 +231,9 @@ struct SignPdfTool: View {
                 }
             }
             if let error { Text(error).font(.plex(.footnote)).foregroundStyle(.red) }
-            PrimaryButton(title: "توقيع وحفظ", icon: "signature", enabled: pdf != nil && !strokes.isEmpty) {
-                guard let pdf else { return }
-                do { result = [try PdfEngine.stamp(pdf, page: page - 1, image: signature(), rx: x, ry: y, rw: w, to: FilesX.outDir().appendingPathComponent("مستند-موقع.pdf"))]; store.used(tool.id); error = nil }
+            PrimaryButton(title: "توقيع وحفظ", icon: "signature", enabled: pdf != nil && chosen != nil) {
+                guard let pdf, let img = chosen else { return }
+                do { result = [try PdfEngine.stamp(pdf, page: page - 1, image: img, rx: x, ry: y, rw: w, to: FilesX.outDir().appendingPathComponent("مستند-موقع.pdf"))]; store.used(tool.id); error = nil }
                 catch { self.error = friendly(error) }
             }
             if !result.isEmpty { ResultFiles(files: result) }
@@ -206,6 +243,7 @@ struct SignPdfTool: View {
             pdf = t; pages = d.pageCount; page = d.pageCount; render()
         }
         .onChange(of: page) { render() }
+        .onChange(of: stampItem) { _, it in Task { if let d = try? await it?.loadTransferable(type: Data.self) { stampImg = UIImage(data: d) } } }
     }
     func render() { guard let pdf, let d = PDFDocument(url: pdf), let p = d.page(at: page - 1) else { return }; preview = PdfEngine.render(p, dpi: 60) }
     func signature() -> UIImage {

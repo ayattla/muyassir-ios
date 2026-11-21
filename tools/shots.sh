@@ -27,6 +27,17 @@ shoot() { # udid dir
     xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -tab "$t" >/dev/null; sleep 3
     xcrun simctl io "$dev" screenshot "shots/$dir/tab-$t.png" >/dev/null 2>&1
   done
+  # Plus: paywall, free counter, templates, settings (debug test states)
+  plus() { local name=$1; shift; xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app "$@" >/dev/null; sleep 4; xcrun simctl io "$dev" screenshot "shots/$dir/plus-$name.png" >/dev/null 2>&1; }
+  plus paywall -plus free -paywall Menu
+  plus paywall-daily -plus free-used -paywall Daily
+  plus paywall-soon -plus off -paywall Menu
+  plus counter -plus free -tool pdf_compress
+  plus templates -plus free -tool invoice
+  plus settings -plus free -tab settings
+  plus settings-subscribed -plus plus -tab settings
+  plus paywall-dark -plus free -paywall Menu -theme dark
+  xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -theme light -plus off >/dev/null; sleep 2
   # Dark mode (then back to the light default)
   xcrun simctl launch --terminate-running-process "$dev" com.muyassir.app -theme dark >/dev/null; sleep 4
   xcrun simctl io "$dev" screenshot "shots/$dir/dark-home.png" >/dev/null 2>&1

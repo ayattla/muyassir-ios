@@ -225,12 +225,23 @@ struct PdfPages: View {
 }
 
 struct PdfProtect: View {
-    let tool: Tool; @State var pass = ""; @State var pass2 = ""
+    let tool: Tool; @State var pass = ""; @State var pass2 = ""; @State var mark = ""
+    @ObservedObject private var plus = Plus.shared
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "حماية الملف",
                  validate: { $0.isEmpty ? "اختر ملفًا" : pass.count < 4 ? "كلمة المرور 4 أحرف على الأقل" : pass != pass2 ? "كلمتا المرور غير متطابقتين" : nil }, options: { _ in
+            Panel {
+                HStack(spacing: 6) { Text("علامة مائية (اختياري)").font(.plex(.subheadline, .semibold)); PlusBadge() }.frame(maxWidth: .infinity)
+                Field(label: "نص العلامة، مثل: سري أو نسخة للمراجعة", text: Binding(get: { mark }, set: { v in if v.isEmpty || plus.allow(.sign) { mark = v } }))
+            }
             Panel { Field(label: "كلمة المرور", text: $pass, secure: true); Field(label: "تأكيد كلمة المرور", text: $pass2, secure: true); Hint(text: "احتفظ بكلمة المرور؛ لا يمكن استرجاعها إن نُسيت.") }
-        }) { ins, out, _ in [try PdfEngine.protect(ins[0], password: pass, to: out.appendingPathComponent(FilesX.base(ins[0]) + "-محمي.pdf"))] }
+        }) { ins, out, _ in
+            var src = ins[0]
+            let open = await MainActor.run { Plus.shared.unlocked }
+            let m = mark.trimmingCharacters(in: .whitespaces)
+            if !m.isEmpty && open { src = try PdfEngine.watermark(src, text: m, to: FileManager.default.temporaryDirectory.appendingPathComponent("wm-\(UUID().uuidString).pdf")) }
+            return [try PdfEngine.protect(src, password: pass, to: out.appendingPathComponent(FilesX.base(ins[0]) + "-محمي.pdf"))]
+        }
     }
 }
 

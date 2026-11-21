@@ -24,7 +24,13 @@ final class DocBuilder {
     let margin: CGFloat = 42
     var cw: CGFloat { pw - 2 * margin }
     var border: UIColor? = nil
-    var footer: String? = "مُيسّر"
+    /// Text before the page number (free document tools: «أُنشئ بمُيسّر»); nil = page number only.
+    var footer: String? = nil
+    var pageNumbers = true
+    /// Template: accent colour and layout (0 classic, 1 coloured header band, 2 side stripe, 3 formal centred).
+    var accent: UIColor = DocBuilder.lapis
+    var layoutStyle = 0
+    var logo: UIImage? = nil
     private var blocks: [Block] = []
 
     init(landscape: Bool = false) { pw = landscape ? 842 : 595; ph = landscape ? 595 : 842 }
@@ -47,19 +53,28 @@ final class DocBuilder {
     func save(to url: URL) throws -> URL {
         let r = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: pw, height: ph))
         try r.writePDF(to: url) { ctx in
-            var y: CGFloat = 0, page = 0
+            var y: CGFloat = 0, page = 0, titled = false, startY: CGFloat = 0
+            func logoRow() {
+                guard let l = logo else { return }
+                let h: CGFloat = 54, w = l.size.width * h / l.size.height, k = min(1, 160 / w)
+                l.draw(in: CGRect(x: margin, y: margin - 10, width: w * k, height: h * k)); y = margin + h * k + 6
+            }
             func newPage() {
-                if page > 0, let f = footer { drawFooter(f, page) }
+                if page > 0 { drawFooter(page) }
                 ctx.beginPage(); page += 1; y = margin
+                if layoutStyle == 2 { accent.setFill(); UIRectFill(CGRect(x: pw - 14, y: 0, width: 14, height: ph)) }
+                if page == 1 && layoutStyle != 1 { logoRow() }
                 if let c = border {
                     c.setStroke()
                     let p1 = UIBezierPath(rect: CGRect(x: 18, y: 18, width: pw - 36, height: ph - 36)); p1.lineWidth = 6; p1.stroke()
                     let p2 = UIBezierPath(rect: CGRect(x: 28, y: 28, width: pw - 56, height: ph - 56)); p2.lineWidth = 1.5; p2.stroke()
-                    y = margin + 20
+                    y = max(y, margin + 20)
                 }
+                startY = y
             }
-            func drawFooter(_ f: String, _ n: Int) {
-                let s = attr("\(f)  •  \(n)", 8, false, Self.muted, .center); s.draw(in: CGRect(x: 0, y: ph - 26, width: pw, height: 14))
+            func drawFooter(_ n: Int) {
+                let label = footer.map { "\($0)  •  \(n)" } ?? (pageNumbers ? "\(n)" : nil)
+                if let label { attr(label, 8, false, Self.muted, .center).draw(in: CGRect(x: 0, y: ph - 26, width: pw, height: 14)) }
             }
             func ensure(_ h: CGFloat) { if y + h > ph - margin - 10 { newPage() } }
             /// Draws text, splitting long paragraphs over pages line by line.
@@ -85,12 +100,31 @@ final class DocBuilder {
 
             newPage()
             for b in blocks {
+                var isTitle = false; if case .title = b { isTitle = true }
+                // band layout needs a title first; otherwise fall back to the logo row
+                if layoutStyle == 1 && page == 1 && !titled && y <= startY + 1 && !isTitle { logoRow(); titled = true }
                 switch b {
+                case let .title(t, sub) where layoutStyle == 1 && !titled && page == 1 && y <= startY + 1:
+                    // coloured header band across the top of the first page
+                    let inset: CGFloat = logo != nil ? 170 : 0
+                    let ta = attr(t, 22, true, .white, .natural), sa = sub.isEmpty ? nil : attr(sub, 10.5, false, UIColor.white.withAlphaComponent(0.9), .natural)
+                    let th = height(ta, cw - inset), sh = sa.map { height($0, cw - inset) } ?? 0
+                    let band = 28 + th + sh + 22
+                    accent.setFill(); UIRectFill(CGRect(x: 0, y: 0, width: pw, height: band))
+                    if let l = logo { let h: CGFloat = 54, w = l.size.width * h / l.size.height, k = min(1, 160 / w); l.draw(in: CGRect(x: margin, y: (band - h) / 2, width: w * k, height: h * k)) }
+                    ta.draw(with: CGRect(x: margin + inset, y: 28, width: cw - inset, height: th + 4), options: .usesLineFragmentOrigin, context: nil)
+                    sa?.draw(with: CGRect(x: margin + inset, y: 28 + th + 4, width: cw - inset, height: sh + 4), options: .usesLineFragmentOrigin, context: nil)
+                    y = band + 22; titled = true
+                case let .title(t, sub) where layoutStyle == 3:
+                    text(attr(t, 22, true, Self.ink, .center)); y += 4
+                    if !sub.isEmpty { text(attr(sub, 10.5, false, Self.muted, .center)) }
+                    ensure(12); accent.setFill()
+                    UIRectFill(CGRect(x: margin + cw * 0.2, y: y + 6, width: cw * 0.6, height: 1.2)); UIRectFill(CGRect(x: margin + cw * 0.2, y: y + 10, width: cw * 0.6, height: 1.2)); y += 24
                 case let .title(t, sub):
                     text(attr(t, 22, true, Self.ink, .natural)); y += 4
                     if !sub.isEmpty { text(attr(sub, 10.5, false, Self.muted, .natural)) }
-                    ensure(10); Self.lapis.setFill(); UIRectFill(CGRect(x: pw - margin - 56, y: y + 6, width: 56, height: 4)); y += 22
-                case let .heading(t): y += 6; text(attr(t, 14, true, Self.lapis, .natural)); y += 6
+                    ensure(10); accent.setFill(); UIRectFill(CGRect(x: pw - margin - 56, y: y + 6, width: 56, height: 4)); y += 22; titled = true
+                case let .heading(t): y += 6; text(attr(t, 14, true, accent, layoutStyle == 3 ? .center : .natural)); y += 6
                 case let .para(t, size, bold, center, color): text(attr(t.isEmpty ? " " : t, size, bold, color, center ? .center : .natural)); y += 6
                 case let .keyValues(rows):
                     for (k, v) in rows {
@@ -108,7 +142,7 @@ final class DocBuilder {
                         let as_ = (0..<n).map { attr($0 < cells.count ? cells[$0] : "", 9.5, head, head ? .white : Self.ink, .natural) }
                         let h = (0..<n).map { height(as_[$0], w[$0] - 10) }.max()! + 10
                         ensure(h)
-                        if head { Self.lapis.setFill(); UIRectFill(CGRect(x: margin, y: y, width: cw, height: h)) }
+                        if head { accent.setFill(); UIRectFill(CGRect(x: margin, y: y, width: cw, height: h)) }
                         var x = pw - margin
                         for i in 0..<n { x -= w[i]; as_[i].draw(with: CGRect(x: x + 5, y: y + 5, width: w[i] - 10, height: h), options: .usesLineFragmentOrigin, context: nil) }
                         y += h; Self.line.setFill(); UIRectFill(CGRect(x: margin, y: y, width: cw, height: 0.5))
@@ -125,7 +159,7 @@ final class DocBuilder {
                 case let .lines(c, gap): for _ in 0..<c { ensure(gap); y += gap; Self.line.setFill(); UIRectFill(CGRect(x: margin, y: y, width: cw, height: 0.7)) }
                 }
             }
-            if let f = footer { drawFooter(f, page) }
+            drawFooter(page)
         }
         return url
     }

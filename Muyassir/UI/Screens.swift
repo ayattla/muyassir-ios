@@ -101,9 +101,16 @@ struct ActivityView: View {
     @State private var files: [URL] = []
     @State private var preview: URL?
     @State private var share: URL?
+    @ObservedObject private var plus = Plus.shared
     var body: some View {
         List {
-            Section { Seg(options: ["العمليات", "الملفات", "المفضلة"], selection: $tab) }.listRowBackground(Color.clear)
+            Section {
+                Seg(options: ["العمليات", "الملفات", "المفضلة"], selection: $tab)
+                Button { plus.paywall = .menu } label: {
+                    Label(plus.active ? "مُيسّر بلس مفعّل" : plus.live ? "اليوم: \(plus.usedToday) من \(Plus.freeOpsPerDay) عمليات مجانية • مُيسّر بلس" : "مُيسّر بلس قريبًا", systemImage: "crown.fill")
+                        .font(.plex(.caption, .semibold)).frame(maxWidth: .infinity)
+                }.buttonStyle(.borderless)
+            }.listRowBackground(Color.clear)
             switch tab {
             case 0:
                 if store.recents.isEmpty { ContentUnavailableView("لا توجد عمليات بعد", systemImage: "clock", description: Text("كل ما تنجزه في الأدوات يظهر هنا لتعيده بلمسة.")) }
@@ -138,11 +145,37 @@ struct SettingsView: View {
     @AppStorage("hidden") private var hidden = ""
     @AppStorage("searches") private var history = ""
     @State private var done: String?
+    @ObservedObject private var plus = Plus.shared
+    @ObservedObject private var lock = AppLock.shared
+    @AppStorage("accent") private var accent = 0
+    @State private var icon = UIApplication.shared.alternateIconName
+    @Environment(\.openURL) private var openURL
     private let sections = [("quick", "الأدوات السريعة"), ("cats", "الأقسام"), ("favs", "المفضلة"), ("most", "الأكثر استخدامًا"), ("rec", "مقترحة لك"), ("recent", "آخر العمليات"), ("files", "الملفات الناتجة")]
     var body: some View {
         Form {
+            Section { PlusCard().listRowInsets(EdgeInsets()).listRowBackground(Color.clear) }
             Section("المظهر") {
                 Picker("الوضع", selection: $theme) { Text("فاتح").tag("light"); Text("داكن").tag("dark"); Text("حسب الجهاز").tag("system") }.pickerStyle(.segmented)
+                HStack(spacing: 6) { Text("لون التطبيق"); PlusBadge() }
+                HStack {
+                    ForEach(accents.indices, id: \.self) { i in
+                        Button {
+                            if i == 0 || plus.allow(.look) { accent = i; plus.syncLook() }
+                        } label: {
+                            Circle().fill(Color(hex: accents[i].1)).frame(width: 30, height: 30)
+                                .overlay(Circle().stroke(Brand.text1, lineWidth: (plus.unlocked ? accent : 0) == i ? 3 : 0))
+                        }.buttonStyle(.plain).accessibilityLabel("اللون \(accents[i].0)")
+                    }
+                }.frame(maxWidth: .infinity)
+                HStack(spacing: 6) { Text("أيقونة التطبيق"); PlusBadge() }
+                HStack {
+                    ForEach(appIcons.indices, id: \.self) { i in
+                        Chip(text: appIcons[i].1, selected: icon == appIcons[i].0) {
+                            guard i == 0 || plus.allow(.look) else { return }
+                            UIApplication.shared.setAlternateIconName(appIcons[i].0) { e in if e == nil { icon = appIcons[i].0 } }
+                        }
+                    }
+                }.frame(maxWidth: .infinity)
             }
             Section("الترحيب") { TextField("اسمك (اختياري) يظهر في التحية", text: $name) }
             Section("أقسام الصفحة الرئيسية") {
@@ -155,8 +188,23 @@ struct SettingsView: View {
             Section {
                 Button("حذف الملفات المؤقتة والنتائج الآن", role: .destructive) { FilesX.clearAll(); done = "حُذفت الملفات المؤقتة والنتائج" }
                 Button("مسح سجل العمليات والبحث") { store.clearRecents(); history = ""; done = "مُسح السجل" }
+                HStack {
+                    Toggle("قفل المفكرة والوثائق ببصمة الوجه", isOn: Binding(get: { lock.enabled }, set: { on in
+                        Task {
+                            if !on { if await lock.prompt("إيقاف القفل") { lock.set(false) } }
+                            else if plus.allow(.lock) {
+                                if !lock.available { done = "فعّل بصمة الوجه أو رمز الجهاز في إعدادات جهازك أولًا" }
+                                else if await lock.prompt("تفعيل القفل") { lock.set(true) }
+                            }
+                        }
+                    }))
+                    PlusBadge()
+                }
                 if let done { Text(done).foregroundStyle(Brand.mint) }
             } header: { Text("الخصوصية والتخزين") } footer: { Text("كل المعالجة على جهازك، ولا تُرفع ملفاتك إلى أي خادم. النتائج تُحذف تلقائيًا بعد 24 ساعة.") }
+            Section {
+                Button { contactSupport(openURL) } label: { Label("تواصل مع الدعم", systemImage: "questionmark.bubble") }
+            } header: { Text("الدعم والملاحظات") } footer: { Text(plus.active ? "مشتركو بلس تصل رسائلهم بعلامة «بلس» ويُرد عليها أولًا." : "أرسل اقتراحك أو بلّغ عن مشكلة.") }
             Section {
                 VStack(spacing: 6) {
                     LogoMark(size: 48)

@@ -33,6 +33,7 @@ struct FileTool<Options: View, After: View>: View {
     }
 
     @EnvironmentObject var store: Store
+    @ObservedObject private var plus = Plus.shared
     @State private var inputs: [URL] = []
     @State private var results: [URL] = []
     @State private var busy = false
@@ -55,6 +56,12 @@ struct FileTool<Options: View, After: View>: View {
                     .background(Brand.accentSoft.opacity(0.6), in: RoundedRectangle(cornerRadius: Radius.l))
                     .overlay(RoundedRectangle(cornerRadius: Radius.l).strokeBorder(Brand.accent.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, dash: [7, 5])))
                 }.buttonStyle(PressStyle())
+                if Plus.metered.contains(tool.id) && !plus.unlocked {
+                    HStack(spacing: 6) {
+                        Text(plus.opsLeft > 0 ? "متبقٍ لك اليوم \(plus.opsLeft) من \(Plus.freeOpsPerDay) عمليات مجانية" : "انتهت عملياتك المجانية لليوم").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
+                        Button("بلا حدود مع بلس") { plus.paywall = .menu }.font(.plex(.caption, .semibold))
+                    }.frame(maxWidth: .infinity).accessibilityElement(children: .combine).accessibilityIdentifier("opsLeft")
+                }
                 if !inputs.isEmpty { Text("\(inputs.count) \(inputs.count == 1 ? "ملف" : "ملفات") جاهزة").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2).frame(maxWidth: .infinity) }
                 ForEach(Array(inputs.enumerated()), id: \.element) { i, u in
                     HStack {
@@ -109,6 +116,7 @@ struct FileTool<Options: View, After: View>: View {
 
     private func start() {
         error = validate(inputs); guard error == nil else { return }
+        if let r = plus.check(tool.id, sizes: inputs.map { FilesX.size($0) }) { plus.paywall = r; return }
         busy = true; progress.value = -1; progress.label = ""
         let ins = inputs
         Task {
@@ -117,6 +125,7 @@ struct FileTool<Options: View, After: View>: View {
                 let started = Date()
                 results = try await Task.detached(priority: .userInitiated) { try await run(ins, out, progress) }.value
                 store.used(tool.id, results.first?.lastPathComponent ?? "")
+                plus.counted(tool.id)
                 if Date().timeIntervalSince(started) > 6 { Notify.done(tool.title, results.count) }
             } catch { self.error = friendly(error) }
             busy = false

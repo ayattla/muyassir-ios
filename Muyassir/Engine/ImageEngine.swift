@@ -116,6 +116,23 @@ enum ImageEngine {
         return UIImage(cgImage: res)
     }
 
+    /// A 10×15 cm (4×6 in) print sheet at 300 dpi filled with copies of a document photo, with cut guides.
+    static func printSheet(_ photo: UIImage) -> UIImage {
+        let sw: CGFloat = 1800, sh: CGFloat = 1200, gap: CGFloat = 24
+        let pw = photo.size.width * photo.scale, ph = photo.size.height * photo.scale
+        let f = UIGraphicsImageRendererFormat(); f.scale = 1
+        return UIGraphicsImageRenderer(size: CGSize(width: sw, height: sh), format: f).image { c in
+            UIColor.white.setFill(); c.fill(CGRect(x: 0, y: 0, width: sw, height: sh))
+            let cols = max(1, Int((sw - gap) / (pw + gap))), rows = max(1, Int((sh - gap) / (ph + gap)))
+            let ox = (sw - CGFloat(cols) * pw - CGFloat(cols - 1) * gap) / 2, oy = (sh - CGFloat(rows) * ph - CGFloat(rows - 1) * gap) / 2
+            UIColor(white: 0.73, alpha: 1).setStroke()
+            for r in 0..<rows { for k in 0..<cols {
+                let rect = CGRect(x: ox + CGFloat(k) * (pw + gap), y: oy + CGFloat(r) * (ph + gap), width: pw, height: ph)
+                photo.draw(in: rect); UIBezierPath(rect: rect.insetBy(dx: -1, dy: -1)).stroke()
+            } }
+        }
+    }
+
     static func idPhoto(_ img: UIImage, wMm: CGFloat, hMm: CGFloat, bg: UIColor) -> UIImage {
         let size = CGSize(width: (wMm / 25.4 * 300).rounded(), height: (hMm / 25.4 * 300).rounded())
         let c = cropRatio(img, wMm, hMm)
@@ -173,5 +190,46 @@ enum Ocr {
             abs(a.boundingBox.midY - b.boundingBox.midY) > 0.01 ? a.boundingBox.midY > b.boundingBox.midY : (lang == .ar ? a.boundingBox.midX > b.boundingBox.midX : a.boundingBox.midX < b.boundingBox.midX)
         }
         return obs.compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+    }
+
+    struct Line { let text: String; let box: CGRect } // box in image pixels, top-left origin
+
+    /// Text plus the position of every line, for a searchable PDF (image with an invisible text layer).
+    static func recognizeLines(_ img: UIImage, _ lang: Lang) throws -> (String, [Line]) {
+        guard let cg = img.cgImage else { return ("", []) }
+        let req = VNRecognizeTextRequest()
+        req.recognitionLevel = .accurate; req.usesLanguageCorrection = true; req.automaticallyDetectsLanguage = false
+        req.recognitionLanguages = lang == .ar ? ["ar-SA", "en-US"] : ["en-US"]
+        try VNImageRequestHandler(cgImage: cg).perform([req])
+        let W = CGFloat(cg.width), H = CGFloat(cg.height)
+        let obs = (req.results ?? []).sorted { abs($0.boundingBox.midY - $1.boundingBox.midY) > 0.01 ? $0.boundingBox.midY > $1.boundingBox.midY : (lang == .ar ? $0.boundingBox.midX > $1.boundingBox.midX : $0.boundingBox.midX < $1.boundingBox.midX) }
+        let lines: [Line] = obs.compactMap { o in
+            guard let t = o.topCandidates(1).first?.string else { return nil }
+            let b = o.boundingBox
+            return Line(text: t, box: CGRect(x: b.minX * W, y: (1 - b.maxY) * H, width: b.width * W, height: b.height * H))
+        }
+        return (lines.map(\.text).joined(separator: "\n"), lines)
+    }
+
+    /// One PDF page per image with the recognised lines as (nearly) invisible text, so the PDF can be searched and copied.
+    static func searchablePdf(_ pages: [(UIImage, [Line])], to url: URL) throws -> URL {
+        let r = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 595, height: 842))
+        try r.writePDF(to: url) { ctx in
+            for (img, lines) in pages {
+                let px = img.size.width * img.scale, k = 595 / px, h = img.size.height * img.scale * k
+                ctx.beginPage(withBounds: CGRect(x: 0, y: 0, width: 595, height: h), pageInfo: [:])
+                img.draw(in: CGRect(x: 0, y: 0, width: 595, height: h))
+                for l in lines {
+                    let bh = l.box.height * k, bw = l.box.width * k
+                    guard bh > 2, bw > 2 else { continue }
+                    let f = UIFont.systemFont(ofSize: bh * 0.85)
+                    let tw = (l.text as NSString).size(withAttributes: [.font: f]).width
+                    let ps = NSMutableParagraphStyle(); ps.alignment = .natural
+                    let a = NSAttributedString(string: l.text, attributes: [.font: f, .foregroundColor: UIColor.black.withAlphaComponent(0.01), .expansion: tw > 0 ? log(bw / tw) : 0, .paragraphStyle: ps])
+                    a.draw(at: CGPoint(x: l.box.minX * k, y: l.box.minY * k))
+                }
+            }
+        }
+        return url
     }
 }

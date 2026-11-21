@@ -62,7 +62,13 @@ struct RecordList<Header: View>: View {
             header(items)
             HStack {
                 PrimaryButton(title: "إضافة", icon: "plus") { editing = ["id": Date().timeIntervalSince1970 * 1000] }
-                if !items.isEmpty { SecondaryButton(title: "تصدير Excel", icon: "tablecells") { exportURL = export() }.frame(maxWidth: 170) }
+            }
+            if !items.isEmpty {
+                HStack {
+                    SecondaryButton(title: "تصدير Excel", icon: "tablecells") { if Plus.shared.allow(.export) { exportURL = export() } }
+                    SecondaryButton(title: "تصدير PDF", icon: "doc.richtext") { if Plus.shared.allow(.export) { exportURL = exportPdf() } }
+                    PlusBadge()
+                }
             }
             if items.isEmpty { EmptyStateView(icon: tool.icon, title: "لا توجد عناصر بعد", text: emptyText) }
             ForEach(sort(items), id: \.id) { o in
@@ -96,9 +102,18 @@ struct RecordList<Header: View>: View {
 
     private func save(_ l: [Rec]) { items = l; store.saveList(storeName, l) }
 
+    private func exportPdf() -> URL? {
+        let r = rows()
+        return exportTablePdf(tool.title, header: r[0], rows: Array(r.dropFirst()))
+    }
+
     private func export() -> URL? {
         let u = FilesX.outDir().appendingPathComponent("\(tool.title).xlsx")
-        let rows = [fields.map(\.label)] + items.map { o in fields.map { f -> String in
+        try? Office.writeXlsx(u, [(tool.title, rows())]); return u
+    }
+
+    private func rows() -> [[String]] {
+        [fields.map(\.label)] + items.map { o in fields.map { f -> String in
             switch f.type {
             case .date: return o.d(f.key) > 0 ? dayFmt.string(from: Date(timeIntervalSince1970: o.d(f.key))) : ""
             case .datetime: return o.d(f.key) > 0 ? dtFmt.string(from: Date(timeIntervalSince1970: o.d(f.key))) : ""
@@ -106,7 +121,6 @@ struct RecordList<Header: View>: View {
             default: return o.s(f.key)
             }
         } }
-        try? Office.writeXlsx(u, [(tool.title, rows)]); return u
     }
 }
 
@@ -172,8 +186,8 @@ struct RecordForm: View {
 
 struct NotesTool: View {
     let tool: Tool
-    var body: some View { RecordList(tool: tool, storeName: "notes", fields: [FieldSpec(key: "title", label: "العنوان", required: true), FieldSpec(key: "body", label: "الملاحظة", type: .multi)],
-        title: { $0.s("title") }, subtitle: { String($0.s("body").prefix(120)) }, sort: { $0.sorted { $0.id > $1.id } }) }
+    var body: some View { LockGate(title: "المفكرة") { RecordList(tool: tool, storeName: "notes", fields: [FieldSpec(key: "title", label: "العنوان", required: true), FieldSpec(key: "body", label: "الملاحظة", type: .multi)],
+        title: { $0.s("title") }, subtitle: { String($0.s("body").prefix(120)) }, sort: { $0.sorted { $0.id > $1.id } }) } }
 }
 
 private let priorities = ["عادية", "مهمة", "عاجلة"]
@@ -213,7 +227,7 @@ struct HomeworkTool: View {
 struct DocumentsTool: View {
     let tool: Tool
     var body: some View {
-        RecordList(tool: tool, storeName: "documents", fields: [FieldSpec(key: "name", label: "اسم الوثيقة أو الموعد", required: true),
+        LockGate(title: "الوثائق") { RecordList(tool: tool, storeName: "documents", fields: [FieldSpec(key: "name", label: "اسم الوثيقة أو الموعد", required: true),
             FieldSpec(key: "kind", label: "النوع", type: .choice(["هوية وطنية", "جواز سفر", "إقامة", "رخصة قيادة", "استمارة مركبة", "تأمين", "عقد إيجار", "موعد", "أخرى"])),
             FieldSpec(key: "expiry", label: "تاريخ الانتهاء أو الموعد", type: .date, required: true), FieldSpec(key: "days", label: "التذكير قبل (أيام)", type: .num), FieldSpec(key: "note", label: "ملاحظة")],
             title: { $0.s("name") }, subtitle: { "\($0.s("kind")) • \(whenText($0.d("expiry")))" }, sort: { $0.sorted { $0.d("expiry") < $1.d("expiry") } },
@@ -221,7 +235,7 @@ struct DocumentsTool: View {
             header: { list in
                 if !list.isEmpty { ResultCard(main: nil, rows: [("تنتهي خلال 30 يومًا", "\(list.filter { (0...30).contains(daysUntil($0.d("expiry"))) }.count)"), ("منتهية", "\(list.filter { daysUntil($0.d("expiry")) < 0 }.count)")]) }
                 Hint(text: "لا تكتب أرقام الوثائق الكاملة. البيانات تبقى على جهازك فقط. التجديد يتم عبر أبشر أو المنصة المختصة.")
-            })
+            }) }
     }
 }
 
@@ -313,12 +327,16 @@ struct AttendanceTool: View {
                         let c = sessions.filter { ($0["absent"] as? [String] ?? []).contains(s) }.count
                         LabelValue(label: s, value: "\(c) غياب • \(fmt(100 * Double(sessions.count - c) / Double(sessions.count), 0))% حضور")
                     }
-                    SecondaryButton(title: "تصدير Excel", icon: "tablecells") {
+                    SecondaryButton(title: "تصدير Excel وPDF", icon: "tablecells") {
+                        guard Plus.shared.allow(.export) else { return }
                         let ds = sessions.sorted { $0.d("date") < $1.d("date") }
                         let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; f.locale = Locale(identifier: "en_US_POSIX")
                         let header = ["الطالب"] + ds.map { f.string(from: Date(timeIntervalSince1970: $0.d("date"))) } + ["الغياب"]
                         let rows = students.map { s -> [String] in let marks = ds.map { ($0["absent"] as? [String] ?? []).contains(s) ? "غائب" : "حاضر" }; return [s] + marks + ["\(marks.filter { $0 == "غائب" }.count)"] }
-                        let u = FilesX.outDir().appendingPathComponent("سجل-الحضور.xlsx"); try? Office.writeXlsx(u, [("الحضور", [header] + rows)]); exportURL = u
+                        let u = FilesX.outDir().appendingPathComponent("سجل-الحضور.xlsx"); try? Office.writeXlsx(u, [("الحضور", [header] + rows)])
+                        let summary = students.map { s -> [String] in let c = sessions.filter { ($0["absent"] as? [String] ?? []).contains(s) }.count; return [s, "\(c)", "\(fmt(100 * Double(sessions.count - c) / Double(sessions.count), 0))%"] }
+                        _ = exportTablePdf("سجل الحضور", header: ["الطالب", "الغياب", "نسبة الحضور"], rows: summary, dir: u.deletingLastPathComponent())
+                        exportURL = u // the PDF summary is saved next to it (also listed in «نشاطي» › الملفات)
                     }
                 }
             }
@@ -331,4 +349,11 @@ struct AttendanceTool: View {
         students += names; newName = ""; saveStudents()
     }
     private func saveStudents() { store.saveList("students", students.map { ["name": $0] }) }
+}
+
+/// A simple table PDF for exported records.
+func exportTablePdf(_ title: String, header: [String], rows: [[String]], dir: URL? = nil) -> URL? {
+    let b = DocBuilder(landscape: header.count > 5)
+    b.add(.title(title, sub: dayFmt.string(from: Date()))); b.add(.table(header: header, rows: rows))
+    return try? b.save(to: (dir ?? FilesX.outDir()).appendingPathComponent("\(title).pdf"))
 }

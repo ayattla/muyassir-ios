@@ -133,19 +133,34 @@ struct ImgEnhance: View {
 }
 
 struct ImgBackground: View {
-    let tool: Tool; @State var bg = 0
+    let tool: Tool; @State var bg = 0; @State var hq = false
+    @ObservedObject private var plus = Plus.shared
     private let colors: [(String, UIColor?)] = [("شفاف", nil), ("أبيض", .white), ("أزرق", UIColor(red: 0.18, green: 0.29, blue: 1, alpha: 1)), ("رمادي", UIColor(white: 0.9, alpha: 1))]
+    // Plus: custom background colours
+    private let custom: [(String, UIColor?)] = [("أسود", UIColor(Color(hex: 0x111111))), ("كحلي", UIColor(Color(hex: 0x1C2453))), ("أحمر", UIColor(Color(hex: 0xC62F3A))), ("أخضر", UIColor(Color(hex: 0x23814A))),
+                                                ("زهري", UIColor(Color(hex: 0xF6C9D5))), ("سماوي", UIColor(Color(hex: 0xCFE8F7))), ("بيج", UIColor(Color(hex: 0xF1E6D2))), ("ذهبي", UIColor(Color(hex: 0xF2B01E)))]
     var body: some View {
+        let all = colors + custom
         FileTool(tool: tool, types: [.image], multiple: true, pickLabel: "اختر صورة لشخص أو منتج", actionLabel: "إزالة الخلفية", options: { ins in
             ImagePreview(url: ins.first)
-            Panel { Text("الخلفية الجديدة").font(.plex(.subheadline, .semibold)); HStack { ForEach(colors.indices, id: \.self) { i in Chip(text: colors[i].0, selected: i == bg) { bg = i } } }
-                Hint(text: "يعمل على جهازك بتقنية Apple Vision دون رفع الصورة.") }
+            Panel {
+                Text("الخلفية الجديدة").font(.plex(.subheadline, .semibold))
+                HStack { ForEach(colors.indices, id: \.self) { i in Chip(text: colors[i].0, selected: i == bg) { bg = i } } }
+                HStack(spacing: 6) { Text("ألوان مخصصة").font(.plex(.subheadline, .semibold)); PlusBadge() }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack { ForEach(custom.indices, id: \.self) { j in Chip(text: custom[j].0, selected: colors.count + j == bg) { if plus.allow(.quality) { bg = colors.count + j } } } }
+                }
+                HStack { Toggle("دقة عالية (حتى 4096 بكسل)", isOn: Binding(get: { hq }, set: { v in if !v || plus.allow(.quality) { hq = v } })); PlusBadge() }
+                Hint(text: "يعمل على جهازك بتقنية Apple Vision دون رفع الصورة.")
+            }
         }) { ins, out, p in
-            try ins.enumerated().compactMap { i, u in
+            let open = await MainActor.run { Plus.shared.unlocked }
+            let side: CGFloat = hq && open ? 4096 : 2048
+            return try ins.enumerated().compactMap { i, u in
                 p.update(i, ins.count, "صورة \(i + 1) من \(ins.count)")
-                guard let img = ImageEngine.load(u, maxSide: 2048) else { return nil }
+                guard let img = ImageEngine.load(u, maxSide: side) else { return nil }
                 let fg = try ImageEngine.removeBackground(img)
-                if let c = colors[bg].1 { return try ImageEngine.save(ImageEngine.flatten(fg, c), .jpg, quality: 0.95, to: out.appendingPathComponent(name(u, "-خلفية", .jpg))) }
+                if let c = all[bg].1 { return try ImageEngine.save(ImageEngine.flatten(fg, c), .jpg, quality: 0.95, to: out.appendingPathComponent(name(u, "-خلفية", .jpg))) }
                 return try ImageEngine.save(fg, .png, quality: 1, to: out.appendingPathComponent(name(u, "-بدون-خلفية", .png)))
             }
         }
@@ -179,46 +194,83 @@ struct ImgBatch: View {
 
 struct IdPhoto: View {
     let tool: Tool
-    private let sizes: [(String, CGFloat, CGFloat)] = [("جواز/هوية 4×6 سم", 40, 60), ("تأشيرة 3.5×4.5 سم", 35, 45), ("2×2 بوصة", 50.8, 50.8), ("3×4 سم", 30, 40)]
+    @ObservedObject private var plus = Plus.shared
+    // The first two sizes are free; the rest and the print sheet are Plus (open to everyone until Plus launches).
+    private let sizes: [(String, CGFloat, CGFloat)] = [("جواز/هوية 4×6 سم", 40, 60), ("تأشيرة 3.5×4.5 سم", 35, 45), ("2×2 بوصة", 50.8, 50.8), ("3×4 سم", 30, 40),
+                                                     ("5×7 سم", 50, 70), ("3.5×4 سم", 35, 40), ("4.5×3.5 سم (عرضي)", 45, 35), ("2.5×3 سم", 25, 30)]
     private let bgs: [(String, UIColor)] = [("أبيض", .white), ("أزرق فاتح", UIColor(red: 0.86, green: 0.9, blue: 0.97, alpha: 1)), ("رمادي فاتح", UIColor(white: 0.94, alpha: 1))]
-    @State var size = 0; @State var removeBg = true; @State var bg = 0
+    @State var size = 0; @State var removeBg = true; @State var bg = 0; @State var sheet = false
     var body: some View {
         FileTool(tool: tool, types: [.image], pickLabel: "اختر صورة شخصية واضحة", actionLabel: "تجهيز الصورة", options: { ins in
             ImagePreview(url: ins.first)
             Panel {
-                Picker("المقاس", selection: $size) { ForEach(sizes.indices, id: \.self) { Text(sizes[$0].0).tag($0) } }
+                Picker("المقاس", selection: Binding(get: { size }, set: { v in if v < 2 || plus.allow(.sizes) { size = v } })) {
+                    ForEach(sizes.indices, id: \.self) { Text(sizes[$0].0 + ($0 >= 2 && !plus.unlocked ? " • بلس" : "")).tag($0) }
+                }
                 Toggle("استبدال الخلفية", isOn: $removeBg)
                 if removeBg { HStack { ForEach(bgs.indices, id: \.self) { i in Chip(text: bgs[i].0, selected: i == bg) { bg = i } } } }
+                HStack { Toggle("ورقة طباعة 10×15 سم بعدة نسخ", isOn: Binding(get: { sheet }, set: { v in if !v || plus.allow(.sizes) { sheet = v } })); PlusBadge() }
                 Hint(text: "تأكد من متطلبات الجهة (لون الخلفية والمقاس) قبل الطباعة. الدقة 300 نقطة لكل بوصة.")
             }
         }) { ins, out, p in
+            let open = await MainActor.run { Plus.shared.unlocked }
             guard var img = ImageEngine.load(ins[0], maxSide: 2400) else { throw UserError("تعذّر فتح الصورة") }
             if removeBg { if let cut = try? ImageEngine.removeBackground(img) { img = ImageEngine.flatten(cut, bgs[bg].1) } else { p.say("لم يُعثر على شخص واضح، فحُفظت الصورة بخلفيتها الأصلية") } }
-            let s = sizes[size]
-            return [try ImageEngine.save(ImageEngine.idPhoto(img, wMm: s.1, hMm: s.2, bg: bgs[bg].1), .jpg, quality: 0.97, to: out.appendingPathComponent("صورة-وثيقة-\(Int(s.1))x\(Int(s.2)).jpg"))]
+            let s = sizes[size >= 2 && !open ? 0 : size]
+            let photo = ImageEngine.idPhoto(img, wMm: s.1, hMm: s.2, bg: bgs[bg].1)
+            var list = [try ImageEngine.save(photo, .jpg, quality: 0.97, to: out.appendingPathComponent("صورة-وثيقة-\(Int(s.1))x\(Int(s.2)).jpg"))]
+            if sheet && open { list.append(try ImageEngine.save(ImageEngine.printSheet(photo), .jpg, quality: 0.97, to: out.appendingPathComponent("ورقة-طباعة-10x15.jpg"))) }
+            return list
         }
     }
 }
 
 struct OcrTool: View {
-    let tool: Tool; @State var lang = 0; @State var text = ""
+    let tool: Tool; @State var lang = 0; @State var text = ""; @State var limited = 0; @State var searchable = true
+    @ObservedObject private var plus = Plus.shared
     var body: some View {
         FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "اختر صورًا أو ملف PDF", actionLabel: "استخراج النص", options: { _ in
-            Panel { Seg(options: Ocr.Lang.allCases.map(\.rawValue), selection: $lang); Hint(text: "يعمل دون إنترنت. للحصول على أفضل نتيجة استخدم صورة واضحة ومستقيمة.") }
-        }, after: { if !text.isEmpty { TextResult(text: text, label: "النص المستخرج") } }) { ins, out, p in
-            var all: [String] = []
-            for (i, u) in ins.enumerated() {
-                if u.pathExtension.lowercased() == "pdf", let d = PDFDocument(url: u) {
-                    for pg in 0..<d.pageCount { p.update(pg, d.pageCount, "\(u.lastPathComponent): صفحة \(pg + 1)"); if let page = d.page(at: pg) { all.append(try Ocr.recognize(PdfEngine.render(page, dpi: 220), Ocr.Lang.allCases[lang])) } }
-                } else if let img = ImageEngine.load(u, maxSide: 3000) {
-                    p.update(i, ins.count, "صورة \(i + 1) من \(ins.count)"); all.append(try Ocr.recognize(img, Ocr.Lang.allCases[lang]))
+            Panel {
+                Seg(options: Ocr.Lang.allCases.map(\.rawValue), selection: $lang)
+                HStack { Toggle("إنشاء PDF قابل للبحث أيضًا", isOn: Binding(get: { searchable && plus.unlocked }, set: { v in if plus.allow(.ocr) { searchable = v } })); PlusBadge() }
+                Hint(text: plus.unlocked ? "يعمل دون إنترنت. للحصول على أفضل نتيجة استخدم صورة واضحة ومستقيمة."
+                     : "يعمل دون إنترنت. المجاني يستخرج النص من \(Plus.freeOcrPages) صفحات في العملية، ومع بلس من الملف كاملًا.")
+            }
+        }, after: {
+            if limited > 0 {
+                Panel {
+                    Text("استُخرج النص من أول \(Plus.freeOcrPages) صفحات، وبقيت \(limited) \(limited == 1 ? "صفحة" : "صفحات").").font(.plex(.subheadline)).frame(maxWidth: .infinity).multilineTextAlignment(.center).accessibilityIdentifier("ocrLimited")
+                    SecondaryButton(title: "استخرج الملف كاملًا مع بلس", icon: "crown.fill") { plus.paywall = .ocr }
                 }
             }
-            let t = all.joined(separator: "\n\n")
-            await MainActor.run { text = t }
+            if !text.isEmpty { TextResult(text: text, label: "النص المستخرج") }
+        }) { ins, out, p in
+            let (budget, open) = await MainActor.run { (Plus.shared.ocrPages, Plus.shared.unlocked) }
+            let makePdf = searchable && open
+            var all: [String] = [], pages: [(UIImage, [Ocr.Line])] = [], done = 0, skipped = 0
+            func one(_ img: UIImage) throws {
+                if makePdf { let (t, lines) = try Ocr.recognizeLines(img, Ocr.Lang.allCases[lang]); all.append(t); pages.append((img, lines)) }
+                else { all.append(try Ocr.recognize(img, Ocr.Lang.allCases[lang])) }
+            }
+            for (i, u) in ins.enumerated() {
+                if u.pathExtension.lowercased() == "pdf", let d = PDFDocument(url: u) {
+                    for pg in 0..<d.pageCount {
+                        if done >= budget { skipped += 1; continue }
+                        p.update(pg, d.pageCount, "\(u.lastPathComponent): صفحة \(pg + 1)")
+                        if let page = d.page(at: pg) { try one(PdfEngine.render(page, dpi: 220)); done += 1 }
+                    }
+                } else if let img = ImageEngine.load(u, maxSide: 3000) {
+                    if done >= budget { skipped += 1; continue }
+                    p.update(i, ins.count, "صورة \(i + 1) من \(ins.count)"); try one(img); done += 1
+                }
+            }
+            let t = all.joined(separator: "\n\n"), sk = skipped
+            await MainActor.run { text = t; limited = sk }
             let txt = out.appendingPathComponent("نص-مستخرج.txt"); try t.write(to: txt, atomically: true, encoding: .utf8)
             let docx = out.appendingPathComponent("نص-مستخرج.docx"); try Office.writeDocx(docx, t.components(separatedBy: "\n\n").map { .text($0) })
-            return [txt, docx]
+            var list = [txt, docx]
+            if makePdf && !pages.isEmpty { p.say("إنشاء PDF قابل للبحث…"); list.append(try Ocr.searchablePdf(pages, to: out.appendingPathComponent("ملف-قابل-للبحث.pdf"))) }
+            return list
         }
     }
 }

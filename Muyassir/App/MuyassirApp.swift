@@ -4,15 +4,27 @@ import UserNotifications
 @main
 struct MuyassirApp: App {
     @StateObject private var store = Store.shared
+    @StateObject private var plus = Plus.shared
     @AppStorage("theme") private var theme = "light"
+    @AppStorage("accentActive") private var accentActive = 0
     init() {
         FilesX.cleanOld()
+        #if DEBUG
+        let a = CommandLine.arguments
+        if let i = a.firstIndex(of: "-plus"), i + 1 < a.count { Plus.shared.testState(a[i + 1]) }
+        if let i = a.firstIndex(of: "-paywall"), i + 1 < a.count { Plus.shared.paywall = Plus.Reason(rawValue: a[i + 1]) }
+        #endif
+        Plus.shared.start()
         if let i = CommandLine.arguments.firstIndex(of: "-theme"), i + 1 < CommandLine.arguments.count { UserDefaults.standard.set(CommandLine.arguments[i + 1], forKey: "theme") }
     }
     var body: some Scene {
         WindowGroup {
             RootView()
+                .id(accentActive) // rebuild with the new accent colour
                 .environmentObject(store)
+                .environmentObject(plus)
+                .fullScreenCover(item: $plus.paywall) { PaywallView(reason: $0) }
+                .task { await plus.refresh() }
                 .environment(\.layoutDirection, .rightToLeft)
                 .environment(\.locale, Locale(identifier: "ar"))
                 .tint(Brand.accent)
@@ -27,9 +39,10 @@ enum Brand {
     static func dyn(_ light: UInt32, _ dark: UInt32) -> Color {
         Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(Color(hex: dark)) : UIColor(Color(hex: light)) })
     }
-    static let accent = dyn(0x3346D3, 0x9AA6FF)
+    /// Default indigo; Plus users can pick another accent (applied through `accentActive`).
+    static var accent: Color { let a = accents[min(max(UserDefaults.standard.integer(forKey: "accentActive"), 0), accents.count - 1)]; return dyn(a.1, a.2) }
     static let onAccent = dyn(0xFFFFFF, 0x0E1220)
-    static let accentSoft = dyn(0xECEEFD, 0x242B4A)
+    static var accentSoft: Color { UserDefaults.standard.integer(forKey: "accentActive") == 0 ? dyn(0xECEEFD, 0x242B4A) : accent.opacity(0.12) }
     static let bg = dyn(0xF6F7FA, 0x0F1320)
     static let surface = dyn(0xFFFFFF, 0x181D2B)
     static let sunken = dyn(0xF0F2F6, 0x121623)
@@ -41,7 +54,7 @@ enum Brand {
     static let ink = Color(hex: 0x1C2453)
     static let mint = dyn(0x14936B, 0x5FD3AE)
     static let saffron = Color(hex: 0xF2B01E)
-    static let lapis = accent // older call sites
+    static var lapis: Color { accent } // older call sites
     /// Icon colour on a solid category tile.
     static let onAccentFor = dyn(0xFFFFFF, 0x10131D)
     /// Category colours share one lightness; lifted in dark mode for contrast.

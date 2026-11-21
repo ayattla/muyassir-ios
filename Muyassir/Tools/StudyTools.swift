@@ -190,10 +190,11 @@ struct QuizMaker: View {
             }
             SecondaryButton(title: "إضافة سؤال", icon: "plus") { qs.append(Q()) }
             Toggle("إنشاء نموذج إجابة منفصل", isOn: $withKey).font(.plex(.subheadline))
+            TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext", enabled: !qs.isEmpty) {
                 let out = FilesX.outDir()
                 func build(_ key: Bool) -> URL? {
-                    let b = DocBuilder()
+                    let b = Templates.apply(DocBuilder())
                     b.add(.title(title + (key ? " — نموذج الإجابة" : ""), sub: [school, subject].filter { !$0.isEmpty }.joined(separator: " • ")))
                     if !key { b.add(.keyValues([("اسم الطالب", "........................................"), ("الدرجة", "......... / \(fmt(qs.reduce(0) { $0 + $1.mark.num }))")])) }
                     for (i, q) in qs.enumerated() {
@@ -222,8 +223,9 @@ struct WorksheetTool: View {
         ToolScreen(tool: tool) {
             Panel { Field(label: "العنوان", text: $title); Field(label: "المادة والصف", text: $subject); Field(label: "الهدف من الدرس", text: $goal)
                 Field(label: "الأنشطة/الأسئلة (سطر لكل سؤال)", text: $bodyText, lines: 6); NumField(label: "أسطر إجابة بعد كل سؤال", text: $lines) }
+            TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext") {
-                let b = DocBuilder(); b.add(.title(title, sub: subject)); b.add(.keyValues([("الاسم", "................................."), ("التاريخ", "....../....../........")]))
+                let b = Templates.apply(DocBuilder()); b.add(.title(title, sub: subject)); b.add(.keyValues([("الاسم", "................................."), ("التاريخ", "....../....../........")]))
                 if !goal.isEmpty { b.add(.heading("الهدف")); b.add(.para(goal)) }
                 b.add(.heading("الأنشطة"))
                 for l in bodyText.components(separatedBy: "\n") where !l.trimmingCharacters(in: .whitespaces).isEmpty { b.add(.para(l, size: 12)); b.add(.lines(min(max(Int(lines.num), 0), 12))); b.add(.space(6)) }
@@ -248,8 +250,9 @@ struct CertificateTool: View {
                 DatePicker("التاريخ", selection: $date, displayedComponents: .date)
                 HStack { ForEach(colors.indices, id: \.self) { i in Chip(text: colors[i].0, selected: i == color) { color = i } } }
             }
+            TemplatePanel(styles: false)
             PrimaryButton(title: "إنشاء الشهادة", icon: "rosette", enabled: !name.isEmpty) {
-                let b = DocBuilder(landscape: true); b.border = colors[color].1; b.footer = nil
+                let b = Templates.apply(DocBuilder(landscape: true)); b.border = colors[color].1; b.layoutStyle = 0; b.accent = colors[color].1; b.pageNumbers = false
                 b.add([.space(30), .para(org, size: 14, center: true, color: DocBuilder.muted), .para(kinds[kind], size: 34, bold: true, center: true, color: colors[color].1), .space(10),
                        .para("يسرّنا أن نقدّم هذه الشهادة إلى", size: 14, center: true), .para(name, size: 28, bold: true, center: true)])
                 if !reason.isEmpty { b.add(.para(reason, size: 14, center: true)) }
