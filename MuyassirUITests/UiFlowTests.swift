@@ -32,6 +32,15 @@ final class UiFlowTests: XCTestCase {
         reveal(f, file: file, line: line); f.tap()
         if let cur = f.value as? String, !cur.isEmpty, cur != label, cur != "0" { f.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: cur.count)) }
         f.typeText(v)
+        dismissKeyboard()
+    }
+    /// Closes the keyboard (toolbar "تم" button, else the return key) so buttons below are reachable.
+    func dismissKeyboard() {
+        guard app.keyboards.count > 0 else { return }
+        let done = app.buttons["تم"]
+        if done.exists && done.isHittable { done.tap() }
+        else { for k in ["Return", "return", "Done", "done"] where app.keyboards.buttons[k].exists { app.keyboards.buttons[k].tap(); break } }
+        _ = app.keyboards.firstMatch.waitForNonExistence(timeout: 2)
     }
     func back() { app.navigationBars.buttons.element(boundBy: 0).tap() }
 
