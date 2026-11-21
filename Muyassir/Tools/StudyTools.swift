@@ -193,7 +193,7 @@ struct QuizMaker: View {
             TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext", enabled: !qs.isEmpty) {
                 let out = FilesX.outDir()
-                func build(_ key: Bool) -> URL? {
+                @MainActor func build(_ key: Bool) -> URL? {
                     let b = Templates.apply(DocBuilder())
                     b.add(.title(title + (key ? " — نموذج الإجابة" : ""), sub: [school, subject].filter { !$0.isEmpty }.joined(separator: " • ")))
                     if !key { b.add(.keyValues([("اسم الطالب", "........................................"), ("الدرجة", "......... / \(fmt(qs.reduce(0) { $0 + $1.mark.num }))")])) }
