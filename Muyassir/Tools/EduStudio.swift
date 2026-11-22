@@ -98,6 +98,9 @@ struct QuizMaker: View {
             let m = store.obj("quiz_meta")
             if !m.s("title").isEmpty { title = m.s("title"); school = m.s("school"); stage = m["stage"] as? Int ?? 0; grade = m.s("grade"); subject = m.s("subject"); lesson = m.s("lesson"); level = m["level"] as? Int ?? 1; minutes = m.s("minutes") }
             let d = store.list("quiz_draft"); if !d.isEmpty { qs += d.map(Q.init); store.saveList("quiz_draft", []) }
+            #if DEBUG
+            if let j = ProcessInfo.processInfo.environment["MYS_QUIZ_DRAFT"], let arr = (try? JSONSerialization.jsonObject(with: Data(j.utf8))) as? [Rec], qs.isEmpty { qs = arr.map(Q.init) }
+            #endif
             let pre = Assistant.takePrefill(); if !pre.s("grade").isEmpty { grade = pre.s("grade") }; if !pre.s("subject").isEmpty { subject = pre.s("subject") }
         }
     }

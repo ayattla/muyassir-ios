@@ -210,22 +210,11 @@ final class P0ToolsTests: XCTestCase {
     }
 
     // MARK: P5 ordering and classification, printed and played online
-    private func addQuestion(_ kind: String) {
-        let p = app.buttons["newType"]; reveal(p)
-        let pred = NSPredicate(format: "label == %@", kind)
-        for _ in 0..<2 {
-            p.tap()
-            for q in [app.buttons, app.menuItems, app.cells, app.staticTexts] {
-                let item = q.matching(pred).firstMatch
-                if item.waitForExistence(timeout: 3) && item.isHittable { item.tap(); tap("إضافة سؤال"); return }
-            }
-        }
-        XCTFail("menu item missing: \(kind)\n" + String(app.debugDescription.suffix(3000)))
-    }
     func testOrderAndClassifyOnline() throws {
-        launch("quiz_maker"); type("عنوان الاختبار", "ترتيب وتصنيف من CI")
-        addQuestion("ترتيب"); type("العناصر بترتيبها الصحيح، عنصر في كل سطر", "واحد\nاثنان\nثلاثة")
-        addQuestion("تصنيف"); type("سطر لكل عنصر بصيغة «العنصر = الفئة»", "أسد = ثدييات\nصقر = طيور\nحوت = ثدييات")
+        app = XCUIApplication(); app.launchArguments = ["-tool", "quiz_maker"]
+        app.launchEnvironment["MYS_QUIZ_DRAFT"] = #"[{"type":5,"q":"","items":"واحد\nاثنان\nثلاثة","mark":"1"},{"type":6,"q":"","pairs":"أسد = ثدييات\nصقر = طيور\nحوت = ثدييات","mark":"1"}]"#
+        app.launch(); type("عنوان الاختبار", "ترتيب وتصنيف من CI")
+        waitText("العناصر بترتيبها الصحيح"); waitText("سطر لكل عنصر بصيغة")
         tap("إنشاء PDF"); waitResults()
         tap("publishOnline")
         let ok = app.alerts.buttons["موافق، انشر"].firstMatch; if ok.waitForExistence(timeout: 5) { ok.tap() }
