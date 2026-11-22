@@ -42,7 +42,14 @@ final class UiFlowTests: XCTestCase {
         else { for k in ["Return", "return", "Done", "done"] where app.keyboards.buttons[k].firstMatch.exists { app.keyboards.buttons[k].firstMatch.tap(); break } }
         _ = app.keyboards.firstMatch.waitForNonExistence(timeout: 2)
     }
-    func back() { app.navigationBars.buttons.element(boundBy: 0).tap() }
+    /// Goes back; waits for the bar during transitions and closes a sheet if one is showing, and names the screen if it cannot.
+    func back(_ from: String = "", file: StaticString = #filePath, line: UInt = #line) {
+        let b = app.navigationBars.buttons.element(boundBy: 0)
+        if b.waitForExistence(timeout: 5) { b.tap(); return }
+        app.swipeDown(velocity: .fast)
+        if b.waitForExistence(timeout: 3) { b.tap(); return }
+        XCTFail("no navigation bar after \(from)", file: file, line: line)
+    }
 
     // MARK: navigation
     func testEveryCategoryShowsItsToolsAndEveryToolOpens() {
@@ -62,11 +69,11 @@ final class UiFlowTests: XCTestCase {
                 row.tap()
                 if !app.navigationBars[t.title].waitForExistence(timeout: 5) { problems.append("\(t.id): screen did not open") }
                 else if !app.buttons["إضافة إلى المفضلة"].exists && !app.buttons["إزالة من المفضلة"].exists { problems.append("\(t.id): no tool toolbar") }
-                back()
+                back(t.id)
                 if !app.navigationBars[c.title].waitForExistence(timeout: 5) { problems.append("\(t.id): back failed") }
                 while !app.buttons["tool-\(tools[0].id)"].isHittable && app.buttons["tool-\(tools[0].id)"].exists { app.swipeDown() }
             }
-            back()
+            back(c.id)
             while !app.buttons["cat-\(Tools.categories[0].id)"].isHittable { app.swipeDown() }
         }
         XCTAssert(problems.isEmpty, problems.joined(separator: "\n"))
