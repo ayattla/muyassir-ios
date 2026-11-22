@@ -175,7 +175,7 @@ struct QuestionBank: View {
             guard case .success(let u) = r else { return }
             let ok = u.startAccessingSecurityScopedResource(); defer { if ok { u.stopAccessingSecurityScopedResource() } }
             let rows: [[String]] = u.pathExtension.lowercased() == "xlsx" ? ((try? Office.readXlsx(u))?.first?.1 ?? [])
-                : ((try? String(contentsOf: u, encoding: .utf8)) ?? "").components(separatedBy: .newlines).map { $0.split(whereSeparator: { ",;\t".contains($0) }, omittingEmptySubsequences: false).map { String($0).trimmingCharacters(in: CharacterSet(charactersIn: "\" ")) } }
+                : ((try? String(contentsOf: u, encoding: .utf8)) ?? "").components(separatedBy: .newlines).map { $0.split(omittingEmptySubsequences: false, whereSeparator: { ",;\t".contains($0) }).map { String($0).trimmingCharacters(in: CharacterSet(charactersIn: "\" ")) } }
             let add = Edu.importRows(rows)
             if add.isEmpty { msg = "تعذّرت قراءة الملف. استخدم Excel أو CSV بالأعمدة: السؤال، النوع، أ، ب، ج، د، الإجابة، الدرجة، المادة، الصف، الدرس، الصعوبة."; return }
             let old = store.list("qbank"), have = Set(old.map { $0.s("q") }); let fresh = add.filter { !have.contains($0.s("q")) }
