@@ -69,8 +69,9 @@ enum Cloud {
         let json = (try? JSONSerialization.jsonObject(with: data)) as? Rec ?? [:]
         guard (200..<300).contains(code) else {
             if code == 429 { throw Failure(message: "طلبات كثيرة خلال وقت قصير، حاول بعد قليل") }
+            if let d = json["detail"] as? String, !d.isEmpty { throw Failure(message: d) }
             if code == 404 { throw Failure(message: "الاختبار غير موجود على الخادم (ربما حُذف)") }
-            throw Failure(message: (json["detail"] as? String) ?? "تعذر الاتصال بالخادم (\(code))")
+            throw Failure(message: "تعذر الاتصال بالخادم (\(code))")
         }
         return json
     }
