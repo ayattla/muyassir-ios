@@ -211,9 +211,16 @@ final class P0ToolsTests: XCTestCase {
 
     // MARK: P5 ordering and classification, printed and played online
     private func addQuestion(_ kind: String) {
-        let p = app.buttons["newType"]; reveal(p); p.tap()
-        let item = app.buttons[kind].firstMatch; XCTAssertTrue(item.waitForExistence(timeout: 5)); item.tap()
-        tap("إضافة سؤال")
+        let p = app.buttons["newType"]; reveal(p)
+        let pred = NSPredicate(format: "label == %@", kind)
+        for _ in 0..<2 {
+            p.tap()
+            for q in [app.buttons, app.menuItems, app.cells, app.staticTexts] {
+                let item = q.matching(pred).firstMatch
+                if item.waitForExistence(timeout: 3) && item.isHittable { item.tap(); tap("إضافة سؤال"); return }
+            }
+        }
+        XCTFail("menu item missing: \(kind)\n" + String(app.debugDescription.suffix(3000)))
     }
     func testOrderAndClassifyOnline() throws {
         launch("quiz_maker"); type("عنوان الاختبار", "ترتيب وتصنيف من CI")
