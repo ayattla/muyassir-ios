@@ -20,7 +20,7 @@ struct RulePanel: View {
                 }
             }
             Text("النتيجة تقديرية للحالات الشائعة ولا تُعد فتوى نظامية؛ العقد والأحكام القضائية واللوائح قد تغيّرها. راجع الجهة المختصة قبل الاعتماد عليها.").font(.plex(.caption)).foregroundStyle(Brand.text2)
-        }.accessibilityIdentifier("rulePanel")
+        }.accessibilityElement(children: .contain).accessibilityIdentifier("rulePanel")
     }
 }
 
