@@ -88,6 +88,7 @@ struct QuizMaker: View {
             TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext", enabled: !qs.isEmpty) { build() }.accessibilityIdentifier("action")
             if !result.isEmpty { ResultFiles(files: result) }
+            OnlineQuizPanel(title: title, qs: qs.map(\.rec), minutes: minutes)
         }
         .onAppear {
             let m = store.obj("quiz_meta")

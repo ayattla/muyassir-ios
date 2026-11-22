@@ -179,4 +179,33 @@ final class P0ToolsTests: XCTestCase {
         let open = app.buttons["assistOpen-worksheet"]; XCTAssertTrue(open.waitForExistence(timeout: 5)); open.tap()
         waitText("الصف السادس")
     }
+
+    // MARK: P4 online quiz on the live server (published, answered, results read, then deleted)
+    func testOnlineQuizEndToEnd() throws {
+        launch("quiz_maker"); type("عنوان الاختبار", "اختبار آلي من CI")
+        tap("إضافة سؤال"); type("نص السؤال", "كم عدد أيام الأسبوع؟"); type("الخيار أ", "سبعة"); type("الخيار ب", "خمسة")
+        tap("publishOnline")
+        let ok = app.alerts.buttons["موافق، انشر"]; if ok.waitForExistence(timeout: 5) { ok.tap() }
+        let urlText = app.staticTexts["onlineUrl"]
+        XCTAssertTrue(urlText.waitForExistence(timeout: 30), "publish did not finish: \(app.staticTexts["onlineError"].exists ? app.staticTexts["onlineError"].label : "")")
+        let url = urlText.label; XCTAssertTrue(url.contains("ayattla.com/muyassir/q/"))
+        let code = String(url.split(separator: "/").last ?? "")
+        // A student answers from the web page (the same form a browser sends).
+        var r = URLRequest(url: URL(string: url)!); r.httpMethod = "POST"
+        r.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let enc = { (s: String) in s.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? s }
+        r.httpBody = "name=\(enc("طالب الاختبار"))&q0=\(enc("سبعة"))".data(using: .utf8)
+        let page = try fetch(r); XCTAssertTrue(page.0.contains("1 من 1"), "student page did not grade the answer")
+        tap("results-\(code)"); waitText("طالب الاختبار", 20); waitText("عدد المتقدمين")
+        // Delete everything from the server through the app, then prove the link is gone.
+        let all = app.buttons["حذف كل اختباراتي ونتائجها من الخادم"]; reveal(all); all.tap()
+        let confirm = app.buttons["حذف نهائي"]; XCTAssertTrue(confirm.waitForExistence(timeout: 5)); confirm.tap()
+        sleep(4)
+        XCTAssertEqual(try fetch(URLRequest(url: URL(string: url)!)).1, 404, "quiz still on the server after deletion")
+    }
+    private func fetch(_ r: URLRequest) throws -> (String, Int) {
+        let done = expectation(description: "http"); var out = ("", 0)
+        URLSession.shared.dataTask(with: r) { d, resp, _ in out = (String(data: d ?? Data(), encoding: .utf8) ?? "", (resp as? HTTPURLResponse)?.statusCode ?? 0); done.fulfill() }.resume()
+        wait(for: [done], timeout: 30); return out
+    }
 }
