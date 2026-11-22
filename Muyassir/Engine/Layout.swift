@@ -4,7 +4,7 @@ import Vision
 
 /// Document reconstruction from OCR words: headings, paragraphs and tables, plus the words the engine was unsure of
 /// so the user reviews them before export. Coordinates are image pixels, y grows downwards.
-enum Layout {
+enum DocLayout {
     struct Word: Equatable { var text: String; var left, top, right, bottom: CGFloat; var conf: Float = 100
         var cy: CGFloat { (top + bottom) / 2 }
     }

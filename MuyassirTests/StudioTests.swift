@@ -2,23 +2,23 @@ import XCTest
 @testable import Muyassir
 
 final class StudioTests: XCTestCase {
-    private func line(_ y: CGFloat, _ h: CGFloat, _ ws: [(String, CGFloat)]) -> [Layout.Word] {
-        ws.map { t, x in Layout.Word(text: t, left: x - CGFloat(t.count) * 10, top: y, right: x, bottom: y + h) }
+    private func line(_ y: CGFloat, _ h: CGFloat, _ ws: [(String, CGFloat)]) -> [DocLayout.Word] {
+        ws.map { t, x in DocLayout.Word(text: t, left: x - CGFloat(t.count) * 10, top: y, right: x, bottom: y + h) }
     }
 
     func testHeadingParagraphAndTable() {
         let words = line(0, 40, [("تقرير", 900), ("المبيعات", 820)]) + line(70, 20, [("هذا", 900), ("نص", 860), ("عادي", 830)]) + line(100, 20, [("يكمل", 900), ("الفقرة", 850)])
             + line(160, 20, [("المنتج", 900), ("الكمية", 600), ("السعر", 300)]) + line(190, 20, [("قلم", 900), ("5", 600), ("10", 300)]) + line(220, 20, [("دفتر", 900), ("2", 600), ("15", 300)])
-        let r = Layout.analyze(words)
+        let r = DocLayout.analyze(words)
         XCTAssertEqual(r.blocks[0], .heading("تقرير المبيعات"))
         XCTAssertEqual(r.blocks[1], .para("هذا نص عادي يكمل الفقرة"))
         XCTAssertEqual(r.blocks[2], .table([["المنتج", "الكمية", "السعر"], ["قلم", "5", "10"], ["دفتر", "2", "15"]]))
     }
 
     func testUnsureWordsAndEditedText() {
-        let r = Layout.analyze([Layout.Word(text: "واضح", left: 0, top: 0, right: 50, bottom: 20, conf: 95), Layout.Word(text: "غامض", left: 60, top: 0, right: 110, bottom: 20, conf: 30)])
+        let r = DocLayout.analyze([DocLayout.Word(text: "واضح", left: 0, top: 0, right: 50, bottom: 20, conf: 95), DocLayout.Word(text: "غامض", left: 60, top: 0, right: 110, bottom: 20, conf: 30)])
         XCTAssertEqual(r.unsure, ["غامض"])
-        let e = Layout.fromText("العنوان\n\nفقرة أولى من النص.\n\nأ | ب\n1 | 2")
+        let e = DocLayout.fromText("العنوان\n\nفقرة أولى من النص.\n\nأ | ب\n1 | 2")
         XCTAssertEqual(e.blocks[2], .table([["أ", "ب"], ["1", "2"]]))
     }
 

@@ -3,25 +3,25 @@ import PDFKit
 import UniformTypeIdentifiers
 
 /// Pages (images or PDF pages) → OCR words → reconstructed layout.
-func ocrPages(_ ins: [URL], _ p: Progress, max: Int) throws -> [Layout.Result] {
-    var pages: [Layout.Result] = []
+func ocrPages(_ ins: [URL], _ p: Progress, max: Int) throws -> [DocLayout.Result] {
+    var pages: [DocLayout.Result] = []
     for (i, u) in ins.enumerated() {
         if u.pathExtension.lowercased() == "pdf" {
             let d = try PdfEngine.open(u)
             for pg in 0..<d.pageCount where pages.count < max {
                 p.update(pg, d.pageCount, "التعرف على الصفحة \(pg + 1) من \(d.pageCount)")
-                if let page = d.page(at: pg) { pages.append(Layout.analyze(try Layout.recognizeWords(PdfEngine.render(page, dpi: 220)))) }
+                if let page = d.page(at: pg) { pages.append(DocLayout.analyze(try DocLayout.recognizeWords(PdfEngine.render(page, dpi: 220)))) }
             }
         } else if pages.count < max {
             p.update(i, ins.count, "التعرف على الصورة \(i + 1) من \(ins.count)")
             guard let img = ImageEngine.load(u, maxSide: 3000) else { throw UserError("تعذّر فتح الصورة \(u.lastPathComponent)") }
-            pages.append(Layout.analyze(try Layout.recognizeWords(img)))
+            pages.append(DocLayout.analyze(try DocLayout.recognizeWords(img)))
         }
     }
     return pages
 }
 
-func docxFrom(_ pages: [Layout.Result]) -> [Office.Para] { pages.enumerated().flatMap { i, r in (i > 0 ? [Office.Para.pageBreak] : []) + Layout.toDocx(r) } }
+func docxFrom(_ pages: [DocLayout.Result]) -> [Office.Para] { pages.enumerated().flatMap { i, r in (i > 0 ? [Office.Para.pageBreak] : []) + DocLayout.toDocx(r) } }
 
 final class ReviewState: ObservableObject { @Published var text = ""; @Published var unsure: [String] = []; @Published var ready = false; var name = "مستند" }
 
@@ -40,7 +40,7 @@ struct ReviewPanel: View {
                 Field(label: "النص المستخرج (الجداول: أعمدة مفصولة بـ |)", text: $state.text, lines: 10).accessibilityIdentifier("reviewText")
                 PrimaryButton(title: "حفظ Word بعد المراجعة", icon: "doc.text") {
                     let o = FilesX.outDir().appendingPathComponent("\(state.name)-مراجع.docx")
-                    if (try? Office.writeDocx(o, Layout.toDocx(Layout.fromText(state.text)))) != nil { saved = [o] }
+                    if (try? Office.writeDocx(o, DocLayout.toDocx(DocLayout.fromText(state.text)))) != nil { saved = [o] }
                 }.accessibilityIdentifier("saveReviewed")
             }
             if !saved.isEmpty { ResultFiles(files: saved) }
