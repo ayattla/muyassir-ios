@@ -35,7 +35,7 @@ struct OnlineQuizPanel: View {
                         ShareLink(item: URL(string: url)!, message: Text(item.s("title"))) { Label("مشاركة", systemImage: "square.and.arrow.up").frame(maxWidth: .infinity, minHeight: 46) }.buttonStyle(.bordered)
                     }
                     Button("حفظ رمز QR صورة للطباعة") {
-                        let f = Store.outDir().appendingPathComponent("رمز-\(item.s("code")).png")
+                        let f = FilesX.outDir().appendingPathComponent("رمز-\(item.s("code")).png")
                         try? ImageEngine.qr(url, size: 900).pngData()?.write(to: f); qrFile = [f]
                     }.font(.plex(.subheadline))
                     if !qrFile.isEmpty { ResultFiles(files: qrFile) }
@@ -152,7 +152,7 @@ private struct PublishedList: View {
         let rows = [["الاسم", "الدرجة", "من", "وقت الإرسال"]] + att.map { a in
             [a.s("name"), fmt(a["score"] as? Double ?? 0), fmt(a["total"] as? Double ?? 0), f.string(from: Date(timeIntervalSince1970: a["submitted"] as? Double ?? 0))]
         }
-        let url = Store.outDir().appendingPathComponent("نتائج-\(r.s("title")).xlsx")
+        let url = FilesX.outDir().appendingPathComponent("نتائج-\(r.s("title")).xlsx")
         do { try Office.writeXlsx(url, [("النتائج", rows)]); files = [url] } catch { self.error = error.localizedDescription }
     }
 }
