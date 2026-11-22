@@ -24,7 +24,7 @@ struct MuyassirApp: App {
                 .environmentObject(store)
                 .environmentObject(plus)
                 .fullScreenCover(item: $plus.paywall) { PaywallView(reason: $0) }
-                .task { await plus.refresh() }
+                .task { await plus.refresh(); await Cloud.refreshLicence() }
                 .environment(\.layoutDirection, .rightToLeft)
                 .environment(\.locale, Locale(identifier: "ar"))
                 .tint(Brand.accent)

@@ -82,6 +82,9 @@ final class Plus: ObservableObject {
     @Published var subscribed = false { didSet { syncLook() } }
     @Published var dayPassUntil: Date = .distantPast { didSet { syncLook() } }
     @Published var planName = ""
+    /// A school licence redeemed with an activation code (checked against the server).
+    @Published var school = ""
+    @Published var schoolUntil: Date = .distantPast { didSet { syncLook() } }
     @Published var renews = true
     @Published var usedToday = 0
     @Published var notifyWhenLive = false
@@ -90,7 +93,7 @@ final class Plus: ObservableObject {
     @Published var busy = false
     @Published var message: String?
 
-    var active: Bool { subscribed || dayPassUntil > Date() }
+    var active: Bool { subscribed || dayPassUntil > Date() || schoolUntil > Date() }
     /// A feature is open to this user: Plus, or Plus not launched yet.
     var unlocked: Bool { active || !live }
     var opsLeft: Int { unlocked ? .max : max(0, Self.freeOpsPerDay - usedToday) }
@@ -106,6 +109,7 @@ final class Plus: ObservableObject {
         day = o["day"] as? String ?? ""; usedToday = o["used"] as? Int ?? 0
         dayPassUntil = Date(timeIntervalSince1970: o["dayPassUntil"] as? Double ?? 0)
         notifyWhenLive = o["notify"] as? Bool ?? false
+        let l = Store.shared.obj("license"); school = l.s("school"); schoolUntil = Date(timeIntervalSince1970: l["until"] as? Double ?? 0)
         rollDay()
     }
 
@@ -256,6 +260,7 @@ final class Plus: ObservableObject {
         case "free": plans = sample; live = true; subscribed = false; dayPassUntil = .distantPast; usedToday = 0; day = Self.dayFmt.string(from: Date()); save()
         case "free-used": plans = sample; live = true; subscribed = false; dayPassUntil = .distantPast; usedToday = Self.freeOpsPerDay; day = Self.dayFmt.string(from: Date()); save()
         case "plus": plans = sample; live = true; subscribed = true; planName = "اشتراك بلس السنوي"
+        case "school": plans = sample; live = true; subscribed = false; school = "مدارس الاختبار"; schoolUntil = Date().addingTimeInterval(86400)
         default: live = false; subscribed = false; usedToday = 0; save()
         }
     }

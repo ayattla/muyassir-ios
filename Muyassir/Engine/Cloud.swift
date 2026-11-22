@@ -97,9 +97,30 @@ enum Cloud {
         do { _ = try await call("DELETE", "/api/v1/activities/\(code)") } catch let e as Failure where e.message.contains("غير موجود") {}
         Store.shared.saveList("published", Store.shared.list("published").filter { $0.s("code") != code })
     }
+    /// School licence: binds an activation code to this device and turns Plus on until the licence ends.
+    @MainActor static func redeem(_ code: String) async throws {
+        let r = try await call("POST", "/api/v1/redeem", ["code": code.trimmingCharacters(in: .whitespaces)]); apply(r)
+    }
+    /// Re-checks the licence once a day (revoked or expired licences switch Plus off). Offline keeps the last answer.
+    @MainActor static func refreshLicence() async {
+        let l = Store.shared.obj("license")
+        guard !l.s("school").isEmpty, Date().timeIntervalSince1970 - (l["checked"] as? Double ?? 0) > 86400 else { return }
+        if let r = try? await call("GET", "/api/v1/entitlement") { apply(r) }
+    }
+    @MainActor private static func apply(_ r: Rec) {
+        if r.s("plan") == "school" {
+            let until = r["expires"] as? Double ?? 0
+            Store.shared.saveObj("license", ["school": r.s("school"), "until": until, "code": r.s("code"), "checked": Date().timeIntervalSince1970])
+            Plus.shared.school = r.s("school"); Plus.shared.schoolUntil = Date(timeIntervalSince1970: until)
+        } else {
+            Store.shared.saveObj("license", [:]); Plus.shared.school = ""; Plus.shared.schoolUntil = .distantPast
+        }
+    }
+
     /// Deletes the device and everything it published from the server, then forgets the token.
     static func forgetMe() async throws {
         if !Store.shared.obj("cloud").s("token").isEmpty { _ = try await call("DELETE", "/api/v1/devices/me") }
         Store.shared.saveObj("cloud", [:]); Store.shared.saveList("published", [])
+        await MainActor.run { Store.shared.saveObj("license", [:]); Plus.shared.school = ""; Plus.shared.schoolUntil = .distantPast }
     }
 }

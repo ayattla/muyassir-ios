@@ -61,6 +61,7 @@ struct PaywallView: View {
                         ForEach(extras, id: \.self) { e in Label(e, systemImage: "checkmark").font(.plex(.footnote)).foregroundStyle(Brand.text2) }
                     }
                     offer
+                    if !plus.active { SchoolCodeButton() }
                     Label("ملفاتك تبقى على جهازك. ألغِ في أي وقت من المتجر.", systemImage: "lock.fill").font(.plex(.caption)).foregroundStyle(Brand.text3)
                     HStack {
                         Button("شروط الاستخدام") { openURL(termsURL) }
@@ -85,7 +86,10 @@ struct PaywallView: View {
     }
 
     @ViewBuilder private var offer: some View {
-        if plus.active {
+        if !plus.school.isEmpty && plus.schoolUntil > Date() {
+            Text("بلس مفعّل ضمن باقة \(plus.school) حتى \(plus.schoolUntil.formatted(.dateTime.day().month(.defaultDigits).year().locale(Locale(identifier: "en_US"))))")
+                .font(.plex(.body)).foregroundStyle(Brand.text1).multilineTextAlignment(.center).accessibilityIdentifier("schoolActive")
+        } else if plus.active {
             Text(plus.subscribed ? "\(plus.planName)\(plus.renews ? " • يتجدد تلقائيًا" : " • لن يتجدد")" : "مرور اليوم مفعّل حتى \(plus.dayPassUntil.formatted(date: .omitted, time: .shortened))")
                 .font(.plex(.body)).foregroundStyle(Brand.text1)
             if plus.subscribed { SecondaryButton(title: "إدارة الاشتراك أو إلغاؤه", icon: "person.crop.circle") { openURL(Plus.manageURL) } }
@@ -156,7 +160,7 @@ struct PlusCard: View {
                 Image(systemName: "crown.fill").foregroundStyle(Brand.saffron).frame(width: 44, height: 44).background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(plus.active ? "أنت مشترك في مُيسّر بلس" : "مُيسّر بلس").font(.plex(.subheadline, .semibold)).foregroundStyle(.white)
-                    Text(plus.active ? "كل الميزات مفتوحة. اضغط لإدارة اشتراكك."
+                    Text(plus.active && !plus.school.isEmpty ? "مفعّل ضمن باقة \(plus.school)." : plus.active ? "كل الميزات مفتوحة. اضغط لإدارة اشتراكك."
                          : !plus.live ? "قريبًا: بلا حدود يومية وقوالب احترافية وOCR لملفات كاملة"
                          : "استخدمت اليوم \(plus.usedToday) من \(Plus.freeOpsPerDay) عمليات مجانية. افتحها بلا حدود.")
                         .font(.plex(.caption)).foregroundStyle(.white.opacity(0.78)).multilineTextAlignment(.leading)
@@ -338,3 +342,45 @@ struct LockGate<Content: View>: View {
 let accents: [(String, UInt32, UInt32)] = [("نيلي", 0x3346D3, 0x9AA6FF), ("زمردي", 0x0B7F7A, 0x7FD1C9), ("عنابي", 0xA3264A, 0xF29CB4),
                                            ("برتقالي", 0xB0500A, 0xF4B27A), ("بنفسجي", 0x6A3FC4, 0xC3AEF5), ("فحمي", 0x2A2F3A, 0xC9CED9)]
 let appIcons: [(String?, String)] = [(nil, "الأصلية"), ("AppIcon-Paper", "فاتحة"), ("AppIcon-Saffron", "زعفرانية")]
+
+
+/// «لديك كود من مدرستك؟»: a teacher enters the code the school gave them, and Plus opens until the school licence ends.
+struct SchoolCodeButton: View {
+    @State private var open = false
+    @State private var code = ""
+    @State private var busy = false
+    @State private var error: String?
+    var body: some View {
+        Button("لديك كود من مدرستك؟") { open = true; error = nil }.font(.plex(.subheadline, .medium)).accessibilityIdentifier("schoolCode")
+            .sheet(isPresented: $open) {
+                NavigationStack {
+                    Form {
+                        Section {
+                            TextField("MSR-XXXX-XXXX", text: $code).textInputAutocapitalization(.characters).autocorrectionDisabled()
+                                .environment(\.layoutDirection, .leftToRight).accessibilityIdentifier("schoolCodeField")
+                        } footer: {
+                            Text("اكتب الكود الذي وصلك من إدارة مدرستك. يُرسل الكود فقط إلى خادم مُيسّر للتحقق منه، ويُربط بهذا الجهاز.")
+                        }
+                        if let error { Text(error).foregroundStyle(.red).accessibilityIdentifier("schoolCodeError") }
+                    }
+                    .navigationTitle("تفعيل باقة المدرسة").navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) { Button("إلغاء") { open = false }.disabled(busy) }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(busy ? "جارٍ التحقق…" : "تفعيل") { redeem() }
+                                .disabled(busy || code.filter { $0.isLetter || $0.isNumber }.count < 8).accessibilityIdentifier("redeemCode")
+                        }
+                    }
+                }
+                .presentationDetents([.medium])
+            }
+    }
+    private func redeem() {
+        busy = true; error = nil
+        Task { @MainActor in
+            do { try await Cloud.redeem(code); if Plus.shared.schoolUntil > Date() { open = false } else { error = "تعذّر تفعيل الكود" } }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+}

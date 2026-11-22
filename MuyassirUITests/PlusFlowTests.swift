@@ -67,4 +67,22 @@ final class PlusFlowTests: XCTestCase {
         XCTAssertTrue(c.waitForExistence(timeout: 10)); c.tap()
         XCTAssertTrue(app.buttons["plan-yearly"].waitForExistence(timeout: 5))
     }
+
+    func testSchoolCodeIsCheckedOnTheServer() {
+        launch("off", paywall: "Menu")
+        let b = app.buttons["schoolCode"]; XCTAssertTrue(b.waitForExistence(timeout: 10))
+        var n = 0; while !b.isHittable && n < 8 { app.swipeUp(); n += 1 }
+        b.tap()
+        let f = app.textFields["schoolCodeField"]; XCTAssertTrue(f.waitForExistence(timeout: 5)); f.tap(); f.typeText("MSR-AAAA-AAAA")
+        app.buttons["redeemCode"].firstMatch.tap()
+        let err = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "الكود غير صحيح")).firstMatch
+        XCTAssertTrue(err.waitForExistence(timeout: 30), "the server did not reject an unknown code")
+    }
+
+    func testSchoolLicenceOpensPlusAndNamesTheSchool() {
+        launch("school", paywall: "Menu")
+        XCTAssertTrue(app.staticTexts["schoolActive"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["schoolActive"].label.contains("مدارس الاختبار"))
+        XCTAssertFalse(app.buttons["schoolCode"].exists)
+    }
 }
