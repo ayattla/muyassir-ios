@@ -60,7 +60,11 @@ enum Cloud {
         if auth { r.setValue("Bearer " + (try await token()), forHTTPHeaderField: "Authorization") }
         if let body { r.httpBody = try JSONSerialization.data(withJSONObject: body); r.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type") }
         let data: Data, resp: URLResponse
-        do { (data, resp) = try await URLSession.shared.data(for: r) } catch { throw Failure(message: "لا يوجد اتصال بالإنترنت أو الخادم لا يستجيب") }
+        do { (data, resp) = try await URLSession.shared.data(for: r) } catch {
+            // One quiet retry: mobile networks often drop the first connection.
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            do { (data, resp) = try await URLSession.shared.data(for: r) } catch { throw Failure(message: "لا يوجد اتصال بالإنترنت أو الخادم لا يستجيب") }
+        }
         let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
         let json = (try? JSONSerialization.jsonObject(with: data)) as? Rec ?? [:]
         guard (200..<300).contains(code) else {
