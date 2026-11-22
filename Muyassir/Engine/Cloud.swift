@@ -37,6 +37,15 @@ enum Cloud {
                 if ps.count < 2 { skipped += 1; continue }
                 let head = (text.isEmpty ? "صل كل عنصر بما يناسبه" : text) + "\n" + ps.enumerated().map { "\($0.offset + 1)) \($0.element.0)" }.joined(separator: "\n")
                 out.append(["text": String(head.prefix(600)), "type": "sort", "options": ps.map { $0.1 }.sorted(), "answer": ps.map { $0.1 }, "mark": mark])
+            case 5:
+                let its = Array(Edu.items(q.s("items")).prefix(8))
+                if its.count < 2 { skipped += 1; continue }
+                out.append(["text": text.isEmpty ? "رتّب العناصر ترتيبًا صحيحًا" : text, "type": "order", "options": its.sorted(), "answer": its, "mark": mark])
+            case 6:
+                let ps = Array(Edu.pairs(q.s("pairs")).filter { !$0.1.isEmpty }.prefix(20))
+                var cats: [String] = []; for c in ps.map(\.1) where !cats.contains(c) { cats.append(c) }
+                if ps.count < 2 || cats.count < 2 || cats.count > 8 { skipped += 1; continue }
+                out.append(["text": text.isEmpty ? "صنّف العناصر" : text, "type": "classify", "items": ps.map(\.0), "options": cats, "answer": ps.map(\.1), "mark": mark])
             default: skipped += 1
             }
         }

@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 /// Shared vocabulary of the education studio.
 enum Edu {
-    static let types = ["اختيار من متعدد", "صح وخطأ", "مقالي", "إكمال الفراغ", "توصيل"]
+    static let types = ["اختيار من متعدد", "صح وخطأ", "مقالي", "إكمال الفراغ", "توصيل", "ترتيب", "تصنيف"]
     static let stages = ["ابتدائي", "متوسط", "ثانوي", "جامعي"]
     static let levels = ["سهل", "متوسط", "صعب"]
     static func blanked(_ s: String) -> String { s.replacingOccurrences(of: "_{2,}|…+|\\.{4,}", with: "..................", options: .regularExpression) }
@@ -13,6 +13,8 @@ enum Edu {
             return p.count == 2 && !p[0].isEmpty ? (p[0], p[1]) : nil
         }
     }
+    /// Ordering: the items in their correct order, one per line.
+    static func items(_ s: String) -> [String] { s.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty } }
     static func shuffled<T>(_ l: [T], _ seed: Int) -> [T] { var g = TextAi.Seeded(UInt64(seed)); return l.shuffled(using: &g) }
 
     /// Reads a bank from Excel/CSV rows: السؤال، النوع، أ، ب، ج، د، الإجابة، الدرجة، المادة، الصف، الدرس، الصعوبة.
@@ -43,11 +45,11 @@ enum Edu {
 struct QuizMaker: View {
     let tool: Tool
     @EnvironmentObject var store: Store
-    struct Q: Identifiable { let id = UUID(); var type = 0; var text = ""; var opts = ["", "", "", ""]; var ans = 0; var lines = "3"; var mark = "1"; var answer = ""; var pairs = ""
+    struct Q: Identifiable { let id = UUID(); var type = 0; var text = ""; var opts = ["", "", "", ""]; var ans = 0; var lines = "3"; var mark = "1"; var answer = ""; var pairs = ""; var items = ""
         init(type: Int = 0) { self.type = type }
         init(_ r: Rec) { type = r["type"] as? Int ?? 0; text = r.s("q"); opts = Array(((r["opts"] as? [String]) ?? []) + ["", "", "", ""]).prefix(4).map { $0 }
-            ans = r["ans"] as? Int ?? 0; lines = r.s("lines").isEmpty ? "3" : r.s("lines"); mark = r.s("mark").isEmpty ? "1" : r.s("mark"); answer = r.s("answer"); pairs = r.s("pairs") }
-        var rec: Rec { ["type": type, "q": text, "opts": opts, "ans": ans, "lines": lines, "mark": mark, "answer": answer, "pairs": pairs] }
+            ans = r["ans"] as? Int ?? 0; lines = r.s("lines").isEmpty ? "3" : r.s("lines"); mark = r.s("mark").isEmpty ? "1" : r.s("mark"); answer = r.s("answer"); pairs = r.s("pairs"); items = r.s("items") }
+        var rec: Rec { ["type": type, "q": text, "opts": opts, "ans": ans, "lines": lines, "mark": mark, "answer": answer, "pairs": pairs, "items": items] }
     }
     @State var title = "اختبار قصير"; @State var school = ""; @State var stage = 0; @State var grade = ""; @State var subject = ""; @State var lesson = ""
     @State var level = 1; @State var minutes = ""; @State var english = false
@@ -72,6 +74,8 @@ struct QuizMaker: View {
                     case 1: Seg(options: ["صح", "خطأ"], selection: $q.ans)
                     case 2: NumField(label: "عدد أسطر الإجابة", text: $q.lines); Field(label: "معيار التصحيح (يظهر في نموذج الإجابة)", text: $q.answer, lines: 2)
                     case 3: Field(label: "الإجابة الصحيحة", text: $q.answer)
+                    case 5: Field(label: "العناصر بترتيبها الصحيح، عنصر في كل سطر", text: $q.items, lines: 4)
+                    case 6: Field(label: "سطر لكل عنصر بصيغة «العنصر = الفئة»", text: $q.pairs, lines: 4)
                     default: Field(label: "الأزواج: سطر لكل زوج بصيغة «العمود الأول = ما يقابله»", text: $q.pairs, lines: 4)
                     }
                     NumField(label: "الدرجة", text: $q.mark)
@@ -121,6 +125,13 @@ struct QuizMaker: View {
                 case 1: b.add(.para(key ? "   \(L["ans"]!): \(q.ans == 0 ? L["t"]! : L["f"]!)" : "   (     ) \(L["t"]!)          (     ) \(L["f"]!)"))
                 case 2: if !key { b.add(.lines(min(max(Int(q.lines.num), 1), 15))) } else if !q.answer.isEmpty { b.add(.para("   \(L["rubric"]!): \(q.answer)")) }
                 case 3: if key { b.add(.para("   \(L["ans"]!): \(q.answer)")) }
+                case 5:
+                    let its = Edu.items(q.items)
+                    b.add(.table(header: [], rows: Edu.shuffled(its, i + 11).map { x in [key ? "\((its.firstIndex(of: x) ?? 0) + 1)" : "(     )", x] }))
+                case 6:
+                    let ps = Edu.pairs(q.pairs); var cats: [String] = []; for c in ps.map(\.1) where !cats.contains(c) { cats.append(c) }
+                    b.add(.para("   \(english ? "Categories" : "الفئات"): \(cats.joined(separator: " / "))"))
+                    b.add(.table(header: [], rows: Edu.shuffled(ps, i + 13).map { [$0.0, key ? $0.1 : ".................."] }))
                 default:
                     let ps = Edu.pairs(q.pairs), right = Edu.shuffled(ps.map(\.1), i + 7)
                     b.add(.table(header: [], rows: ps.indices.map { k in ["\(k + 1)) \(ps[k].0)", key ? (right.firstIndex(of: ps[k].1).map { String(letters[min($0, 3)]) } ?? "-") : "(     )", "\(k < 4 ? String(letters[k]) : "-")) \(right[k])"] }))
@@ -139,6 +150,10 @@ struct QuizMaker: View {
                 case 1: p.append(.text("    (     ) \(L["t"]!)        (     ) \(L["f"]!)"))
                 case 2: for _ in 0..<min(max(Int(q.lines.num), 1), 15) { p.append(.text("    ..............................................................")) }
                 case 4: let ps = Edu.pairs(q.pairs), right = Edu.shuffled(ps.map(\.1), i + 7); p.append(.table(ps.indices.map { k in ["\(k + 1)) \(ps[k].0)", "(     )", "\(k < 4 ? String(letters[k]) : "-")) \(right[k])"] }))
+                case 5: p.append(.table(Edu.shuffled(Edu.items(q.items), i + 11).map { ["(     )", $0] }))
+                case 6:
+                    let ps = Edu.pairs(q.pairs); var cats: [String] = []; for c in ps.map(\.1) where !cats.contains(c) { cats.append(c) }
+                    p.append(.text("    \(english ? "Categories" : "الفئات"): \(cats.joined(separator: " / "))")); p.append(.table(Edu.shuffled(ps, i + 13).map { [$0.0, ".................."] }))
                 default: break
                 }
             }

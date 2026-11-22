@@ -208,4 +208,30 @@ final class P0ToolsTests: XCTestCase {
         URLSession.shared.dataTask(with: r) { d, resp, _ in out = (String(data: d ?? Data(), encoding: .utf8) ?? "", (resp as? HTTPURLResponse)?.statusCode ?? 0); done.fulfill() }.resume()
         wait(for: [done], timeout: 30); return out
     }
+
+    // MARK: P5 ordering and classification, printed and played online
+    private func addQuestion(_ kind: String) {
+        let p = app.buttons["newType"]; reveal(p); p.tap()
+        let item = app.buttons[kind].firstMatch; XCTAssertTrue(item.waitForExistence(timeout: 5)); item.tap()
+        tap("إضافة سؤال")
+    }
+    func testOrderAndClassifyOnline() throws {
+        launch("quiz_maker"); type("عنوان الاختبار", "ترتيب وتصنيف من CI")
+        addQuestion("ترتيب"); type("العناصر بترتيبها الصحيح، عنصر في كل سطر", "واحد\nاثنان\nثلاثة")
+        addQuestion("تصنيف"); type("سطر لكل عنصر بصيغة «العنصر = الفئة»", "أسد = ثدييات\nصقر = طيور\nحوت = ثدييات")
+        tap("إنشاء PDF"); waitResults()
+        tap("publishOnline")
+        let ok = app.alerts.buttons["موافق، انشر"].firstMatch; if ok.waitForExistence(timeout: 5) { ok.tap() }
+        let urlText = app.staticTexts["onlineUrl"]
+        XCTAssertTrue(urlText.waitForExistence(timeout: 30), "publish did not finish: \(app.staticTexts["onlineError"].exists ? app.staticTexts["onlineError"].label : "")")
+        let url = urlText.label
+        var r = URLRequest(url: URL(string: url)!); r.httpMethod = "POST"
+        r.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let enc = { (s: String) in s.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? s }
+        r.httpBody = "name=\(enc("طالبة"))&q0_0=\(enc("واحد"))&q0_1=\(enc("اثنان"))&q0_2=\(enc("ثلاثة"))&q1_0=\(enc("ثدييات"))&q1_1=\(enc("طيور"))&q1_2=\(enc("ثدييات"))".data(using: .utf8)
+        let page = try fetch(r); XCTAssertTrue(page.0.contains("2 من 2"), "ordering/classification were not graded")
+        let all = app.buttons["حذف كل اختباراتي ونتائجها من الخادم"].firstMatch; reveal(all); all.tap()
+        let confirm = app.buttons["حذف نهائي"].firstMatch; XCTAssertTrue(confirm.waitForExistence(timeout: 5)); confirm.tap()
+        sleep(4); XCTAssertEqual(try fetch(URLRequest(url: URL(string: url)!)).1, 404)
+    }
 }
