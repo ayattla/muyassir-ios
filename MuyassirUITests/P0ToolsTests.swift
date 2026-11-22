@@ -156,4 +156,12 @@ final class P0ToolsTests: XCTestCase {
         let item = app.buttons["مستويات بلوم"].firstMatch; XCTAssertTrue(item.waitForExistence(timeout: 5)); item.tap()
         tap("action"); waitResults(); waitText(".docx")
     }
+
+    // MARK: P2 Saudi services
+    func testNoticeCompensation() {
+        launch("notice"); type("أيام الإشعار التي أُعطيت", "20"); type("الأجر الشهري", "9000"); waitText("12,000.00")
+        let b = app.buttons["ruleToggle"]; reveal(b); b.tap(); waitText("آخر مراجعة")
+    }
+    func testFinalSettlement() { launch("settlement"); type("آخر أجر شهري (الأساسي + البدلات الثابتة)", "10000"); waitText("إجمالي التسوية التقديرية"); waitText("تفاصيل الحساب") }
+    func testWageDeduction() { launch("wage_deduct"); type("الأجر المستحق هذا الشهر", "8000"); type("المبلغ المطلوب استقطاعه (سلفة، جزاء…)", "6000"); waitText("4,000.00") }
 }

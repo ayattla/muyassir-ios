@@ -102,7 +102,7 @@ struct ExamToDoc: View {
             let pages = try ocrPages(ins, p, max: budget)
             let text = pages.flatMap { $0.blocks.map { b -> String in switch b { case let .heading(t), let .para(t): return t; case let .table(r): return r.map { $0.joined(separator: " ") }.joined(separator: "\n") } } }.joined(separator: "\n")
             let found = ExamParser.parse(text)
-            if found.isEmpty { throw UserError("لم أجد أسئلة مرقمة. تأكد أن الصورة واضحة وأن الأسئلة تبدأ بأرقام.") }
+            if found.isEmpty { throw UserError("لم أجد أسئلة مرقمة. تأكد أن الصورة واضحة وأن الأسئلة تبدأ بأرقام." + (text.isEmpty ? "" : " النص المقروء: «\(text.prefix(80))»")) }
             await MainActor.run { qs = found; msg = nil }
             var paras: [Office.Para] = []
             for (i, q) in found.enumerated() {

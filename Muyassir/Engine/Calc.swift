@@ -14,8 +14,8 @@ enum Calc {
     struct Gosi { let base, employee, employer, employeeRate, employerRate: Double }
 
     /// Base = basic + housing (cap 45,000; floor 1,500 for Saudis). Legacy: 9% pension + 0.75% SANED each, employer +2% hazards.
-    /// New system (law M/273): pension share rises 0.5% every July (9.5% in 2026). Non-Saudi: employer 2% hazards only.
-    static func gosi(basic: Double, housing: Double, saudi: Bool, system: GosiSystem = .legacy, newPension: Double = 9.5) -> Gosi {
+    /// New system (law M/273): pension share rises 0.5% every July on GOSI's published schedule. Non-Saudi: employer 2% hazards only.
+    static func gosi(basic: Double, housing: Double, saudi: Bool, system: GosiSystem = .legacy, newPension: Double = SaudiRules.newPensionRate()) -> Gosi {
         var base = min(basic + housing, 45000)
         if saudi { base = max(base, 1500) } else { return Gosi(base: base, employee: 0, employer: base * 0.02, employeeRate: 0, employerRate: 2) }
         let pension = system == .legacy ? 9.0 : newPension

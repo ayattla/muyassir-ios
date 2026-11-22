@@ -66,6 +66,11 @@ enum Tools {
         Tool(id: "salary", cats: ["saudi"], title: "حاسبة الراتب", sub: "الإجمالي وخصم التأمينات والصافي", icon: "banknote", keys: "راتب تأمينات gosi"),
         Tool(id: "eos", cats: ["saudi"], title: "مكافأة نهاية الخدمة", sub: "وفق المادتين 84 و85", icon: "briefcase", keys: "نهاية خدمة مكافأة"),
         Tool(id: "leave", cats: ["saudi"], title: "حاسبة الإجازات", sub: "الرصيد المستحق وقيمته", icon: "beach.umbrella", keys: "اجازة سنوية رصيد"),
+        Tool(id: "service_len", cats: ["saudi"], title: "مدة الخدمة", sub: "من تاريخ المباشرة إلى نهاية العلاقة", icon: "person.badge.clock", keys: "مده خدمه سنوات عمل"),
+        Tool(id: "notice", cats: ["saudi"], title: "التعويض عن مهلة الإشعار", sub: "المادتان 75 و76 من نظام العمل", icon: "bell.badge", keys: "اشعار انذار مهله تعويض انهاء"),
+        Tool(id: "settlement", cats: ["saudi"], title: "التسوية النهائية", sub: "المكافأة والإجازة والتعويضات عند انتهاء العقد", icon: "doc.text.magnifyingglass", keys: "تسويه نهائيه مستحقات انهاء فصل استقاله"),
+        Tool(id: "entitlements", cats: ["saudi"], title: "المستحقات الوظيفية", sub: "أجر الأيام والعمل الإضافي وبدل الإجازة", icon: "banknote", keys: "مستحقات رواتب متاخره اضافي"),
+        Tool(id: "wage_deduct", cats: ["saudi"], title: "الاستقطاع من الأجر", sub: "الحد النظامي للخصم من الراتب", icon: "minus.circle", keys: "خصم استقطاع سلفه جزاء راتب"),
         Tool(id: "finance", cats: ["saudi", "calc"], title: "التمويل والأقساط", sub: "ثابت أو متناقص مع النسبة الفعلية", icon: "creditcard", keys: "تمويل قسط قرض"),
         Tool(id: "discount", cats: ["saudi", "calc"], title: "حاسبة الخصومات", sub: "خصم واحد أو خصومات متتالية", icon: "tag", keys: "خصم تخفيض"),
         Tool(id: "hijri", cats: ["saudi", "calc"], title: "التاريخ الهجري والميلادي", sub: "تقويم أم القرى الرسمي", icon: "calendar", keys: "هجري ميلادي تحويل تاريخ"),
@@ -157,7 +162,7 @@ enum Tools {
     static let byRole: [String: [String]] = [
         "student": ["gpa", "flashcards", "study_timer", "exams", "ocr", "scan"],
         "teacher": ["quiz_maker", "worksheet", "exam_doc", "grades", "certificate", "quiz_gen"],
-        "employee": ["salary", "overtime", "eos", "letter", "sign_pdf", "pdf_compress"],
+        "employee": ["salary", "settlement", "eos", "overtime", "leave", "letter"],
         "business": ["invoice", "quote", "vat", "sign_pdf", "expenses", "scan"],
     ]
     static let roles: [(String, String)] = [("student", "طالب"), ("teacher", "معلم"), ("employee", "موظف"), ("business", "صاحب منشأة")]

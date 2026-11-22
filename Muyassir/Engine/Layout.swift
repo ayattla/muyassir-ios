@@ -119,8 +119,8 @@ enum ExamParser {
 
     private static let digitMap: [Character: Character] = ["٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9"]
     private static func latin(_ s: String) -> String { String(s.map { digitMap[$0] ?? $0 }) }
-    private static let qStart = try! NSRegularExpression(pattern: "^\\s*(?:س\\s*)?\\(?([0-9]{1,3})\\s*[).:\\-ـ/]\\s*(.+)$")
-    private static let choice = try! NSRegularExpression(pattern: "^\\s*\\(?([أابجدهـabcdABCD])\\s*[).:\\-ـ]\\s*(.+)$")
+    private static let qStart = try! NSRegularExpression(pattern: "^\\s*(?:س\\s*)?[(\\[]?([0-9]{1,3})\\s*[)(.:\\-ـ/\\]]\\s*(.+)$")
+    private static let choice = try! NSRegularExpression(pattern: "^\\s*[(\\[]?([أابجدهـabcdABCD])\\s*[)(.:\\-ـ\\]]\\s*(.+)$")
     private static let inline = try! NSRegularExpression(pattern: "\\(?([أبجد])\\s*[).\\-]\\s*([^()]+?)(?=\\s*\\(?[أبجد]\\s*[).\\-]|$)")
 
     private static func groups(_ re: NSRegularExpression, _ s: String) -> [String]? {

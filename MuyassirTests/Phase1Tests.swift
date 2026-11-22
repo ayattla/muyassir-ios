@@ -30,7 +30,7 @@ final class Phase1Tests: XCTestCase {
         XCTAssertEqual(Recipes.builtIn.count, 6)
         XCTAssertTrue(Recipes.shared.forKinds(["image"]).contains { $0.id == "doc" })
         XCTAssertEqual(Assistant.recipeFor(["img_pdf", "pdf_compress"]), "doc")
-        XCTAssertEqual(Tools.all.count, 87)
+        XCTAssertEqual(Tools.all.count, 92)
     }
     func testRecipeRunsOnRealImages() throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("rt-\(UUID())"); try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
