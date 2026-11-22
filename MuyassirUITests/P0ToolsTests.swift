@@ -185,7 +185,7 @@ final class P0ToolsTests: XCTestCase {
         launch("quiz_maker"); type("عنوان الاختبار", "اختبار آلي من CI")
         tap("إضافة سؤال"); type("نص السؤال", "كم عدد أيام الأسبوع؟"); type("الخيار أ", "سبعة"); type("الخيار ب", "خمسة")
         tap("publishOnline")
-        let ok = app.alerts.buttons["موافق، انشر"]; if ok.waitForExistence(timeout: 5) { ok.tap() }
+        let ok = app.alerts.buttons["موافق، انشر"].firstMatch; if ok.waitForExistence(timeout: 5) { ok.tap() }
         let urlText = app.staticTexts["onlineUrl"]
         XCTAssertTrue(urlText.waitForExistence(timeout: 30), "publish did not finish: \(app.staticTexts["onlineError"].exists ? app.staticTexts["onlineError"].label : "")")
         let url = urlText.label; XCTAssertTrue(url.contains("ayattla.com/muyassir/q/"))
@@ -198,8 +198,8 @@ final class P0ToolsTests: XCTestCase {
         let page = try fetch(r); XCTAssertTrue(page.0.contains("1 من 1"), "student page did not grade the answer")
         tap("results-\(code)"); waitText("طالب الاختبار", 20); waitText("عدد المتقدمين")
         // Delete everything from the server through the app, then prove the link is gone.
-        let all = app.buttons["حذف كل اختباراتي ونتائجها من الخادم"]; reveal(all); all.tap()
-        let confirm = app.buttons["حذف نهائي"]; XCTAssertTrue(confirm.waitForExistence(timeout: 5)); confirm.tap()
+        let all = app.buttons["حذف كل اختباراتي ونتائجها من الخادم"].firstMatch; reveal(all); all.tap()
+        let confirm = app.buttons["حذف نهائي"].firstMatch; XCTAssertTrue(confirm.waitForExistence(timeout: 5)); confirm.tap()
         sleep(4)
         XCTAssertEqual(try fetch(URLRequest(url: URL(string: url)!)).1, 404, "quiz still on the server after deletion")
     }
