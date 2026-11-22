@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Search tab: instant results by name, purpose or synonym (Arabic and English), grouped by section, with history.
 struct SearchView: View {
@@ -65,6 +66,7 @@ struct FlowLayout: Layout {
 struct AssistantView: View {
     @State private var q = ""
     @State private var plan: Assistant.Plan?
+    @State private var picking: String?
     var body: some View {
         ScrollView {
             VStack(spacing: Space.m) {
@@ -78,6 +80,9 @@ struct AssistantView: View {
                         NavigationLink(value: RecipeRoute(id: r.id)) { RecipeCard(recipe: r) }.buttonStyle(PressStyle()).accessibilityIdentifier("assistantRecipe")
                     }
                     ForEach(Array(plan.steps.enumerated()), id: \.element.id) { i, s in
+                        if i == 0 && Plus.isMetered(s.tool.id) {
+                            SecondaryButton(title: "اختر الملفات وافتح «\(s.tool.title)»", icon: "folder.badge.plus") { picking = s.tool.id }.accessibilityIdentifier("assistPick")
+                        }
                         NavigationLink(value: s.tool) {
                             HStack(spacing: Space.m) {
                                 Text("\(i + 1)").font(.plex(.subheadline, .bold)).foregroundStyle(Brand.onAccent).frame(width: 32, height: 32).background(Brand.accent, in: Circle())
@@ -86,15 +91,21 @@ struct AssistantView: View {
                                 Text("افتح").font(.plex(.caption, .semibold)).foregroundStyle(Brand.accent)
                             }.padding(Space.l).card()
                         }.buttonStyle(PressStyle()).transition(.opacity.combined(with: .move(edge: .bottom)))
+                        .simultaneousGesture(TapGesture().onEnded { Assistant.prefill(q) }).accessibilityIdentifier("assistOpen-\(s.tool.id)")
                     }
                 } else {
                     SectionHead(title: "أمثلة")
-                    FlowChips(items: ["حوّل صوري إلى PDF وصغّر حجمه", "أريد نص هذه الصورة", "صورة شخصية بمقاس الجواز", "ادمج ملفات PDF واحمها بكلمة مرور", "كم صافي راتبي؟", "صوّر أوراقًا ووقّعها"]) { q = $0; plan = Assistant.plan($0) }
-                    Hint(text: "المساعد يعمل على جهازك دون إنترنت، ويقترح فقط: أنت من يفتح الأداة ويختار ملفاتك وينفّذ.")
+                    FlowChips(items: ["حوّل صوري إلى PDF وصغّر حجمه", "أريد تحويل عشر صور إلى Word", "أنشئ ورقة عمل للصف السادس", "أريد حساب مستحقات نهاية الخدمة", "اجمع هذه المستندات في PDF", "استخرج الجداول من هذا التقرير"]) { q = $0; plan = Assistant.plan($0) }
+                    Hint(text: "المساعد يعمل على جهازك دون إنترنت: يفهم طلبك، ويفتح الأداة الحقيقية بملفاتك وبما ذكرته (الصف، المادة)، ثم تضغط تنفيذ وترى النتيجة. لا يرسل شيئًا خارج جهازك.")
                 }
             }.padding(Space.l).frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
         .background(Brand.bg).navigationTitle("المساعد")
+        .fileImporter(isPresented: Binding(get: { picking != nil }, set: { if !$0 { picking = nil } }), allowedContentTypes: [.item], allowsMultipleSelection: true) { r in
+            guard let id = picking, case .success(let urls) = r, !urls.isEmpty else { picking = nil; return }
+            let local = urls.compactMap { try? FilesX.toTemp($0) }
+            Incoming.shared.handTo(local); Assistant.prefill(q); picking = nil; DeepLink.shared.target = "tool/\(id)"
+        }
     }
 }
 
@@ -106,11 +117,12 @@ struct ActivityView: View {
     @State private var preview: URL?
     @State private var share: URL?
     @State private var fileQuery = ""
+    @State private var projectsVersion = 0
     @ObservedObject private var plus = Plus.shared
     var body: some View {
         List {
             Section {
-                Seg(options: ["العمليات", "الملفات", "المفضلة"], selection: $tab)
+                Seg(options: ["العمليات", "الملفات", "مشاريعي", "المفضلة"], selection: $tab)
                 Button { plus.paywall = .menu } label: {
                     Label(plus.active ? "مُيسّر بلس مفعّل" : plus.live ? "اليوم: \(plus.usedToday) من \(Plus.freeOpsPerDay) عمليات مجانية • مُيسّر بلس" : "مُيسّر بلس قريبًا", systemImage: "crown.fill")
                         .font(.plex(.caption, .semibold)).frame(maxWidth: .infinity)
@@ -132,7 +144,15 @@ struct ActivityView: View {
                             Button { share = u } label: { Label("مشاركة", systemImage: "square.and.arrow.up") }.tint(Brand.accent)
                             if !FilesX.isKept(u) { Button { FilesX.keep(u); files = FilesX.outputs() } label: { Label("إبقاء", systemImage: "pin") }.tint(Brand.mint) }
                         }
+                        .contextMenu {
+                            Menu("أضف إلى مشروع") {
+                                ForEach(Projects.all().indices, id: \.self) { i in let p = Projects.all()[i]; Button(p.s("name")) { Projects.add(p.d("id"), u); files = FilesX.outputs(); projectsVersion += 1 } }
+                                Button("مشروع جديد باسم الملف") { let p = Projects.create(FilesX.base(u)); Projects.add(p.d("id"), u); files = FilesX.outputs(); projectsVersion += 1 }
+                            }
+                        }
                 }
+            case 2:
+                ProjectsSection(version: $projectsVersion)
             default:
                 let favs = store.favorites.compactMap { Tools.byId[$0] }
                 if favs.isEmpty { ContentUnavailableView("لا توجد مفضلة", systemImage: "star", description: Text("اضغط النجمة أعلى أي أداة لتضيفها هنا وفي الرئيسية.")) }

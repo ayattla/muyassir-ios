@@ -17,7 +17,7 @@ struct ToolScreen<Content: View>: View {
                 }.frame(maxWidth: .infinity).padding(.bottom, Space.xs)
                 VStack(alignment: .leading, spacing: Space.m) { content }
             }
-            .padding(Space.l).frame(maxWidth: 720).frame(maxWidth: .infinity)
+            .padding(Space.l).padding(.bottom, Space.xxl).frame(maxWidth: 720).frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
         .background(Brand.bg)

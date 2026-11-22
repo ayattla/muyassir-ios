@@ -44,3 +44,12 @@ final class StudioTests: XCTestCase {
         XCTAssertTrue(Strategies.all.count >= 13)
     }
 }
+
+final class AssistantTests: XCTestCase {
+    func testBriefExamples() {
+        let cases = ["أريد تحويل عشر صور إلى Word": "img_word", "أنشئ اختباراً من هذا الملف": "quiz_gen", "أريد حساب مستحقات نهاية الخدمة": "settlement",
+                     "اجمع هذه المستندات في PDF": "pdf_merge", "استخرج الجداول من هذا التقرير": "pdf_excel", "أنشئ ورقة عمل للصف السادس": "worksheet"]
+        for (q, id) in cases { XCTAssertEqual(Assistant.plan(q).steps.first?.tool.id, id, q) }
+        XCTAssertEqual(Assistant.details("أنشئ ورقة عمل للصف السادس")["grade"], "الصف السادس")
+    }
+}

@@ -93,6 +93,7 @@ struct QuizMaker: View {
             let m = store.obj("quiz_meta")
             if !m.s("title").isEmpty { title = m.s("title"); school = m.s("school"); stage = m["stage"] as? Int ?? 0; grade = m.s("grade"); subject = m.s("subject"); lesson = m.s("lesson"); level = m["level"] as? Int ?? 1; minutes = m.s("minutes") }
             let d = store.list("quiz_draft"); if !d.isEmpty { qs += d.map(Q.init); store.saveList("quiz_draft", []) }
+            let pre = Assistant.takePrefill(); if !pre.s("grade").isEmpty { grade = pre.s("grade") }; if !pre.s("subject").isEmpty { subject = pre.s("subject") }
         }
     }
 
@@ -261,6 +262,7 @@ struct WorksheetTool: View {
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext") { build(tpl) }.accessibilityIdentifier("action")
             if !result.isEmpty { ResultFiles(files: result) }
         }
+        .onAppear { let p = Assistant.takePrefill(); let sg = [p.s("subject"), p.s("grade")].filter { !$0.isEmpty }.joined(separator: " — "); if !sg.isEmpty { subject = sg } }
     }
     @MainActor private func build(_ tpl: Strategies.T) {
         let b = Templates.apply(DocBuilder()); var doc: [Office.Para] = []

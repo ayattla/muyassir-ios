@@ -9,14 +9,14 @@ enum Assistant {
     private static let rules: [Rule] = [
         Rule(tool: "img_pdf", why: "اجمع الصور في ملف PDF واحد", all: [["صور", "صوره", "image", "photo"], ["pdf"]]),
         Rule(tool: "pdf_img", why: "حوّل صفحات PDF إلى صور", all: [["pdf"], ["الى صور", "الى صوره", "to image", "to jpg"]]),
-        Rule(tool: "pdf_merge", why: "ادمج ملفات PDF بالترتيب الذي تريده", all: [["دمج", "اجمع", "جمع", "ضم", "merge"], ["pdf", "ملفات", "مستندات"]], none: ["صور"]),
+        Rule(tool: "pdf_merge", why: "ادمج ملفات PDF بالترتيب الذي تريده", all: [["دمج", "ادمج", "اجمع", "جمع", "ضم", "merge"], ["pdf", "ملفات", "مستندات"]], none: ["صور"]),
         Rule(tool: "pdf_compress", why: "صغّر حجم ملف PDF", all: [["ضغط", "تصغير", "تقليل", "صغر", "حجم", "compress"], ["pdf", "ملف", "مستند"]]),
         Rule(tool: "img_compress", why: "صغّر حجم الصور مع الحفاظ على الوضوح", all: [["ضغط", "تصغير", "تقليل", "حجم", "compress"], ["صور", "صوره", "image", "photo"]], none: ["pdf"]),
         Rule(tool: "pdf_word", why: "حوّل PDF إلى ملف Word قابل للتعديل", all: [["pdf"], ["ورد", "word", "تعديل"]]),
         Rule(tool: "word_pdf", why: "حوّل ملف Word إلى PDF", all: [["ورد", "word", "docx"], ["pdf"]], none: ["pdf الى ورد", "pdf الى word"]),
         Rule(tool: "pdf_excel", why: "استخرج الجداول من PDF إلى Excel", all: [["pdf"], ["اكسل", "excel"]]),
         Rule(tool: "ocr", why: "استخرج النص من الصورة أو الملف الممسوح", all: [["نص", "كلام", "كتابه", "ocr", "text", "انسخ"], ["صور", "صوره", "ممسوح", "مصور", "image", "pdf", "استخراج", "استخرج"]]),
-        Rule(tool: "scan", why: "صوّر الأوراق بالكاميرا مع قص وتحسين تلقائي", all: [["مسح", "اسكان", "scan", "اصور", "كاميرا", "ورقه", "اوراق"]]),
+        Rule(tool: "scan", why: "صوّر الأوراق بالكاميرا مع قص وتحسين تلقائي", all: [["مسح", "اسكان", "scan", "اصور", "كاميرا", "ورقه", "اوراق"]], none: ["ورقه عمل", "اوراق عمل"]),
         Rule(tool: "img_bg", why: "أزل خلفية الصورة", all: [["خلفيه", "background"]]),
         Rule(tool: "id_photo", why: "جهّز صورة بمقاس الجواز أو الهوية", all: [["جواز", "هويه", "شخصيه", "passport", "تاشيره"]]),
         Rule(tool: "img_resize", why: "غيّر أبعاد الصورة", all: [["ابعاد", "مقاس", "resize", "تكبير"]]),
@@ -33,6 +33,21 @@ enum Assistant {
         Rule(tool: "qr_read", why: "اقرأ رمز QR", all: [["qr", "باركود"], ["اقرا", "قراءه", "مسح", "scan", "read"]]),
         Rule(tool: "tts", why: "حوّل النص إلى صوت", all: [["صوت", "نطق", "tts"]]),
         Rule(tool: "zip", why: "اجمع الملفات في أرشيف ZIP", all: [["zip", "ارشيف", "مضغوط"]]),
+        Rule(tool: "settlement", why: "احسب التسوية النهائية: المكافأة والإجازة والتعويضات", all: [["مستحقات", "تسويه", "مخالصه", "حقوقي"]]),
+        Rule(tool: "notice", why: "احسب التعويض عن مهلة الإشعار", all: [["مهله الاشعار", "اشعار", "انذار"], ["تعويض", "احسب", "كم", "مهله"]]),
+        Rule(tool: "service_len", why: "احسب مدة خدمتك", all: [["مده الخدمه", "مده خدمتي", "سنوات الخدمه"]]),
+        Rule(tool: "wage_deduct", why: "اعرف الحد النظامي للخصم من الراتب", all: [["خصم", "استقطاع"], ["راتب", "اجر", "سلفه", "جزاء"]]),
+        Rule(tool: "img_word", why: "حوّل الصور إلى ملف Word قابل للتعديل", all: [["صور", "صوره", "مصور", "image"], ["ورد", "word"]], none: ["pdf الى"]),
+        Rule(tool: "pdf_excel", why: "استخرج الجداول إلى Excel", all: [["جداول", "جدول"], ["استخرج", "استخراج", "اكسل", "excel", "من"]]),
+        Rule(tool: "exam_doc", why: "حوّل الاختبار المصوّر إلى مستند قابل للتعديل", all: [["اختبار", "امتحان", "اسئله"], ["مصور", "صوره", "صور", "ورقه"]]),
+        Rule(tool: "quiz_gen", why: "ولّد أسئلة مراجعة من ملفك أو ملاحظاتك", all: [["اختبار", "اسئله", "امتحان"], ["من هذا الملف", "من الملف", "من ملاحظاتي", "من الدرس", "من النص"]]),
+        Rule(tool: "quiz_maker", why: "أنشئ اختبارًا وصدّره PDF وWord", all: [["اختبار", "امتحان", "اسئله"], ["انشئ", "انشاء", "اعمل", "صمم", "جهز", "اكتب"]], none: ["مصور", "من هذا الملف", "من الملف", "من ملاحظاتي"]),
+        Rule(tool: "worksheet", why: "أنشئ ورقة عمل بقالب الاستراتيجية التي تريد", all: [["ورقه عمل", "اوراق عمل", "نشاط", "بطاقه خروج"]]),
+        Rule(tool: "summarize", why: "لخّص النص أو الملف", all: [["لخص", "تلخيص", "ملخص"]]),
+        Rule(tool: "translate", why: "ترجم بين العربية والإنجليزية على جهازك", all: [["ترجم", "ترجمه", "translate"]]),
+        Rule(tool: "grades", why: "ارصد درجات الطلاب وصدّرها", all: [["درجات", "رصد", "كشف"], ["طلاب", "طالب", "الصف", "رصد"]]),
+        Rule(tool: "certificate", why: "أنشئ شهادات شكر أو تفوق", all: [["شهاده", "شهادات"]]),
+        Rule(tool: "pdf_pages", why: "أضف ترقيم الصفحات أو ترويسة لملف PDF", all: [["ترقيم", "ترويسه", "تذييل"]]),
         Rule(tool: "currency", why: "حوّل بين العملات", all: [["عمله", "عملات", "دولار", "صرف", "currency"]]),
     ]
 
@@ -54,6 +69,25 @@ enum Assistant {
         }
         return Plan(steps: steps, note: steps.count > 1 ? "نفّذ الخطوات بالترتيب. افتح كل أداة واختر ملفاتك فيها." : nil)
     }
+
+    static let subjects = ["رياضيات", "علوم", "لغتي", "لغه عربيه", "انجليزي", "اجتماعيات", "فيزياء", "كيمياء", "احياء", "دراسات اسلاميه", "توحيد", "فقه", "حديث", "تفسير", "قران", "حاسب", "مهارات رقميه", "تربيه فنيه"]
+    static let gradeWords = ["الاول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"]
+
+    /// Details in the request (grade, subject, count) that the opened tool fills in.
+    static func details(_ request: String) -> [String: String] {
+        let t = Tools.norm(request); var o: [String: String] = [:]
+        if let re = try? NSRegularExpression(pattern: "(?:لل?صف|صف)\\s+(\\S+)(?:\\s+(متوسط|ثانوي|ابتدائي))?"),
+           let m = re.firstMatch(in: t, range: NSRange(t.startIndex..., in: t)), let r1 = Range(m.range(at: 1), in: t) {
+            let w = String(t[r1])
+            if gradeWords.contains(w) || w.contains(where: \.isNumber) {
+                var g = "الصف \(w)"; if let r2 = Range(m.range(at: 2), in: t) { g += " " + t[r2] }; o["grade"] = g
+            }
+        }
+        if let s = subjects.first(where: { t.contains(Tools.norm($0)) }) { o["subject"] = s }
+        return o
+    }
+    @MainActor static func prefill(_ request: String) { Store.shared.saveObj("assist_prefill", details(request)) }
+    @MainActor static func takePrefill() -> Rec { let o = Store.shared.obj("assist_prefill"); Store.shared.saveObj("assist_prefill", [:]); return o }
 
     /// A built-in recipe that does the whole plan in one tap, if there is one.
     static func recipeFor(_ ids: [String]) -> String? {

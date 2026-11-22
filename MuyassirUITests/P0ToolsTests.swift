@@ -14,8 +14,14 @@ final class P0ToolsTests: XCTestCase {
         app.launch()
     }
     func reveal(_ e: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        dismissKeyboard()
         var n = 0
         while !(e.exists && e.isHittable) && n < 14 { app.swipeUp(velocity: .fast); n += 1 }
+        // A fast swipe can overshoot or leave the element under the bottom bar; settle slowly both ways.
+        n = 0
+        while !(e.exists && e.isHittable) && n < 6 { app.swipeDown(velocity: .slow); n += 1 }
+        n = 0
+        while !(e.exists && e.isHittable) && n < 10 { app.swipeUp(velocity: .slow); n += 1 }
         XCTAssertTrue(e.exists && e.isHittable, "not reachable: \(e)", file: file, line: line)
     }
     func waitText(_ s: String, _ t: TimeInterval = 10, file: StaticString = #filePath, line: UInt = #line) {
@@ -164,4 +170,13 @@ final class P0ToolsTests: XCTestCase {
     }
     func testFinalSettlement() { launch("settlement"); type("آخر أجر شهري (الأساسي + البدلات الثابتة)", "10000"); waitText("إجمالي التسوية التقديرية"); waitText("تفاصيل الحساب") }
     func testWageDeduction() { launch("wage_deduct"); type("الأجر المستحق هذا الشهر", "8000"); type("المبلغ المطلوب استقطاعه (سلفة، جزاء…)", "6000"); waitText("4,000.00") }
+
+    // MARK: P3 assistant and projects
+    func testAssistantOpensWorksheetWithGrade() {
+        app = XCUIApplication(); app.launch()
+        app.tabBars.buttons["المساعد"].tap(); type("طلبك", "أنشئ ورقة عمل للصف السادس")
+        app.buttons["اقترح الأدوات"].firstMatch.tap()
+        let open = app.buttons["assistOpen-worksheet"]; XCTAssertTrue(open.waitForExistence(timeout: 5)); open.tap()
+        waitText("الصف السادس")
+    }
 }
