@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build-test:
-    runs-on: macos-15-intel  # Apple Silicon queue kept timing out (no runner acquired), Nov 2026
+    runs-on: macos-latest
     timeout-minutes: 200
     steps:
       - uses: actions/checkout@v7

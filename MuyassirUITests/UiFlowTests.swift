@@ -16,6 +16,9 @@ final class UiFlowTests: XCTestCase {
     func reveal(_ e: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
         var n = 0
         while !(e.exists && e.isHittable) && n < 14 { app.swipeUp(velocity: .fast); n += 1 }
+        // A fast swipe can overshoot or leave the element under the tab bar; settle slowly both ways.
+        n = 0; while !(e.exists && e.isHittable) && n < 6 { app.swipeDown(velocity: .slow); n += 1 }
+        n = 0; while !(e.exists && e.isHittable) && n < 10 { app.swipeUp(velocity: .slow); n += 1 }
         XCTAssertTrue(e.exists && e.isHittable, "not reachable: \(e)", file: file, line: line)
     }
     func waitText(_ s: String, _ t: TimeInterval = 10, file: StaticString = #filePath, line: UInt = #line) {
@@ -113,7 +116,8 @@ final class UiFlowTests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["todaySetup"].waitForExistence(timeout: 10))
         waitText("نرتّب لك يومك")
         app.buttons["role-teacher"].tap(); app.buttons["role-employee"].tap()
-        let start = app.buttons["todayStart"]; reveal(start); start.tap()
+        let start = app.buttons.matching(NSPredicate(format: "identifier == 'todayStart' OR label == 'ابدأ يومي'")).firstMatch
+        reveal(start); start.tap()
         XCTAssertFalse(app.descendants(matching: .any)["todaySetup"].waitForExistence(timeout: 2))
         let prayer = app.descendants(matching: .any)["prayerCard"]
         var n = 0; while !prayer.exists && n < 6 { app.swipeDown(); n += 1 }

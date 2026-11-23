@@ -38,6 +38,9 @@ final class P0ToolsTests: XCTestCase {
         let f = field(label)
         XCTAssertTrue(f.waitForExistence(timeout: 5), "field missing: \(label)", file: file, line: line)
         reveal(f, file: file, line: line); f.tap()
+        // On a slow simulator the first tap can land before the field takes focus.
+        var tries = 0
+        while !((f.value(forKey: "hasKeyboardFocus") as? Bool) ?? true) && tries < 3 { sleep(1); f.tap(); tries += 1 }
         if let cur = f.value as? String, !cur.isEmpty, cur != label, cur != "0" { f.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: cur.count)) }
         f.typeText(v); dismissKeyboard()
     }
