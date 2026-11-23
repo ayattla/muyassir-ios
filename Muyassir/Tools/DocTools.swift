@@ -257,9 +257,11 @@ struct SignPdfTool: View {
                     Stepper("الصفحة \(page) من \(pages)", value: $page, in: 1...max(pages, 1))
                     if let preview {
                         Image(uiImage: preview).resizable().scaledToFit().overlay(GeometryReader { g in
+                            let gw: CGFloat = g.size.width, gh: CGFloat = g.size.height
+                            let bw: CGFloat = gw * CGFloat(w), bh: CGFloat = bw * ratio
+                            let px: CGFloat = gw * CGFloat(x) + bw / 2, py: CGFloat = gh * CGFloat(y) + bh / 2
                             Rectangle().stroke(Brand.lapis, lineWidth: 2).background(Brand.lapis.opacity(0.12) as Color)
-                                .frame(width: g.size.width * w, height: g.size.width * w * ratio)
-                                .position(x: g.size.width * (x + w / 2), y: g.size.height * y + g.size.width * w * ratio / 2)
+                                .frame(width: bw, height: bh).position(x: px, y: py)
                         }).environment(\.layoutDirection, .leftToRight)
                     }
                     VStack(alignment: .leading) { Text("الموضع الأفقي").font(.plex(.caption)); Slider(value: $x, in: 0...0.95).environment(\.layoutDirection, .leftToRight)
