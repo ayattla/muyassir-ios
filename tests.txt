@@ -1,0 +1,162 @@
+Test Case '-[MuyassirTests.AssistantTests testBriefExamples]' passed (0.032 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.032 (0.034) seconds
+Test Case '-[MuyassirTests.CalcTests testDiscountAndGpa]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.CalcTests testEndOfService]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.CalcTests testExpressions]' passed (0.006 seconds).
+Test Case '-[MuyassirTests.CalcTests testGosi]' passed (0.003 seconds).
+Test Case '-[MuyassirTests.CalcTests testHijri]' passed (0.005 seconds).
+Test Case '-[MuyassirTests.CalcTests testLeave]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.CalcTests testLoans]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.CalcTests testTextTools]' passed (0.033 seconds).
+Test Case '-[MuyassirTests.CalcTests testUnits]' passed (0.002 seconds).
+Test Case '-[MuyassirTests.CalcTests testVat]' passed (0.003 seconds).
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.055 (0.626) seconds
+Test Case '-[MuyassirTests.CloudTests testMapsEveryAutoGradedType]' passed (0.004 seconds).
+Test Case '-[MuyassirTests.CloudTests testMapsOrderingAndClassification]' passed (0.003 seconds).
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.007 (1.403) seconds
+Test Case '-[MuyassirTests.FileEngineTests testImagesAndQr]' passed (9.072 seconds).
+Test Case '-[MuyassirTests.FileEngineTests testOfficeRoundTrip]' passed (0.016 seconds).
+Test Case '-[MuyassirTests.FileEngineTests testPdfOps]' passed (0.096 seconds).
+Test Case '-[MuyassirTests.FileEngineTests testZip]' passed (0.005 seconds).
+	 Executed 4 tests, with 0 failures (0 unexpected) in 9.189 (9.191) seconds
+Test Case '-[MuyassirTests.Phase1Tests testDateFinder]' passed (0.004 seconds).
+Test Case '-[MuyassirTests.Phase1Tests testDateSpan]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.Phase1Tests testElectricity]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.Phase1Tests testOvertimeArticle107]' passed (0.002 seconds).
+Test Case '-[MuyassirTests.Phase1Tests testRecipeRunsOnRealImages]' passed (1.623 seconds).
+Test Case '-[MuyassirTests.Phase1Tests testRecipes]' passed (0.002 seconds).
+Test Case '-[MuyassirTests.Phase1Tests testZakat]' passed (0.001 seconds).
+	 Executed 7 tests, with 0 failures (0 unexpected) in 1.635 (1.639) seconds
+Test Case '-[MuyassirTests.Phase23Tests testBackupRoundTrip]' passed (0.096 seconds).
+Test Case '-[MuyassirTests.Phase23Tests testQuizHasAnswerAmongOptions]' passed (0.009 seconds).
+Test Case '-[MuyassirTests.Phase23Tests testSummaryKeepsOrderAndShrinks]' passed (0.004 seconds).
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.110 (0.112) seconds
+Test Case '-[MuyassirTests.PlusTests testBeforeLaunchEverythingIsOpen]' passed (0.119 seconds).
+Test Case '-[MuyassirTests.PlusTests testEveryTemplateRendersAPdf]' passed (0.423 seconds).
+Test Case '-[MuyassirTests.PlusTests testFiveOperationsPerDay]' passed (0.182 seconds).
+Test Case '-[MuyassirTests.PlusTests testFreeLimits]' passed (0.117 seconds).
+Test Case '-[MuyassirTests.PlusTests testGatesAndFooter]' passed (0.079 seconds).
+Test Case '-[MuyassirTests.PlusTests testPlusLimits]' passed (0.076 seconds).
+Test Case '-[MuyassirTests.PlusTests testUnmeteredToolsAreAlwaysFree]' passed (0.009 seconds).
+	 Executed 7 tests, with 0 failures (0 unexpected) in 1.005 (1.008) seconds
+Test Case '-[MuyassirTests.SaudiRulesTests testArticle77]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.SaudiRulesTests testArticle80AndSources]' passed (0.005 seconds).
+Test Case '-[MuyassirTests.SaudiRulesTests testDeductionCap]' passed (0.003 seconds).
+Test Case '-[MuyassirTests.SaudiRulesTests testGosiSchedule]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.SaudiRulesTests testNotice]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.SaudiRulesTests testServiceSpan]' passed (0.001 seconds).
+Test Case '-[MuyassirTests.SaudiRulesTests testSettlementResignation]' passed (0.002 seconds).
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.016 (0.117) seconds
+Test Case '-[MuyassirTests.StudioTests testBankImportAndPairs]' passed (0.003 seconds).
+Test Case '-[MuyassirTests.StudioTests testExamParser]' passed (0.002 seconds).
+Test Case '-[MuyassirTests.StudioTests testHeadingParagraphAndTable]' passed (0.002 seconds).
+Test Case '-[MuyassirTests.StudioTests testUnsureWordsAndEditedText]' passed (0.001 seconds).
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.008 (0.011) seconds
+	 Executed 45 tests, with 0 failures (0 unexpected) in 12.056 (18.056) seconds
+	 Executed 45 tests, with 0 failures (0 unexpected) in 12.056 (18.153) seconds
+Test Case '-[MuyassirUITests.P0ToolsTests testAreaOfRectangle]' passed (98.373 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testAssistantOpensWorksheetWithGrade]' passed (39.676 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testAttendanceSession]' passed (23.714 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testBrokenExcelIsRejected]' passed (12.598 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testBrokenImageIsRejected]' passed (17.587 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testBrokenPdfIsRejected]' passed (17.250 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testBrokenWordIsRejected]' passed (22.197 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testBrokenZipIsRejected]' passed (28.206 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testBudgetRemaining]' passed (19.089 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testCertificateBulk]' passed (34.424 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testCertificateSingle]' passed (26.371 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testDateSpan]' passed (10.515 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testDocumentsSave]' passed (25.828 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testElectricityBill]' passed (20.447 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testEmergencyNumbers]' passed (11.612 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testExamsSave]' passed (22.746 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testExpensesTotal]' passed (36.911 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testFinalSettlement]' passed (21.153 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testFlashcardsReview]' passed (31.436 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testGovDirectory]' passed (9.009 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testGradesTotals]' passed (53.715 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testHomeworkSave]' passed (30.933 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testImagesToWordWithReview]' passed (20.861 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testLargePdfMergeAndCompress]' passed (26.295 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testLeaveBalance]' passed (20.912 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testLetterPdf]' passed (39.014 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testNoticeCompensation]' passed (29.921 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testOnlineQuizEndToEnd]' passed (107.822 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testOrderAndClassifyOnline]' passed (94.475 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testOvertimePay]' passed (32.932 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testPdfEditAddsText]' passed (34.954 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testPdfHeaderFooter]' passed (29.947 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testQrReadFromImage]' passed (11.439 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testQuizGenerator]' passed (28.971 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testQuizMakerPdf]' passed (66.235 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testQuizMakerWordExport]' passed (72.008 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testQuotePdf]' passed (70.339 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testRemindersSave]' passed (24.313 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testSignPdf]' passed (22.349 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testStudyTimerCounts]' passed (18.128 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testSummarizer]' passed (28.474 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testTextCompare]' passed (38.564 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testTextToPdf]' passed (37.413 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testTimetableCell]' passed (19.092 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testWageDeduction]' passed (24.635 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testWorksheetPdf]' passed (17.339 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testWorksheetTemplate]' passed (23.878 seconds).
+Test Case '-[MuyassirUITests.P0ToolsTests testZakatDue]' passed (31.059 seconds).
+	 Executed 48 tests, with 0 failures (0 unexpected) in 1585.157 (1585.208) seconds
+Test Case '-[MuyassirUITests.PlusFlowTests testBeforeLaunchPaywallSaysSoon]' passed (10.066 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testDailyLimitOpensPaywall]' passed (10.506 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testMoreThanFiveFilesNeedsPlus]' passed (13.374 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testPaywallShowsPlansTermsRestoreAndCloses]' passed (19.856 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testSchoolCodeIsCheckedOnTheServer]' passed (19.855 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testSchoolLicenceOpensPlusAndNamesTheSchool]' passed (9.628 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testSettingsPlusCardOpensPaywall]' passed (9.304 seconds).
+Test Case '-[MuyassirUITests.PlusFlowTests testTemplatesLockedForFree]' passed (17.881 seconds).
+	 Executed 8 tests, with 0 failures (0 unexpected) in 110.470 (110.477) seconds
+Test Case '-[MuyassirUITests.UiFlowTests testAssistantSuggestsStepsInOrder]' passed (30.393 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testCurrencyOfflinePeggedRate]' passed (11.040 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testDiscount]' passed (27.418 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testEndOfService]' passed (31.123 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testEveryCategoryShowsItsToolsAndEveryToolOpens]' passed (1084.667 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testExcelToPdf]' passed (17.134 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testFinance]' passed (19.275 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testIdPhoto]' passed (21.143 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImagesToPdf]' passed (9.596 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgBatch]' passed (10.924 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgCompress]' passed (9.713 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgConvert]' passed (10.567 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgCrop]' passed (9.938 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgEnhance]' passed (12.366 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgResize]' passed (11.131 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testImgRotate]' passed (10.950 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testNotesPersist]' passed (34.710 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testOcr]' passed (17.838 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfCompress]' passed (8.952 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfDelete]' passed (23.839 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfExtract]' passed (21.047 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfMerge]' passed (12.452 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfProtect]' passed (35.107 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfReorder]' passed (22.817 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfRotate]' passed (8.749 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfSplit]' passed (9.891 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfToExcel]' passed (8.340 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfToImages]' passed (9.302 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfToPpt]' passed (7.736 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfToWord]' passed (8.422 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPdfUnlock]' passed (18.979 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPercent]' passed (24.009 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testPptToPdf]' passed (9.990 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testQrMake]' passed (22.875 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testSalary]' passed (22.236 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testScientific]' passed (15.289 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testSearchFindsToolByPurpose]' passed (30.334 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testTabsAndDarkMode]' passed (26.286 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testUnits]' passed (17.198 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testUnsupportedFileShowsClearError]' passed (8.744 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testUnzip]' passed (9.287 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testVat]' passed (20.089 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testWordCount]' passed (19.863 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testWordToPdf]' passed (9.580 seconds).
+Test Case '-[MuyassirUITests.UiFlowTests testZip]' passed (9.518 seconds).
+	 Executed 46 tests, with 1 test skipped and 0 failures (0 unexpected) in 1820.989 (1821.049) seconds
+	 Executed 102 tests, with 1 test skipped and 0 failures (0 unexpected) in 3516.616 (3516.741) seconds
+	 Executed 102 tests, with 1 test skipped and 0 failures (0 unexpected) in 3516.616 (3516.745) seconds
