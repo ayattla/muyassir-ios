@@ -299,7 +299,7 @@ private struct AdhkarCard: View {
         let t = PrayerTimes.today(Cities.byId(daily.city), now)
         let m = KSA.minuteOfDay(now)
         let (label, path) = m >= t[0] && m < t[3] ? ("أذكار الصباح", "azkar-sabah") : m >= t[3] && m < t[5] + 120 ? ("أذكار المساء", "azkar-masaa") : ("أذكار النوم", "azkar-nawm")
-        Button { if let u = URL(string: "https://ayattla.com/tools/\(path)") { openURL(u) } } label: {
+        Button { if let u = URL(string: "https://ayattla.com/\(path)") { openURL(u) } } label: {
             VStack(spacing: 4) {
                 Text(label).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.dyn(0x0E7A57, 0x5FD3AE))
                 Text("حان وقت \(label)").font(.plex(.subheadline)).foregroundStyle(Brand.text1)
