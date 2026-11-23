@@ -160,7 +160,7 @@ struct ActivityView: View {
             }
         }
         .listRowSeparator(.hidden).scrollContentBackground(.hidden).background(Brand.bg)
-        .navigationTitle("نشاطي")
+        .navigationTitle("ملفاتي")
         .onAppear { files = FilesX.outputs() }
         .quickLookPreview($preview, in: files)
         .sheet(item: Binding(get: { share.map { EditURL(url: $0) } }, set: { share = $0?.url })) { ShareSheet(items: [$0.url]) }
@@ -169,6 +169,7 @@ struct ActivityView: View {
 
 /// Settings tab: appearance (light by default), greeting name, home sections, privacy and storage.
 struct SettingsView: View {
+    let open: (String) -> Void
     @EnvironmentObject var store: Store
     @AppStorage("theme") private var theme = "light"
     @AppStorage("name") private var name = ""
@@ -181,9 +182,23 @@ struct SettingsView: View {
     @State private var icon = UIApplication.shared.alternateIconName
     @Environment(\.openURL) private var openURL
     @AppStorage("role") private var role = ""
+    init(open: @escaping (String) -> Void = { _ in }) { self.open = open }
     private let sections = [("quick", "الأدوات السريعة"), ("recipes", "الوصفات"), ("cats", "الأقسام"), ("favs", "المفضلة"), ("most", "الأكثر استخدامًا"), ("rec", "مقترحة لك"), ("recent", "آخر العمليات"), ("files", "الملفات الناتجة")]
     var body: some View {
         Form {
+            Section {
+                Text("وثائقك وتفضيلاتك والإعدادات").font(.plex(.subheadline)).foregroundStyle(Brand.text2).frame(maxWidth: .infinity).listRowBackground(Color.clear)
+                HStack(spacing: Space.s) {
+                    ForEach([("documents", "وثائقي", "folder.badge.person.crop"), ("budget", "ميزانيتي", "chart.pie")], id: \.0) { id, label, icon in
+                        Button { open(id) } label: {
+                            VStack(spacing: 6) {
+                                Image(systemName: icon).font(.system(size: 20, weight: .semibold)).foregroundStyle(Brand.accent)
+                                Text(label).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text1)
+                            }.frame(maxWidth: .infinity, minHeight: 76).card(Radius.m)
+                        }.buttonStyle(PressStyle()).accessibilityIdentifier("me-\(id)")
+                    }
+                }.listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
+            }
             Section { PlusCard().listRowInsets(EdgeInsets()).listRowBackground(Color.clear) }
             Section("المظهر") {
                 Picker("الوضع", selection: $theme) { Text("فاتح").tag("light"); Text("داكن").tag("dark"); Text("حسب الجهاز").tag("system") }.pickerStyle(.segmented)
@@ -249,6 +264,6 @@ struct SettingsView: View {
             }
         }
         .font(.plex(.body))
-        .navigationTitle("الإعدادات")
+        .navigationTitle("أنا")
     }
 }

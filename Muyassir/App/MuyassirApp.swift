@@ -109,39 +109,49 @@ extension Font {
     }
 }
 
+/// The search screen, pushed from the search field on «الأدوات».
+struct SearchRoute: Hashable {}
+
 struct RootView: View {
     @ObservedObject private var incoming = Incoming.shared
     @ObservedObject private var deepLink = DeepLink.shared
-    @State private var tab = "home"
+    @State private var tab = "today"
     @State private var homePath = NavigationPath()
+    @State private var todayPath = NavigationPath()
+    @State private var mePath = NavigationPath()
     var body: some View {
         TabView(selection: $tab) {
+            NavigationStack(path: $todayPath) {
+                TodayView(open: { id in if let t = Tools.byId[id] { todayPath.append(t) } }, openTab: { tab = $0 })
+                    .navigationDestination(for: Tool.self) { ToolHost(tool: $0) }
+            }
+            .tabItem { Label("اليوم", systemImage: "sun.max") }.tag("today")
             NavigationStack(path: $homePath) {
-                HomeView(go: { tab = $0 }, path: $homePath)
+                HomeView(go: { t in if t == "search" { homePath.append(SearchRoute()) } else { tab = t } }, path: $homePath)
+                    .navigationDestination(for: SearchRoute.self) { _ in SearchView() }
                     .navigationDestination(for: Tool.self) { ToolHost(tool: $0) }
                     .navigationDestination(for: Category.self) { CategoryView(cat: $0) }
                     .navigationDestination(for: RecipeRoute.self) { RecipeRunView(id: $0.id) }
                     .navigationDestination(for: RecipesRoute.self) { _ in RecipesView() }
                     .navigationDestination(for: IncomingRoute.self) { _ in IncomingView() }
             }
-            .tabItem { Label("الرئيسية", systemImage: "house") }.tag("home")
-            NavigationStack { SearchView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) } }
-                .tabItem { Label("البحث", systemImage: "magnifyingglass") }.tag("search")
+            .tabItem { Label("الأدوات", systemImage: "square.grid.2x2") }.tag("home")
             NavigationStack { AssistantView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) }.navigationDestination(for: RecipeRoute.self) { RecipeRunView(id: $0.id) } }
                 .tabItem { Label("المساعد", systemImage: "sparkles") }.tag("assistant")
             NavigationStack { ActivityView().navigationDestination(for: Tool.self) { ToolHost(tool: $0) } }
-                .tabItem { Label("نشاطي", systemImage: "clock.arrow.circlepath") }.tag("activity")
-            NavigationStack { SettingsView() }
-                .tabItem { Label("الإعدادات", systemImage: "gearshape") }.tag("settings")
+                .tabItem { Label("ملفاتي", systemImage: "folder") }.tag("activity")
+            NavigationStack(path: $mePath) { SettingsView(open: { id in if let t = Tools.byId[id] { mePath.append(t) } }).navigationDestination(for: Tool.self) { ToolHost(tool: $0) } }
+                .tabItem { Label("أنا", systemImage: "person.crop.circle") }.tag("settings")
         }
         .onAppear {
             // UI tests and screenshots: `-tool <id>`, `-cat <id>` or `-tab <name>` open a screen directly.
             let a = CommandLine.arguments
             func arg(_ k: String) -> String? { a.firstIndex(of: k).flatMap { $0 + 1 < a.count ? a[$0 + 1] : nil } }
-            if let t = arg("-tool").flatMap({ Tools.byId[$0] }) { homePath.append(t) }
-            if let c = arg("-cat").flatMap({ id in Tools.categories.first { $0.id == id } }) { homePath.append(c) }
-            if let t = arg("-tab") { tab = t }
-            if arg("-screen") == "recipes" { homePath.append(RecipesRoute()) }
+            if arg("-daily") == "fresh" { UserDefaults.standard.removeObject(forKey: "role"); Daily.shared.resetForTest() }
+            if let t = arg("-tool").flatMap({ Tools.byId[$0] }) { tab = "home"; homePath.append(t) }
+            if let c = arg("-cat").flatMap({ id in Tools.categories.first { $0.id == id } }) { tab = "home"; homePath.append(c) }
+            if let t = arg("-tab") { tab = t == "search" ? "home" : t; if t == "search" { homePath.append(SearchRoute()) } }
+            if arg("-screen") == "recipes" { tab = "home"; homePath.append(RecipesRoute()) }
         }
         // «فتح في مُيسّر» from Files/Mail/WhatsApp, and muyassir://tool/<id> links from the widget and shortcuts.
         .onOpenURL { open($0) }

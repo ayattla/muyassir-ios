@@ -6,9 +6,10 @@ final class UiFlowTests: XCTestCase {
     var app: XCUIApplication!
     override func setUp() { continueAfterFailure = false; app = XCUIApplication() }
 
-    func launch(tool: String? = nil, inputs: String? = nil) {
+    func launch(tool: String? = nil, inputs: String? = nil, tab: String = "home", fresh: Bool = false) {
         app = XCUIApplication()
-        if let tool { app.launchArguments = ["-tool", tool] }
+        if let tool { app.launchArguments = ["-tool", tool] } else { app.launchArguments = ["-tab", tab] }
+        if fresh { app.launchArguments += ["-daily", "fresh"] }
         if let inputs { app.launchEnvironment["MYS_TEST_INPUTS"] = inputs }
         app.launch()
     }
@@ -81,7 +82,7 @@ final class UiFlowTests: XCTestCase {
 
     func testSearchFindsToolByPurpose() {
         launch()
-        app.tabBars.buttons["البحث"].tap()
+        app.buttons["home-search"].firstMatch.tap()
         let s = app.searchFields.firstMatch; XCTAssertTrue(s.waitForExistence(timeout: 5)); s.tap(); s.typeText("تصغير ملف")
         waitText("ضغط PDF"); waitText("ضغط الصور")
         let r = app.buttons["result-pdf_compress"]; XCTAssertTrue(r.waitForExistence(timeout: 5)); r.tap()
@@ -98,10 +99,31 @@ final class UiFlowTests: XCTestCase {
 
     func testTabsAndDarkMode() {
         launch()
-        app.tabBars.buttons["نشاطي"].tap(); XCTAssertTrue(app.navigationBars["نشاطي"].waitForExistence(timeout: 5))
-        app.tabBars.buttons["الإعدادات"].tap(); XCTAssertTrue(app.navigationBars["الإعدادات"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["ملفاتي"].tap(); XCTAssertTrue(app.navigationBars["ملفاتي"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["أنا"].tap(); XCTAssertTrue(app.navigationBars["أنا"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["me-documents"].exists && app.buttons["me-budget"].exists)
         app.buttons["داكن"].firstMatch.tap(); app.buttons["فاتح"].firstMatch.tap()
-        app.tabBars.buttons["الرئيسية"].tap(); XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["اليوم"].tap(); XCTAssertTrue(app.descendants(matching: .any)["today"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["الأدوات"].tap(); XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 5))
+    }
+
+    /// «يومي»: the first-run card, roles, prayer times, pay days and today's tasks.
+    func testTodaySetupPrayerDatesAndTasks() {
+        launch(tab: "today", fresh: true)
+        XCTAssertTrue(app.descendants(matching: .any)["todaySetup"].waitForExistence(timeout: 10))
+        waitText("نرتّب لك يومك")
+        app.buttons["role-teacher"].tap(); app.buttons["role-employee"].tap()
+        let start = app.buttons["todayStart"]; reveal(start); start.tap()
+        XCTAssertFalse(app.descendants(matching: .any)["todaySetup"].waitForExistence(timeout: 2))
+        let prayer = app.descendants(matching: .any)["prayerCard"]
+        var n = 0; while !prayer.exists && n < 6 { app.swipeDown(); n += 1 }
+        XCTAssertTrue(prayer.waitForExistence(timeout: 5)); waitText("الرياض"); waitText("المغرب")
+        XCTAssertTrue(app.descendants(matching: .any)["dates"].exists); waitText("راتب الدولة")
+        reveal(app.descendants(matching: .any)["roleCard-teacher"]); waitText("اختباراتك")
+        reveal(app.descendants(matching: .any)["roleCard-employee"])
+        let tasks = app.descendants(matching: .any)["todayTasks"]; XCTAssertTrue(tasks.exists)
+        let add = app.buttons.matching(NSPredicate(format: "label IN %@", ["أضف مهمة", "كل المهام"])).firstMatch; reveal(add); add.tap()
+        XCTAssertTrue(app.navigationBars["المهام"].waitForExistence(timeout: 5))
     }
 
     // MARK: calculators
