@@ -257,7 +257,7 @@ struct SignPdfTool: View {
                     Stepper("الصفحة \(page) من \(pages)", value: $page, in: 1...max(pages, 1))
                     if let preview {
                         Image(uiImage: preview).resizable().scaledToFit().overlay(GeometryReader { g in
-                            Rectangle().stroke(Brand.lapis, lineWidth: 2).background(Brand.lapis.opacity(0.12))
+                            Rectangle().stroke(Brand.lapis, lineWidth: 2).background(Brand.lapis.opacity(0.12) as Color)
                                 .frame(width: g.size.width * w, height: g.size.width * w * ratio)
                                 .position(x: g.size.width * (x + w / 2), y: g.size.height * y + g.size.width * w * ratio / 2)
                         }).environment(\.layoutDirection, .leftToRight)
