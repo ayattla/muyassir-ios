@@ -65,7 +65,9 @@ enum PrayerTimes {
 
     static func today(_ city: Cities.City, _ now: Date = Date()) -> [Int] {
         let (y, m, d) = KSA.ymd(now)
-        return minutes(y, m, d, lat: city.lat, lng: city.lng, ramadan: Hijri.toHijri(y, m, d)?.m == 9)
+        var u = Calendar(identifier: .islamicUmmAlQura); u.timeZone = TimeZone(identifier: "Asia/Riyadh")!
+        let ramadan = KSA.cal.date(from: DateComponents(year: y, month: m, day: d, hour: 12)).map { u.component(.month, from: $0) == 9 } ?? false
+        return minutes(y, m, d, lat: city.lat, lng: city.lng, ramadan: ramadan)
     }
 
     /// The next of the five prayers (sunrise skipped): index into `names` and minutes left. After Isha, tomorrow's Fajr.

@@ -45,4 +45,9 @@ struct QuickWidget: Widget {
 }
 
 @main
-struct MuyassirWidgets: WidgetBundle { var body: some Widget { QuickWidget() } }
+struct MuyassirWidgets: WidgetBundle {
+    var body: some Widget {
+        TodayWidget()
+        QuickWidget()
+    }
+}

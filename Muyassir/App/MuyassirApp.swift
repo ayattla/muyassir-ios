@@ -165,6 +165,7 @@ struct RootView: View {
     private func open(_ url: URL) {
         if url.isFileURL { Incoming.shared.receive(url); return }
         guard url.scheme == "muyassir" else { return }
+        if url.host() == "today" { tab = "today"; todayPath = NavigationPath(); return }
         tab = "home"; homePath = NavigationPath()
         switch url.host() {
         case "tool": if let t = Tools.byId[url.lastPathComponent] { homePath.append(t) }

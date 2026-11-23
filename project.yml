@@ -16,6 +16,11 @@ targets:
     platform: iOS
     sources:
       - path: Muyassir
+      - path: Shared
+    entitlements:
+      path: Muyassir/Resources/Muyassir.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.muyassir.app]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.muyassir.app
@@ -33,7 +38,11 @@ targets:
   MuyassirWidget:
     type: app-extension
     platform: iOS
-    sources: [MuyassirWidget]
+    sources: [MuyassirWidget, Shared]
+    entitlements:
+      path: MuyassirWidget/MuyassirWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.muyassir.app]
     info:
       path: MuyassirWidget/Info.plist
       properties:

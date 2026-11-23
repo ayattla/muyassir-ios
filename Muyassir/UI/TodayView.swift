@@ -41,6 +41,7 @@ struct TodayView: View {
         }
         .background(Brand.bg)
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear { daily.syncWidget() }
     }
 
     private func header(_ now: Date) -> some View {

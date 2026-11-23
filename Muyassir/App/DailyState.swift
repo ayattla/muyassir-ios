@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import WidgetKit
 
 /// What «يومي» shows. Everything stays on the device (Store obj "daily"), same keys as Android.
 final class Daily: ObservableObject {
@@ -31,6 +32,18 @@ final class Daily: ObservableObject {
     private func save() {
         Store.shared.saveObj("daily", ["done": setupDone, "roles": roles, "city": city, "prayer": showPrayer, "salary": salary, "salaryDay": salaryDay,
                                        "citizen": showCitizen, "pension": showPension, "docs": showDocs, "adhkar": showAdhkar])
+        syncWidget()
+    }
+
+    /// Hands the widget what it shows: city, the next pay day and the nearest document date (no names).
+    func syncWidget(_ now: Date = Date()) {
+        var w = WidgetSnapshot(); w.city = city; w.prayer = showPrayer
+        if let r = payRules().first { let (_, d) = PayDays.next(r, now); w.payTitle = r.title; w.payDate = d }
+        if showDocs {
+            let t = KSA.cal.startOfDay(for: now).timeIntervalSince1970
+            w.docDate = Store.shared.list("documents").map { $0.d("expiry") }.filter { $0 >= t && $0 <= t + 60 * 86_400 }.min().map { Date(timeIntervalSince1970: $0) }
+        }
+        w.write(); WidgetCenter.shared.reloadAllTimelines()
     }
 
     func toggleRole(_ r: String) {
