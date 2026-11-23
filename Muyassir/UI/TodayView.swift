@@ -21,7 +21,7 @@ struct TodayView: View {
                     if daily.showPrayer { PrayerCard(now: now) }
                     datesRow(now)
                     TasksCard(now: now, open: open, changed: { tick += 1 }).id(tick)
-                    ForEach(daily.roles, id: \.self) { RoleCard(role: $0, now: now, open: open) }
+                    ForEach(daily.roles, id: \.self) { TodayRoleCard(role: $0, now: now, open: open) }
                     if daily.showAdhkar && daily.showPrayer { AdhkarCard(now: now) }
                     Button { openTab("assistant") } label: {
                         HStack(spacing: Space.s) {
@@ -257,7 +257,7 @@ private struct TasksCard: View {
 
 // MARK: role and adhkar
 
-private struct RoleCard: View {
+private struct TodayRoleCard: View {
     let role: String
     let now: Date
     let open: (String) -> Void
