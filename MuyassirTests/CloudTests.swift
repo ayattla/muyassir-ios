@@ -25,7 +25,7 @@ final class CloudTests: XCTestCase {
     func testMapsOrderingAndClassification() {
         let qs: [Rec] = [
             ["type": 5, "q": "", "items": "واحد\nاثنان\nثلاثة"],
-            ["type": 6, "q": "صنّف", "pairs": "أسد = ثدييات\nصقر = طيور\nحوت = ثدييات"],
+            ["type": 6, "q": "صنف", "pairs": "أسد = ثدييات\nصقر = طيور\nحوت = ثدييات"],
             ["type": 6, "q": "فئة واحدة", "pairs": "أسد = ثدييات\nحوت = ثدييات"],
         ]
         let m = Cloud.toActivity(title: "ت", qs: qs, minutes: 0); let a = m.activity["questions"] as! [Rec]

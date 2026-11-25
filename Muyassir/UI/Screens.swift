@@ -15,10 +15,10 @@ struct SearchView: View {
                 if !past.isEmpty {
                     Section { chips(past) } header: { HStack { Text("عمليات بحث سابقة"); Spacer(); Button("مسح") { history = "" } } }
                 }
-                Section("جرّب") { chips(["تصغير ملف", "صور إلى PDF", "دمج", "إزالة الخلفية", "استخراج نص", "راتب", "ضريبة", "QR", "compress", "merge"]) }
+                Section("جرب") { chips(["تصغير ملف", "صور إلى PDF", "دمج", "إزالة الخلفية", "استخراج نص", "راتب", "ضريبة", "QR", "compress", "merge"]) }
                 Section { NavigationLink { AssistantView() } label: { Label("لا تعرف أي أداة؟ صف ما تريد للمساعد", systemImage: "sparkles").foregroundStyle(Brand.accent) } }
             } else if res.isEmpty {
-                ContentUnavailableView("لا توجد أداة بهذا الوصف", systemImage: "magnifyingglass", description: Text("جرّب كلمة أخرى، أو صف ما تريد للمساعد."))
+                ContentUnavailableView("لا توجد أداة بهذا الوصف", systemImage: "magnifyingglass", description: Text("جرب كلمة أخرى، أو صف ما تريد للمساعد."))
             } else {
                 ForEach(Tools.categories) { c in
                     let list = res.filter { $0.cats[0] == c.id }
@@ -76,7 +76,7 @@ struct AssistantView: View {
                 if let plan {
                     if let note = plan.note { Text(note).font(.plex(.subheadline)).foregroundStyle(Brand.text2).multilineTextAlignment(.center) }
                     if let rid = Assistant.recipeFor(plan.steps.map(\.tool.id)), let r = Recipes.shared.byId(rid) {
-                        Text("أو نفّذها كلها بلمسة واحدة:").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
+                        Text("أو نفذها كلها بلمسة واحدة:").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
                         NavigationLink(value: RecipeRoute(id: r.id)) { RecipeCard(recipe: r) }.buttonStyle(PressStyle()).accessibilityIdentifier("assistantRecipe")
                     }
                     ForEach(Array(plan.steps.enumerated()), id: \.element.id) { i, s in
@@ -95,8 +95,8 @@ struct AssistantView: View {
                     }
                 } else {
                     SectionHead(title: "أمثلة")
-                    FlowChips(items: ["حوّل صوري إلى PDF وصغّر حجمه", "أريد تحويل عشر صور إلى Word", "أنشئ ورقة عمل للصف السادس", "أريد حساب مستحقات نهاية الخدمة", "اجمع هذه المستندات في PDF", "استخرج الجداول من هذا التقرير"]) { q = $0; plan = Assistant.plan($0) }
-                    Hint(text: "المساعد يعمل على جهازك دون إنترنت: يفهم طلبك، ويفتح الأداة الحقيقية بملفاتك وبما ذكرته (الصف، المادة)، ثم تضغط تنفيذ وترى النتيجة. لا يرسل شيئًا خارج جهازك.")
+                    FlowChips(items: ["حول صوري إلى PDF وصغر حجمه", "أريد تحويل عشر صور إلى Word", "أنشئ ورقة عمل للصف السادس", "أريد حساب مستحقات نهاية الخدمة", "اجمع هذه المستندات في PDF", "استخرج الجداول من هذا التقرير"]) { q = $0; plan = Assistant.plan($0) }
+                    Hint(text: "المساعد يعمل على جهازك دون إنترنت: يفهم طلبك، ويفتح الأداة الحقيقية بملفاتك وبما ذكرته (الصف، المادة)، ثم تضغط تنفيذ وترى النتيجة. لا يرسل شيئا خارج جهازك.")
                 }
             }.padding(Space.l).frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
@@ -124,7 +124,7 @@ struct ActivityView: View {
             Section {
                 Seg(options: ["العمليات", "الملفات", "مشاريعي", "المفضلة"], selection: $tab)
                 Button { plus.paywall = .menu } label: {
-                    Label(plus.active ? "مُيسّر بلس مفعّل" : plus.live ? "اليوم: \(plus.usedToday) من \(Plus.freeOpsPerDay) عمليات مجانية • مُيسّر بلس" : "مُيسّر بلس قريبًا", systemImage: "crown.fill")
+                    Label(plus.active ? "ميسر بلس مفعل" : plus.live ? "اليوم: \(plus.usedToday) من \(Plus.freeOpsPerDay) عمليات مجانية • ميسر بلس" : "ميسر بلس قريبا", systemImage: "crown.fill")
                         .font(.plex(.caption, .semibold)).frame(maxWidth: .infinity)
                 }.buttonStyle(.borderless)
             }.listRowBackground(Color.clear)
@@ -134,10 +134,10 @@ struct ActivityView: View {
                 ForEach(store.recents) { r in if let t = Tools.byId[r.tool] { NavigationLink(value: t) { ActivityRow(icon: t.icon, hex: Tools.hex(t), title: t.title, detail: r.detail.isEmpty ? t.sub : r.detail, date: r.time, action: "إعادة") } } }
                 if !store.recents.isEmpty { Button("مسح السجل", role: .destructive) { store.clearRecents() }.frame(maxWidth: .infinity) }
             case 1:
-                if files.isEmpty { ContentUnavailableView("لا توجد ملفات ناتجة", systemImage: "folder", description: Text("نتائج التحويل والضغط تبقى هنا 24 ساعة ثم تُحذف تلقائيًا، إلا ما تختار إبقاءه.")) }
+                if files.isEmpty { ContentUnavailableView("لا توجد ملفات ناتجة", systemImage: "folder", description: Text("نتائج التحويل والضغط تبقى هنا 24 ساعة ثم تحذف تلقائيا، إلا ما تختار إبقاءه.")) }
                 else { TextField("ابحث في ملفاتك", text: $fileQuery).textFieldStyle(.roundedBorder) }
                 ForEach(files.filter { fileQuery.isEmpty || Tools.norm($0.lastPathComponent).contains(Tools.norm(fileQuery)) }, id: \.self) { u in
-                    Button { preview = u } label: { ActivityRow(icon: fileIcon(u), hex: 0x3346D3, title: u.lastPathComponent, detail: FilesX.human(FilesX.size(u)) + (FilesX.isKept(u) ? " • محفوظ" : " • يُحذف بعد 24 ساعة"), date: FilesX.date(u), action: "معاينة") }
+                    Button { preview = u } label: { ActivityRow(icon: fileIcon(u), hex: 0x3346D3, title: u.lastPathComponent, detail: FilesX.human(FilesX.size(u)) + (FilesX.isKept(u) ? " • محفوظ" : " • يحذف بعد 24 ساعة"), date: FilesX.date(u), action: "معاينة") }
                         .buttonStyle(.plain)
                         .swipeActions {
                             Button(role: .destructive) { try? FileManager.default.removeItem(at: u); files = FilesX.outputs() } label: { Label("حذف", systemImage: "trash") }
@@ -183,7 +183,7 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @AppStorage("role") private var role = ""
     init(open: @escaping (String) -> Void = { _ in }) { self.open = open }
-    private let sections = [("quick", "الأدوات السريعة"), ("recipes", "الوصفات"), ("cats", "الأقسام"), ("favs", "المفضلة"), ("most", "الأكثر استخدامًا"), ("rec", "مقترحة لك"), ("recent", "آخر العمليات"), ("files", "الملفات الناتجة")]
+    private let sections = [("quick", "الأدوات السريعة"), ("recipes", "الوصفات"), ("cats", "الأقسام"), ("favs", "المفضلة"), ("most", "الأكثر استخداما"), ("rec", "مقترحة لك"), ("recent", "آخر العمليات"), ("files", "الملفات الناتجة")]
     var body: some View {
         Form {
             Section {
@@ -235,14 +235,14 @@ struct SettingsView: View {
                 }
             }
             Section {
-                Button("حذف الملفات المؤقتة والنتائج الآن", role: .destructive) { FilesX.clearAll(); done = "حُذفت الملفات المؤقتة والنتائج" }
-                Button("مسح سجل العمليات والبحث") { store.clearRecents(); history = ""; done = "مُسح السجل" }
+                Button("حذف الملفات المؤقتة والنتائج الآن", role: .destructive) { FilesX.clearAll(); done = "حذفت الملفات المؤقتة والنتائج" }
+                Button("مسح سجل العمليات والبحث") { store.clearRecents(); history = ""; done = "مسح السجل" }
                 HStack {
                     Toggle("قفل المفكرة والوثائق ببصمة الوجه", isOn: Binding(get: { lock.enabled }, set: { on in
                         Task {
                             if !on { if await lock.prompt("إيقاف القفل") { lock.set(false) } }
                             else if plus.allow(.lock) {
-                                if !lock.available { done = "فعّل بصمة الوجه أو رمز الجهاز في إعدادات جهازك أولًا" }
+                                if !lock.available { done = "فعل بصمة الوجه أو رمز الجهاز في إعدادات جهازك أولا" }
                                 else if await lock.prompt("تفعيل القفل") { lock.set(true) }
                             }
                         }
@@ -250,15 +250,15 @@ struct SettingsView: View {
                     PlusBadge()
                 }
                 if let done { Text(done).foregroundStyle(Brand.mint) }
-            } header: { Text("الخصوصية والتخزين") } footer: { Text("كل المعالجة على جهازك، ولا تُرفع ملفاتك إلى أي خادم. النتائج تُحذف تلقائيًا بعد 24 ساعة.") }
+            } header: { Text("الخصوصية والتخزين") } footer: { Text("كل المعالجة على جهازك، ولا ترفع ملفاتك إلى أي خادم. النتائج تحذف تلقائيا بعد 24 ساعة.") }
             BackupSection()
             Section {
                 Button { contactSupport(openURL) } label: { Label("تواصل مع الدعم", systemImage: "questionmark.bubble") }
-            } header: { Text("الدعم والملاحظات") } footer: { Text(plus.active ? "مشتركو بلس تصل رسائلهم بعلامة «بلس» ويُرد عليها أولًا." : "أرسل اقتراحك أو بلّغ عن مشكلة.") }
+            } header: { Text("الدعم والملاحظات") } footer: { Text(plus.active ? "مشتركو بلس تصل رسائلهم بعلامة «بلس» ويرد عليها أولا." : "أرسل اقتراحك أو بلغ عن مشكلة.") }
             Section {
                 VStack(spacing: 6) {
                     LogoMark(size: 48)
-                    Text("مُيسّر").font(.plex(.headline, .semibold))
+                    Text("ميسر").font(.plex(.headline, .semibold))
                     Text("الإصدار \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") • \(Tools.all.count) أداة").font(.plex(.caption)).foregroundStyle(Brand.text3)
                 }.frame(maxWidth: .infinity).listRowBackground(Color.clear)
             }

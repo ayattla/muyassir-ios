@@ -31,7 +31,7 @@ struct CvTool: View {
                 Field(label: "الخبرات العملية", text: f.bind("exp"), lines: 4); Field(label: "التعليم", text: f.bind("edu"), lines: 3)
                 Field(label: "المهارات", text: f.bind("skills"), lines: 3); Field(label: "الشهادات والدورات", text: f.bind("certs"), lines: 3); Field(label: "اللغات", text: f.bind("langs"), lines: 2)
             }
-            Panel { Seg(options: ["سيرة عربية", "English CV"], selection: $lang); if lang == 1 { Hint(text: "اكتب البيانات بالإنجليزية؛ تُكتب العناوين بالإنجليزية ويُحاذى النص لليسار.") } }
+            Panel { Seg(options: ["سيرة عربية", "English CV"], selection: $lang); if lang == 1 { Hint(text: "اكتب البيانات بالإنجليزية؛ تكتب العناوين بالإنجليزية ويحاذى النص لليسار.") } }
             TemplatePanel(useLogo: false)
             PrimaryButton(title: "إنشاء السيرة الذاتية PDF", icon: "doc.richtext", enabled: !f["name"].isEmpty) {
                 f.save()
@@ -110,7 +110,7 @@ struct BillingDoc: View {
                 if withVat { tot.append(("ضريبة القيمة المضافة 15%", money(v.vat))) }
                 tot.append(("الإجمالي المستحق", money(v.total))); b.add(.keyValues(tot))
                 if !f["notes"].isEmpty { b.add(.heading(quote ? "الشروط" : "ملاحظات")); b.add(.para(f["notes"])) }
-                if !quote && withVat { b.add(.para("تنبيه: هذا مستند مبسط. الفوترة الإلكترونية الإلزامية (فاتورة) تتطلب نظامًا معتمدًا من هيئة الزكاة والضريبة والجمارك.", size: 8.5, color: DocBuilder.muted)) }
+                if !quote && withVat { b.add(.para("تنبيه: هذا مستند مبسط. الفوترة الإلكترونية الإلزامية (فاتورة) تتطلب نظاما معتمدا من هيئة الزكاة والضريبة والجمارك.", size: 8.5, color: DocBuilder.muted)) }
                 let name = "\(quote ? "عرض-سعر" : "فاتورة")-\(f["buyer"].isEmpty ? "عميل" : f["buyer"]).pdf"
                 result = [try? b.save(to: FilesX.outDir().appendingPathComponent(name))].compactMap { $0 }; store.used(tool.id, f["buyer"])
             }
@@ -149,7 +149,7 @@ struct LetterTool: View {
                 Field(label: "الجهة المرسلة", text: f.bind("from")); Field(label: "إلى (الجهة/الشخص)", text: f.bind("to")); Field(label: "الموضوع", text: f.bind("subject"))
                 Field(label: "نص الخطاب", text: f.bind("body"), lines: 8); Field(label: "الاسم والصفة للتوقيع", text: f.bind("sign"))
             }
-            Hint(text: "اختر نوع الخطاب لملء نص مقترح، ثم عدّله كما تريد.")
+            Hint(text: "اختر نوع الخطاب لملء نص مقترح، ثم عدله كما تريد.")
             TemplatePanel()
             PrimaryButton(title: "إنشاء الخطاب PDF", icon: "doc.richtext", enabled: !f["body"].isEmpty) {
                 f.save()
@@ -168,9 +168,9 @@ struct LetterTool: View {
     func fillTemplate() {
         let t: [(String, String)] = [
             ("", ""),
-            ("طلب خطاب تعريف", "نفيدكم بأن الموظف/ ........ يعمل لدينا بوظيفة ........ منذ تاريخ ........ ولا يزال على رأس العمل، وقد أُعطي هذا الخطاب بناءً على طلبه دون أدنى مسؤولية على المنشأة."),
-            ("طلب إجازة", "أتقدم إليكم بطلب إجازة ........ لمدة (....) أيام اعتبارًا من تاريخ ........ وحتى ........، وذلك لظروف ........، آملًا الموافقة."),
-            ("استقالة", "أتقدم إليكم باستقالتي من العمل بوظيفة ........ اعتبارًا من تاريخ ........، مع الالتزام بفترة الإشعار المنصوص عليها في العقد ونظام العمل، شاكرًا لكم ما قدمتموه من دعم."),
+            ("طلب خطاب تعريف", "نفيدكم بأن الموظف/ ........ يعمل لدينا بوظيفة ........ منذ تاريخ ........ ولا يزال على رأس العمل، وقد أعطي هذا الخطاب بناء على طلبه دون أدنى مسؤولية على المنشأة."),
+            ("طلب إجازة", "أتقدم إليكم بطلب إجازة ........ لمدة (....) أيام اعتبارا من تاريخ ........ وحتى ........، وذلك لظروف ........، آملا الموافقة."),
+            ("استقالة", "أتقدم إليكم باستقالتي من العمل بوظيفة ........ اعتبارا من تاريخ ........، مع الالتزام بفترة الإشعار المنصوص عليها في العقد ونظام العمل، شاكرا لكم ما قدمتموه من دعم."),
             ("طلب", "أتقدم إليكم بهذا الطلب بخصوص ........، وأرجو التكرم بالنظر فيه واتخاذ اللازم."),
         ]
         guard kind > 0 else { return }
@@ -212,13 +212,13 @@ struct SignPdfTool: View {
     var body: some View {
         ToolScreen(tool: tool) {
             Panel {
-                Seg(options: ["ارسم توقيعًا", "توقيعي المحفوظ", "ختم أو صورة"], selection: Binding(get: { source }, set: { v in if v == 0 || plus.allow(.sign) { source = v } }))
+                Seg(options: ["ارسم توقيعا", "توقيعي المحفوظ", "ختم أو صورة"], selection: Binding(get: { source }, set: { v in if v == 0 || plus.allow(.sign) { source = v } }))
                 PlusBadge().frame(maxWidth: .infinity)
             }
             if source == 1 {
                 Panel(title: "توقيعي المحفوظ") {
                     if let saved { Image(uiImage: saved).resizable().scaledToFit().frame(height: 120).frame(maxWidth: .infinity).background(.white, in: RoundedRectangle(cornerRadius: 14)) }
-                    else { Hint(text: "لا يوجد توقيع محفوظ بعد. ارسم توقيعك في «ارسم توقيعًا» ثم اضغط «حفظ هذا التوقيع».") }
+                    else { Hint(text: "لا يوجد توقيع محفوظ بعد. ارسم توقيعك في «ارسم توقيعا» ثم اضغط «حفظ هذا التوقيع».") }
                 }
             }
             if source == 2 {
@@ -234,7 +234,7 @@ struct SignPdfTool: View {
                     RoundedRectangle(cornerRadius: 14).fill(.white).overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(.separator)))
                     Path { p in for s in strokes + [current] where s.count > 1 { p.move(to: s[0]); for q in s.dropFirst() { p.addLine(to: q) } } }
                         .stroke(Color(hex: 0x0B1F6B), style: StrokeStyle(lineWidth: 3.5, lineCap: .round, lineJoin: .round))
-                    if strokes.isEmpty && current.isEmpty { Text("وقّع هنا بإصبعك").foregroundStyle(.gray) }
+                    if strokes.isEmpty && current.isEmpty { Text("وقع هنا بإصبعك").foregroundStyle(.gray) }
                 }
                 .frame(height: 180)
                 .background(GeometryReader { g in Color.clear.onAppear { padSize = g.size } })

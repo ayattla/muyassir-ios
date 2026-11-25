@@ -88,7 +88,7 @@ struct QuizMaker: View {
             }
             QuestionBank(qs: $qs, subject: subject, grade: grade, lesson: lesson, level: Edu.levels[level])
             Toggle("إنشاء نموذج إجابة منفصل مع معايير التقويم", isOn: $withKey).font(.plex(.subheadline))
-            Toggle("ملف Word قابل للتعديل أيضًا", isOn: $word).font(.plex(.subheadline))
+            Toggle("ملف Word قابل للتعديل أيضا", isOn: $word).font(.plex(.subheadline))
             TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext", enabled: !qs.isEmpty) { build() }.accessibilityIdentifier("action")
             if !result.isEmpty { ResultFiles(files: result) }
@@ -184,7 +184,7 @@ struct QuestionBank: View {
                     let old = store.list("qbank"), have = Set(old.map { $0.s("q") })
                     let add: [Rec] = qs.filter { !$0.text.trimmingCharacters(in: .whitespaces).isEmpty && !have.contains($0.text) }
                         .map { var r = $0.rec; r["subject"] = subject; r["grade"] = grade; r["lesson"] = lesson; r["level"] = level; return r }
-                    store.saveList("qbank", old + add); msg = "أُضيف \(add.count) سؤالًا إلى البنك (\(old.count + add.count) إجمالًا)"
+                    store.saveList("qbank", old + add); msg = "أضيف \(add.count) سؤالا إلى البنك (\(old.count + add.count) إجمالا)"
                 }
                 SecondaryButton(title: "من البنك", icon: "tray.and.arrow.down") { bank = store.list("qbank"); picked = []; show = true }
             }
@@ -197,14 +197,14 @@ struct QuestionBank: View {
             let rows: [[String]] = u.pathExtension.lowercased() == "xlsx" ? ((try? Office.readXlsx(u))?.first?.1 ?? [])
                 : ((try? String(contentsOf: u, encoding: .utf8)) ?? "").components(separatedBy: .newlines).map { $0.split(omittingEmptySubsequences: false, whereSeparator: { ",;\t".contains($0) }).map { String($0).trimmingCharacters(in: CharacterSet(charactersIn: "\" ")) } }
             let add = Edu.importRows(rows)
-            if add.isEmpty { msg = "تعذّرت قراءة الملف. استخدم Excel أو CSV بالأعمدة: السؤال، النوع، أ، ب، ج، د، الإجابة، الدرجة، المادة، الصف، الدرس، الصعوبة."; return }
+            if add.isEmpty { msg = "تعذرت قراءة الملف. استخدم Excel أو CSV بالأعمدة: السؤال، النوع، أ، ب، ج، د، الإجابة، الدرجة، المادة، الصف، الدرس، الصعوبة."; return }
             let old = store.list("qbank"), have = Set(old.map { $0.s("q") }); let fresh = add.filter { !have.contains($0.s("q")) }
-            store.saveList("qbank", old + fresh); msg = "استُورد \(fresh.count) سؤالًا إلى البنك"
+            store.saveList("qbank", old + fresh); msg = "استورد \(fresh.count) سؤالا إلى البنك"
         }
         .sheet(isPresented: $show) {
             NavigationStack {
                 List {
-                    if bank.isEmpty { Text("البنك فارغ. احفظ أسئلة اختبار أو استوردها من Excel لتعيد استخدامها لاحقًا.") }
+                    if bank.isEmpty { Text("البنك فارغ. احفظ أسئلة اختبار أو استوردها من Excel لتعيد استخدامها لاحقا.") }
                     else {
                         Section {
                             TextField("بحث في الأسئلة", text: $search)
@@ -239,18 +239,18 @@ enum Strategies {
     struct Sec { var head: String; var prompt = ""; var lines = 3; var table: [String] = []; var rows = 0 }
     struct T { var name: String; var about: String; var sections: [Sec]; var perPage = 1 }
     static let all: [T] = [
-        T(name: "ورقة عمل حرة", about: "اكتب أنشطتك سطرًا سطرًا", sections: []),
-        T(name: "مستويات بلوم", about: "أسئلة متدرجة من التذكر إلى الإبداع", sections: [Sec(head: "تذكّر", prompt: "عرّف أو اذكر…"), Sec(head: "افهم", prompt: "اشرح بأسلوبك…"), Sec(head: "طبّق", prompt: "استخدم ما تعلمته في…"), Sec(head: "حلّل", prompt: "قارن أو صنّف…"), Sec(head: "قيّم", prompt: "ما رأيك ولماذا؟"), Sec(head: "ابتكر", prompt: "صمّم أو اقترح…")]),
-        T(name: "فكّر، زاوج، شارك", about: "تفكير فردي ثم نقاش ثنائي ثم مشاركة", sections: [Sec(head: "فكّر بمفردك (دقيقتان)", prompt: "اكتب إجابتك الأولية"), Sec(head: "زاوج مع زميلك (3 دقائق)", prompt: "ما الذي أضافه زميلك؟"), Sec(head: "شارك الصف", prompt: "الفكرة التي سنعرضها", lines: 2)]),
-        T(name: "الخبراء (Jigsaw)", about: "كل مجموعة تتقن جزءًا ثم تعلّمه للآخرين", sections: [Sec(head: "جزئي في مجموعة الخبراء", prompt: "الجزء: ............  أهم ثلاث أفكار", lines: 4), Sec(head: "ما تعلمته من زملائي في المجموعة الأم", table: ["الجزء", "الفكرة الرئيسة", "مثال"], rows: 4)]),
+        T(name: "ورقة عمل حرة", about: "اكتب أنشطتك سطرا سطرا", sections: []),
+        T(name: "مستويات بلوم", about: "أسئلة متدرجة من التذكر إلى الإبداع", sections: [Sec(head: "تذكر", prompt: "عرف أو اذكر…"), Sec(head: "افهم", prompt: "اشرح بأسلوبك…"), Sec(head: "طبق", prompt: "استخدم ما تعلمته في…"), Sec(head: "حلل", prompt: "قارن أو صنف…"), Sec(head: "قيم", prompt: "ما رأيك ولماذا؟"), Sec(head: "ابتكر", prompt: "صمم أو اقترح…")]),
+        T(name: "فكر، زاوج، شارك", about: "تفكير فردي ثم نقاش ثنائي ثم مشاركة", sections: [Sec(head: "فكر بمفردك (دقيقتان)", prompt: "اكتب إجابتك الأولية"), Sec(head: "زاوج مع زميلك (3 دقائق)", prompt: "ما الذي أضافه زميلك؟"), Sec(head: "شارك الصف", prompt: "الفكرة التي سنعرضها", lines: 2)]),
+        T(name: "الخبراء (Jigsaw)", about: "كل مجموعة تتقن جزءا ثم تعلمه للآخرين", sections: [Sec(head: "جزئي في مجموعة الخبراء", prompt: "الجزء: ............  أهم ثلاث أفكار", lines: 4), Sec(head: "ما تعلمته من زملائي في المجموعة الأم", table: ["الجزء", "الفكرة الرئيسة", "مثال"], rows: 4)]),
         T(name: "القبعات الست", about: "التفكير في الموضوع من ست زوايا", sections: [Sec(head: "القبعة البيضاء: الحقائق", prompt: "ما المعلومات المتوفرة؟", lines: 2), Sec(head: "القبعة الحمراء: المشاعر", prompt: "بماذا تشعر تجاه الموضوع؟", lines: 2), Sec(head: "القبعة السوداء: المخاطر", prompt: "ما السلبيات أو العقبات؟", lines: 2), Sec(head: "القبعة الصفراء: الإيجابيات", prompt: "ما الفوائد؟", lines: 2), Sec(head: "القبعة الخضراء: الأفكار الجديدة", prompt: "ما البدائل والحلول المبتكرة؟", lines: 2), Sec(head: "القبعة الزرقاء: التنظيم", prompt: "ما الخلاصة والخطوة التالية؟", lines: 2)]),
-        T(name: "التعلم التعاوني", about: "أدوار واضحة لكل عضو ومهمة مشتركة", sections: [Sec(head: "أدوار المجموعة", table: ["الدور", "الاسم"]), Sec(head: "المهمة", prompt: "ما المطلوب من المجموعة؟"), Sec(head: "ناتج المجموعة", lines: 5), Sec(head: "تقييم العمل الجماعي", prompt: "ما الذي نجح؟ وما الذي نحسّنه؟", lines: 2)]),
+        T(name: "التعلم التعاوني", about: "أدوار واضحة لكل عضو ومهمة مشتركة", sections: [Sec(head: "أدوار المجموعة", table: ["الدور", "الاسم"]), Sec(head: "المهمة", prompt: "ما المطلوب من المجموعة؟"), Sec(head: "ناتج المجموعة", lines: 5), Sec(head: "تقييم العمل الجماعي", prompt: "ما الذي نجح؟ وما الذي نحسنه؟", lines: 2)]),
         T(name: "التعلم القائم على حل المشكلات", about: "من تحديد المشكلة إلى تقييم الحل", sections: [Sec(head: "المشكلة", prompt: "صف المشكلة بجملة واحدة", lines: 2), Sec(head: "ماذا نعرف؟"), Sec(head: "ماذا نحتاج أن نعرف؟"), Sec(head: "الحلول المقترحة", table: ["الحل", "المزايا", "العيوب"], rows: 3), Sec(head: "الحل المختار ولماذا"), Sec(head: "كيف سنعرف أنه نجح؟", lines: 2)]),
         T(name: "المحطات التعليمية", about: "مهام قصيرة يتنقل الطلاب بينها", sections: (1...4).map { Sec(head: "المحطة \($0)", prompt: "المهمة: ............  الزمن: ..... دقائق") }),
-        T(name: "بطاقات الخروج (3-2-1)", about: "ثلاث بطاقات قصيرة في الصفحة تُجمع آخر الحصة", sections: [Sec(head: "3 أشياء تعلمتها اليوم"), Sec(head: "2 سؤالان ما زالا لديّ", lines: 2), Sec(head: "1 كيف سأطبّق ما تعلمته", lines: 1)], perPage: 3),
-        T(name: "الاستبيان القبلي والبعدي", about: "قبل الدرس وبعده لقياس التعلم", sections: [Sec(head: "قبل الدرس: ماذا أعرف؟"), Sec(head: "ماذا أريد أن أعرف؟", lines: 2), Sec(head: "بعد الدرس: ماذا تعلمت؟"), Sec(head: "قيّم فهمك", table: ["العبارة", "قبل (1-5)", "بعد (1-5)"], rows: 4)]),
-        T(name: "خطة علاجية", about: "لطلاب يحتاجون دعمًا في مهارة محددة", sections: [Sec(head: "المهارة المستهدفة", lines: 1), Sec(head: "خطة الدعم", table: ["الطالب", "مستواه الحالي", "الإجراء العلاجي", "الموعد", "النتيجة"], rows: 6)]),
-        T(name: "خطة إثرائية", about: "لطلاب متقدمين يحتاجون تحديًا أكبر", sections: [Sec(head: "الهدف الإثرائي", lines: 2), Sec(head: "الأنشطة", table: ["الطالب", "النشاط الإثرائي", "المصدر", "موعد التسليم"], rows: 5)]),
+        T(name: "بطاقات الخروج (3-2-1)", about: "ثلاث بطاقات قصيرة في الصفحة تجمع آخر الحصة", sections: [Sec(head: "3 أشياء تعلمتها اليوم"), Sec(head: "2 سؤالان ما زالا لدي", lines: 2), Sec(head: "1 كيف سأطبق ما تعلمته", lines: 1)], perPage: 3),
+        T(name: "الاستبيان القبلي والبعدي", about: "قبل الدرس وبعده لقياس التعلم", sections: [Sec(head: "قبل الدرس: ماذا أعرف؟"), Sec(head: "ماذا أريد أن أعرف؟", lines: 2), Sec(head: "بعد الدرس: ماذا تعلمت؟"), Sec(head: "قيم فهمك", table: ["العبارة", "قبل (1-5)", "بعد (1-5)"], rows: 4)]),
+        T(name: "خطة علاجية", about: "لطلاب يحتاجون دعما في مهارة محددة", sections: [Sec(head: "المهارة المستهدفة", lines: 1), Sec(head: "خطة الدعم", table: ["الطالب", "مستواه الحالي", "الإجراء العلاجي", "الموعد", "النتيجة"], rows: 6)]),
+        T(name: "خطة إثرائية", about: "لطلاب متقدمين يحتاجون تحديا أكبر", sections: [Sec(head: "الهدف الإثرائي", lines: 2), Sec(head: "الأنشطة", table: ["الطالب", "النشاط الإثرائي", "المصدر", "موعد التسليم"], rows: 5)]),
         T(name: "خطة دراسية أسبوعية", about: "توزيع المذاكرة على أيام الأسبوع", sections: [Sec(head: "الأهداف هذا الأسبوع"), Sec(head: "الجدول", table: ["اليوم", "المادة", "ما سأذاكره", "المدة", "تم"], rows: 7)]),
     ]
 }
@@ -276,7 +276,7 @@ struct WorksheetTool: View {
                 if kind == 0 { Field(label: "الأنشطة/الأسئلة (سطر لكل سؤال)", text: $bodyText, lines: 6); NumField(label: "أسطر إجابة بعد كل سؤال", text: $lines) }
                 else { ForEach(tpl.sections.indices, id: \.self) { i in Text("• \(tpl.sections[i].head)\(tpl.sections[i].prompt.isEmpty ? "" : ": \(tpl.sections[i].prompt)")").font(.plex(.footnote)) } }
             }
-            Toggle("ملف Word قابل للتعديل أيضًا", isOn: $word).font(.plex(.subheadline))
+            Toggle("ملف Word قابل للتعديل أيضا", isOn: $word).font(.plex(.subheadline))
             TemplatePanel()
             PrimaryButton(title: "إنشاء PDF", icon: "doc.richtext") { build(tpl) }.accessibilityIdentifier("action")
             if !result.isEmpty { ResultFiles(files: result) }
@@ -305,7 +305,7 @@ struct WorksheetTool: View {
                     b.add(.heading(s.head)); if first { doc.append(.text(s.head, heading: 2)) }
                     if !s.prompt.isEmpty { b.add(.para(s.prompt, size: 11, color: DocBuilder.muted)); if first { doc.append(.text(s.prompt)) } }
                     if !s.table.isEmpty {
-                        let rows = s.head == "أدوار المجموعة" ? ["القائد", "المقرر", "الموقّت", "المتحدث"].map { [$0, ""] } : Array(repeating: Array(repeating: "", count: s.table.count), count: s.rows)
+                        let rows = s.head == "أدوار المجموعة" ? ["القائد", "المقرر", "الموقت", "المتحدث"].map { [$0, ""] } : Array(repeating: Array(repeating: "", count: s.table.count), count: s.rows)
                         b.add(.table(header: s.table, rows: rows)); if first { doc.append(.table([s.table] + rows.map { $0.map { $0.isEmpty ? " " : $0 } })) }
                     } else { b.add(.lines(s.lines)); if first { doc += Array(repeating: .text(dots), count: s.lines) } }
                 }

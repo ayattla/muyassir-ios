@@ -55,7 +55,7 @@ final class Recipes: ObservableObject {
             let dir = work.appendingPathComponent("s\(i)", isDirectory: true)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             files = try step(s, files, dir)
-            if files.isEmpty { throw UserError("لم تُنتج الخطوة «\(opName(s.op))» أي ملف. تأكد من نوع الملفات المختارة.") }
+            if files.isEmpty { throw UserError("لم تنتج الخطوة «\(opName(s.op))» أي ملف. تأكد من نوع الملفات المختارة.") }
         }
         return try files.map { f in
             let t = out.appendingPathComponent(f.lastPathComponent)
@@ -121,7 +121,7 @@ final class Recipes: ObservableObject {
     }
 }
 
-/// «فتح في مُيسّر»: files opened in the app from Files, Mail, WhatsApp… are copied privately, then the user chooses what to do.
+/// «فتح في ميسر»: files opened in the app from Files, Mail, WhatsApp… are copied privately, then the user chooses what to do.
 @MainActor
 final class Incoming: ObservableObject {
     static let shared = Incoming()

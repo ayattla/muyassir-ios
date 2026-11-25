@@ -19,7 +19,7 @@ struct RulePanel: View {
                     }
                 }
             }
-            Text("النتيجة تقديرية للحالات الشائعة ولا تُعد فتوى نظامية؛ العقد والأحكام القضائية واللوائح قد تغيّرها. راجع الجهة المختصة قبل الاعتماد عليها.").font(.plex(.caption)).foregroundStyle(Brand.text2)
+            Text("النتيجة تقديرية للحالات الشائعة ولا تعد فتوى نظامية؛ العقد والأحكام القضائية واللوائح قد تغيرها. راجع الجهة المختصة قبل الاعتماد عليها.").font(.plex(.caption)).foregroundStyle(Brand.text2)
         }.accessibilityElement(children: .contain).accessibilityIdentifier("rulePanel")
     }
 }
@@ -49,13 +49,13 @@ struct NoticeTool: View {
                 Text("نوع العقد").font(.plex(.caption, .medium)); Seg(options: ["غير محدد المدة", "محدد المدة"], selection: $contract)
                 Text("من أنهى العقد").font(.plex(.caption, .medium)); Seg(options: ["صاحب العمل", "العامل"], selection: $by)
                 Text("طريقة دفع الأجر").font(.plex(.caption, .medium)); Seg(options: ["شهري", "غير شهري"], selection: $monthly)
-                NumField(label: "أيام الإشعار التي أُعطيت", text: $given, suffix: "يوم")
+                NumField(label: "أيام الإشعار التي أعطيت", text: $given, suffix: "يوم")
                 NumField(label: "الأجر الشهري", text: $wage, suffix: "ريال")
             }
             if wage.num > 0 {
                 let n = SaudiRules.notice(contract == 0 ? .open : .fixed, by == 0 ? .employer : .worker, monthlyPaid: monthly == 0, given: Int(given.num), wage: wage.num)
-                if contract == 1 { ResultCard(main: ("لا مهلة إشعار في العقد محدد المدة", money(0)), note: "إنهاؤه مبكرًا دون سبب مشروع يرتب تعويض المادة 77.") }
-                else { ResultCard(main: ("التعويض عن المهلة", money(n.amount)), rows: [("المهلة النظامية", "\(n.requiredDays) يومًا"), ("الأيام الناقصة", "\(n.missingDays) يومًا"), ("يدفعه", by == 0 ? "صاحب العمل للعامل" : "العامل لصاحب العمل")]) }
+                if contract == 1 { ResultCard(main: ("لا مهلة إشعار في العقد محدد المدة", money(0)), note: "إنهاؤه مبكرا دون سبب مشروع يرتب تعويض المادة 77.") }
+                else { ResultCard(main: ("التعويض عن المهلة", money(n.amount)), rows: [("المهلة النظامية", "\(n.requiredDays) يوما"), ("الأيام الناقصة", "\(n.missingDays) يوما"), ("يدفعه", by == 0 ? "صاحب العمل للعامل" : "العامل لصاحب العمل")]) }
             }
             RulePanel("notice", "art77")
         }
@@ -82,9 +82,9 @@ struct SettlementTool: View {
                     DatePicker("تاريخ المباشرة", selection: $start, displayedComponents: .date); DatePicker("تاريخ انتهاء العلاقة", selection: $end, displayedComponents: .date)
                     NumField(label: "آخر أجر شهري (الأساسي + البدلات الثابتة)", text: $wage, suffix: "ريال")
                     Picker("سبب انتهاء العلاقة", selection: $reason) { ForEach(SaudiRules.Reason.allCases) { Text($0.rawValue).tag($0) } }
-                    NumField(label: "أيام عمل لم يُدفع أجرها", text: $unpaid, suffix: "يوم")
+                    NumField(label: "أيام عمل لم يدفع أجرها", text: $unpaid, suffix: "يوم")
                     NumField(label: "رصيد الإجازة غير المستخدم", text: $leave, suffix: "يوم")
-                    if reason == .employerLawful || reason == .employerUnlawful { NumField(label: "أيام الإشعار التي أُعطيت", text: $given, suffix: "يوم") }
+                    if reason == .employerLawful || reason == .employerUnlawful { NumField(label: "أيام الإشعار التي أعطيت", text: $given, suffix: "يوم") }
                     if reason == .employerUnlawful && contract == 1 { NumField(label: "الأشهر المتبقية من العقد", text: $remaining, suffix: "شهر") }
                 }
                 if wage.num > 0 {
@@ -108,8 +108,8 @@ struct EntitlementsTool: View {
         ToolScreen(tool: tool) {
             Panel {
                 NumField(label: "الأجر الشهري الكامل", text: $wage, suffix: "ريال"); NumField(label: "الراتب الأساسي (للعمل الإضافي)", text: $basic, suffix: "ريال")
-                NumField(label: "أيام عمل لم يُدفع أجرها", text: $unpaid, suffix: "يوم"); NumField(label: "ساعات عمل إضافي لم تُدفع", text: $ot, suffix: "ساعة")
-                NumField(label: "ساعات العمل اليومية", text: $daily, suffix: "ساعة"); NumField(label: "رصيد إجازة يُصرف بدله", text: $leave, suffix: "يوم")
+                NumField(label: "أيام عمل لم يدفع أجرها", text: $unpaid, suffix: "يوم"); NumField(label: "ساعات عمل إضافي لم تدفع", text: $ot, suffix: "ساعة")
+                NumField(label: "ساعات العمل اليومية", text: $daily, suffix: "ساعة"); NumField(label: "رصيد إجازة يصرف بدله", text: $leave, suffix: "يوم")
             }
             if wage.num > 0 {
                 let w = wage.num, u = unpaid.num * w / 30, l = leave.num * w / 30
@@ -131,7 +131,7 @@ struct DeductTool: View {
             Panel { NumField(label: "الأجر المستحق هذا الشهر", text: $wage, suffix: "ريال"); NumField(label: "المبلغ المطلوب استقطاعه (سلفة، جزاء…)", text: $req, suffix: "ريال") }
             if wage.num > 0 && req.num > 0 {
                 let d = SaudiRules.deduction(wage: wage.num, requested: req.num)
-                ResultCard(main: ("الحد المسموح استقطاعه", money(d.allowed)), rows: [("الحد الأعلى (نصف الأجر)", money(d.cap)), ("الباقي للأشهر التالية", money(max(0, d.requested - d.allowed))), ("صافي ما يُصرف", money(wage.num - d.allowed))])
+                ResultCard(main: ("الحد المسموح استقطاعه", money(d.allowed)), rows: [("الحد الأعلى (نصف الأجر)", money(d.cap)), ("الباقي للأشهر التالية", money(max(0, d.requested - d.allowed))), ("صافي ما يصرف", money(wage.num - d.allowed))])
             }
             RulePanel("deduct")
         }

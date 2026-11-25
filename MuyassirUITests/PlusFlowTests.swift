@@ -1,6 +1,6 @@
 import XCTest
 
-/// «مُيسّر بلس»: paywall, free limits and gates through the real UI (debug launch argument `-plus`).
+/// «ميسر بلس»: paywall, free limits and gates through the real UI (debug launch argument `-plus`).
 final class PlusFlowTests: XCTestCase {
     var app: XCUIApplication!
     override func setUp() { continueAfterFailure = false }
@@ -27,7 +27,7 @@ final class PlusFlowTests: XCTestCase {
         launch("free", paywall: "Menu")
         XCTAssertTrue(app.buttons["plan-yearly"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["plan-monthly"].exists)
-        waitText("وفّر"); waitText("استعادة المشتريات"); waitText("ابدأ تجربة مجانية 7 أيام")
+        waitText("وفر"); waitText("استعادة المشتريات"); waitText("ابدأ تجربة مجانية 7 أيام")
         var n = 0; while !app.buttons["شروط الاستخدام"].isHittable && n < 6 { app.swipeUp(); n += 1 }
         XCTAssertTrue(app.buttons["شروط الاستخدام"].exists); XCTAssertTrue(app.buttons["سياسة الخصوصية"].exists)
         app.buttons["paywallClose"].tap()
@@ -36,7 +36,7 @@ final class PlusFlowTests: XCTestCase {
 
     func testBeforeLaunchPaywallSaysSoon() {
         launch("off", paywall: "Menu")
-        waitText("قريبًا"); waitText("نبّهني عند إطلاق بلس")
+        waitText("قريبا"); waitText("نبهني عند إطلاق بلس")
         XCTAssertFalse(app.buttons["subscribe"].exists)
     }
 

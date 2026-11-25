@@ -18,7 +18,7 @@ struct PdfEditTool: View {
         ToolScreen(tool: tool) {
             if doc == nil {
                 PrimaryButton(title: "اختر ملف PDF", icon: "doc.badge.plus") { picking = true }.accessibilityIdentifier("pick")
-                Hint(text: "اكتب على أي ملف PDF، ظلّل أو أخفِ أجزاء منه، أو عبّئ حقول النماذج. كل شيء على جهازك.")
+                Hint(text: "اكتب على أي ملف PDF، ظلل أو أخف أجزاء منه، أو عبئ حقول النماذج. كل شيء على جهازك.")
             } else if let doc {
                 Panel {
                     Seg(options: modes, selection: $mode)
@@ -28,8 +28,8 @@ struct PdfEditTool: View {
                         HStack { NumField(label: "حجم الخط", text: $size).frame(width: 120); ForEach(inks.indices, id: \.self) { i in Chip(text: inks[i].0, selected: i == colorIdx) { colorIdx = i } } }
                         Hint(text: "اكتب النص ثم اضغط مكانه على الصفحة.")
                     case 1: Hint(text: "اضغط على السطر الذي تريد تظليله.")
-                    case 2: Hint(text: "اضغط على ما تريد إخفاءه ليُغطّى بمستطيل أبيض.")
-                    default: Hint(text: fields > 0 ? "في الملف \(fields) حقلًا. اضغط أي حقل في الصفحة واكتب فيه مباشرة." : "هذا الملف لا يحتوي حقول نموذج قابلة للتعبئة. استخدم «كتابة» لإضافة نص فوقه.")
+                    case 2: Hint(text: "اضغط على ما تريد إخفاءه ليغطى بمستطيل أبيض.")
+                    default: Hint(text: fields > 0 ? "في الملف \(fields) حقلا. اضغط أي حقل في الصفحة واكتب فيه مباشرة." : "هذا الملف لا يحتوي حقول نموذج قابلة للتعبئة. استخدم «كتابة» لإضافة نص فوقه.")
                     }
                 }
                 PDFKitView(document: doc, interactive: mode == 3) { page, pt in place(page, pt) }
@@ -38,7 +38,7 @@ struct PdfEditTool: View {
                     SecondaryButton(title: "تراجع", icon: "arrow.uturn.backward") { if let (p, a) = added.popLast() { p.removeAnnotation(a) } }
                     SecondaryButton(title: "ملف آخر", icon: "doc") { self.doc = nil; added = []; files = [] }
                 }
-                Toggle("دمج التعديلات في الصفحات (لا تُعدّل لاحقًا)", isOn: $flatten).font(.plex(.subheadline))
+                Toggle("دمج التعديلات في الصفحات (لا تعدل لاحقا)", isOn: $flatten).font(.plex(.subheadline))
                 PrimaryButton(title: "حفظ الملف", icon: "square.and.arrow.down") { save(doc) }.accessibilityIdentifier("action")
                 if let error { Text(error).font(.plex(.caption)).foregroundStyle(.red) }
                 if !files.isEmpty { ResultFiles(files: files) }
@@ -46,7 +46,7 @@ struct PdfEditTool: View {
         }
         .fileImporter(isPresented: $picking, allowedContentTypes: [.pdf]) { r in
             guard case .success(let u) = r, let t = try? FilesX.toTemp(u) else { return }
-            if let d = PDFDocument(url: t) { if d.isLocked { error = "الملف محمي بكلمة مرور. افتحه أولًا بأداة «إزالة حماية PDF»." } else { doc = d; src = t; error = nil } }
+            if let d = PDFDocument(url: t) { if d.isLocked { error = "الملف محمي بكلمة مرور. افتحه أولا بأداة «إزالة حماية PDF»." } else { doc = d; src = t; error = nil } }
         }
         .onAppear {
             #if DEBUG
@@ -79,12 +79,12 @@ struct PdfEditTool: View {
     private func save(_ d: PDFDocument) {
         let sz = src.map { FilesX.size($0) } ?? 0
         if let r = plus.check(tool.id, sizes: [sz]) { plus.paywall = r; return }
-        let name = (src.map(FilesX.base) ?? "ملف") + "-معدّل.pdf"
+        let name = (src.map(FilesX.base) ?? "ملف") + "-معدل.pdf"
         let out = FilesX.outDir().appendingPathComponent(name)
         var opts: [PDFDocumentWriteOption: Any] = [:]
         if flatten { opts[.burnInAnnotationsOption] = true }
         if d.write(to: out, withOptions: opts) { files = [out]; plus.counted(tool.id); store.used(tool.id, name); ReviewAsk.success(); error = nil }
-        else { error = "تعذّر حفظ الملف" }
+        else { error = "تعذر حفظ الملف" }
     }
 }
 

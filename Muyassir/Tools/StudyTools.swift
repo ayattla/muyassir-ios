@@ -24,9 +24,9 @@ struct GpaTool: View {
             Panel(title: "المعدل السابق (للتراكمي)") { HStack { NumField(label: "المعدل التراكمي", text: $prevGpa); NumField(label: "الساعات المجتازة", text: $prevHours) } }
             let g = Calc.gpa(rows.map { Calc.Course(points: Calc.points($0.grade, scale5: scale == 0), hours: $0.hours.num) }, prevGpa: prevGpa.num, prevHours: prevHours.num)
             let sem = g.0, cum = g.1, mx = scale == 0 ? 5.0 : 4.0
-            let word = sem >= mx * 0.9 ? "ممتاز مرتفع" : sem >= mx * 0.75 ? "ممتاز" : sem >= mx * 0.7 ? "جيد جدًا مرتفع" : sem >= mx * 0.55 ? "جيد جدًا" : sem >= mx * 0.5 ? "جيد" : "مقبول"
+            let word = sem >= mx * 0.9 ? "ممتاز مرتفع" : sem >= mx * 0.75 ? "ممتاز" : sem >= mx * 0.7 ? "جيد جدا مرتفع" : sem >= mx * 0.55 ? "جيد جدا" : sem >= mx * 0.5 ? "جيد" : "مقبول"
             ResultCard(main: ("المعدل الفصلي", "\(fmt(sem)) من \(fmt(mx, 0))"), rows: [("التقدير", word), ("المعدل التراكمي", fmt(cum)), ("ساعات الفصل", fmt(rows.reduce(0) { $0 + $1.hours.num }))])
-            Hint(text: "سُلّم النقاط المستخدم هو الشائع في الجامعات السعودية (A+ = 5، A = 4.75 …). راجع لائحة جامعتك فقد يختلف.")
+            Hint(text: "سلم النقاط المستخدم هو الشائع في الجامعات السعودية (A+ = 5، A = 4.75 …). راجع لائحة جامعتك فقد يختلف.")
         }
     }
 }
@@ -181,7 +181,7 @@ struct CertificateTool: View {
         ToolScreen(tool: tool) {
             Panel {
                 Picker("النوع", selection: $kind) { ForEach(kinds.indices, id: \.self) { Text(kinds[$0]).tag($0) } }
-                Field(label: "اسم المكرَّم", text: $name); Field(label: "السبب أو الإنجاز", text: $reason, lines: 2); Field(label: "الجهة المانحة", text: $org); Field(label: "اسم الموقّع وصفته", text: $signer)
+                Field(label: "اسم المكرم", text: $name); Field(label: "السبب أو الإنجاز", text: $reason, lines: 2); Field(label: "الجهة المانحة", text: $org); Field(label: "اسم الموقع وصفته", text: $signer)
                 DatePicker("التاريخ", selection: $date, displayedComponents: .date)
                 HStack { ForEach(colors.indices, id: \.self) { i in Chip(text: colors[i].0, selected: i == color) { color = i } } }
             }
@@ -191,7 +191,7 @@ struct CertificateTool: View {
                     Field(label: "الأسماء (اسم في كل سطر)", text: $names, lines: 6)
                     SecondaryButton(title: "استيراد الأسماء من Excel أو CSV", icon: "tablecells") { importing = true }
                     let n = nameList.count
-                    Text("\(n) اسمًا\(Plus.shared.unlocked ? "" : " • المجاني حتى 10 أسماء في المرة")").font(.plex(.caption)).foregroundStyle(Brand.text2)
+                    Text("\(n) اسما\(Plus.shared.unlocked ? "" : " • المجاني حتى 10 أسماء في المرة")").font(.plex(.caption)).foregroundStyle(Brand.text2)
                 }
             }
             TemplatePanel(styles: false)
@@ -202,7 +202,7 @@ struct CertificateTool: View {
                 for (i, who) in list.enumerated() {
                     if i > 0 { b.add(.pageBreak) }
                     b.add([.space(30), .para(org, size: 14, center: true, color: DocBuilder.muted), .para(kinds[kind], size: 34, bold: true, center: true, color: colors[color].1), .space(10),
-                           .para("يسرّنا أن نقدّم هذه الشهادة إلى", size: 14, center: true), .para(who, size: 28, bold: true, center: true)])
+                           .para("يسرنا أن نقدم هذه الشهادة إلى", size: 14, center: true), .para(who, size: 28, bold: true, center: true)])
                     if !reason.isEmpty { b.add(.para(reason, size: 14, center: true)) }
                     b.add([.space(30), .para("\(dayFmt.string(from: date))\n\(signer)\n...............................", size: 12, center: true, color: DocBuilder.muted)])
                 }

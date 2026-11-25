@@ -102,7 +102,7 @@ enum ImageEngine {
     private static func personCutout(_ cg: CGImage) throws -> UIImage {
         let req = VNGeneratePersonSegmentationRequest(); req.qualityLevel = .accurate; req.outputPixelFormat = kCVPixelFormatType_OneComponent8
         try VNImageRequestHandler(cgImage: cg).perform([req])
-        guard let maskBuf = req.results?.first?.pixelBuffer else { throw NSError(domain: "mys", code: 1, userInfo: [NSLocalizedDescriptionKey: "لم يُعثر على عنصر واضح في الصورة"]) }
+        guard let maskBuf = req.results?.first?.pixelBuffer else { throw NSError(domain: "mys", code: 1, userInfo: [NSLocalizedDescriptionKey: "لم يعثر على عنصر واضح في الصورة"]) }
         let src = CIImage(cgImage: cg)
         var mask = CIImage(cvPixelBuffer: maskBuf)
         mask = mask.transformed(by: CGAffineTransform(scaleX: src.extent.width / mask.extent.width, y: src.extent.height / mask.extent.height))
@@ -110,7 +110,7 @@ enum ImageEngine {
         let avg = CIFilter.areaAverage(); avg.inputImage = mask; avg.extent = mask.extent
         var px = [UInt8](repeating: 0, count: 4)
         if let o = avg.outputImage { ci.render(o, toBitmap: &px, rowBytes: 4, bounds: CGRect(x: 0, y: 0, width: 1, height: 1), format: .RGBA8, colorSpace: nil) }
-        if px[0] < 3 { throw NSError(domain: "mys", code: 1, userInfo: [NSLocalizedDescriptionKey: "لم يُعثر على عنصر واضح في الصورة"]) }
+        if px[0] < 3 { throw NSError(domain: "mys", code: 1, userInfo: [NSLocalizedDescriptionKey: "لم يعثر على عنصر واضح في الصورة"]) }
         let blend = CIFilter.blendWithMask(); blend.inputImage = src; blend.backgroundImage = CIImage.empty().cropped(to: src.extent); blend.maskImage = mask
         guard let out = blend.outputImage, let res = ci.createCGImage(out, from: src.extent) else { throw CocoaError(.fileWriteUnknown) }
         return UIImage(cgImage: res)

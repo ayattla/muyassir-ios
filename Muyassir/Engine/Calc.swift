@@ -85,7 +85,7 @@ enum Calc {
         let four: [String: Double] = ["A+": 4, "A": 3.75, "B+": 3.5, "B": 3, "C+": 2.5, "C": 2, "D+": 1.5, "D": 1, "F": 0]
         return (scale5 ? five : four)[l] ?? 0
     }
-    static func gradeWord(_ p: Double) -> String { p >= 90 ? "ممتاز" : p >= 80 ? "جيد جدًا" : p >= 70 ? "جيد" : p >= 60 ? "مقبول" : "راسب" }
+    static func gradeWord(_ p: Double) -> String { p >= 90 ? "ممتاز" : p >= 80 ? "جيد جدا" : p >= 70 ? "جيد" : p >= 60 ? "مقبول" : "راسب" }
 
     // Zakat: 2.5% of zakatable wealth held a lunar year, when it reaches the nisab (value of 85 g gold or 595 g silver).
     struct Zakat: Equatable { let wealth, nisab, due: Double; let reached: Bool }

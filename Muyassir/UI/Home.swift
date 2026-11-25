@@ -26,7 +26,7 @@ struct HomeView: View {
                 searchEntry
                 if role.isEmpty { RoleCard() }
                 if shows("quick") {
-                    SectionHead(title: "أدوات سريعة", sub: "أكثر ما يحتاجه الناس يوميًا")
+                    SectionHead(title: "أدوات سريعة", sub: "أكثر ما يحتاجه الناس يوميا")
                     LazyVGrid(columns: hsize == .regular ? Array(repeating: GridItem(.flexible(), spacing: Space.m), count: 6) : cols, spacing: Space.m) {
                         ForEach(featured, id: \.self) { id in if let t = Tools.byId[id] { NavigationLink(value: t) { FeaturedCard(tool: t) }.buttonStyle(PressStyle()).accessibilityIdentifier("quick-\(id)") } }
                     }
@@ -44,8 +44,8 @@ struct HomeView: View {
                     }
                 }
                 let most = store.usage.sorted { $0.value > $1.value }.prefix(4).compactMap { Tools.byId[$0.key] }
-                if shows("most") && !most.isEmpty { SectionHead(title: "الأكثر استخدامًا"); toolGrid(most, compact: true) }
-                if shows("rec") { SectionHead(title: "مقترحة لك", sub: "بناءً على آخر ما استخدمته"); toolGrid(Array(Tools.suggestions(last: store.recents.first?.tool).prefix(4)), compact: false) }
+                if shows("most") && !most.isEmpty { SectionHead(title: "الأكثر استخداما"); toolGrid(most, compact: true) }
+                if shows("rec") { SectionHead(title: "مقترحة لك", sub: "بناء على آخر ما استخدمته"); toolGrid(Array(Tools.suggestions(last: store.recents.first?.tool).prefix(4)), compact: false) }
                 if shows("favs") {
                     SectionHead(title: "المفضلة")
                     let favs = store.favorites.compactMap { Tools.byId[$0] }
@@ -62,12 +62,12 @@ struct HomeView: View {
                     }
                 }
                 if shows("files") && !outputs.isEmpty {
-                    SectionHead(title: "ملفاتك الناتجة", sub: "تُحذف تلقائيًا بعد 24 ساعة", action: ("الكل", { go("activity") }))
+                    SectionHead(title: "ملفاتك الناتجة", sub: "تحذف تلقائيا بعد 24 ساعة", action: ("الكل", { go("activity") }))
                     VStack(spacing: Space.s) { ForEach(outputs.prefix(4), id: \.self) { u in ActivityRow(icon: fileIcon(u), hex: 0x3346D3, title: u.lastPathComponent, detail: FilesX.human(FilesX.size(u)), date: FilesX.date(u), action: "") } }
                 }
                 VStack(spacing: 4) {
                     Image(systemName: "lock.fill").font(.caption).foregroundStyle(Brand.text3)
-                    Text("ملفاتك تُعالَج على جهازك. لا حسابات ولا إعلانات، والملفات المؤقتة تُحذف تلقائيًا بعد 24 ساعة.").font(.plex(.footnote)).foregroundStyle(Brand.text3).multilineTextAlignment(.center)
+                    Text("ملفاتك تعالج على جهازك. لا حسابات ولا إعلانات، والملفات المؤقتة تحذف تلقائيا بعد 24 ساعة.").font(.plex(.footnote)).foregroundStyle(Brand.text3).multilineTextAlignment(.center)
                 }.padding(.vertical, Space.xl)
             }
             .padding(.horizontal, Space.l).frame(maxWidth: 1100).frame(maxWidth: .infinity)
@@ -89,7 +89,7 @@ struct HomeView: View {
                 Image(systemName: theme == "dark" ? "sun.max" : "moon").font(.system(size: 18)).foregroundStyle(Brand.text2).frame(width: 44, height: 44)
             }.accessibilityLabel(theme == "dark" ? "الوضع الفاتح" : "الوضع الداكن")
             Spacer()
-            HStack(spacing: Space.s) { LogoMark(size: 34); Text("مُيسّر").font(.plex(.title2, .bold)).foregroundStyle(Brand.text1) }
+            HStack(spacing: Space.s) { LogoMark(size: 34); Text("ميسر").font(.plex(.title2, .bold)).foregroundStyle(Brand.text1) }
             Spacer()
             Button { go("settings") } label: { Image(systemName: "gearshape").font(.system(size: 18)).foregroundStyle(Brand.text2).frame(width: 44, height: 44) }.accessibilityLabel("الإعدادات")
         }.padding(.top, Space.s)
@@ -218,7 +218,7 @@ struct CategoryView: View {
                     Text("\(tools.count) أداة").font(.plex(.caption, .semibold)).foregroundStyle(Brand.tone(cat.hex))
                         .padding(.horizontal, 12).padding(.vertical, 4).background(Brand.toneSoft(cat.hex), in: Capsule())
                 }.multilineTextAlignment(.center).padding(.vertical, Space.m)
-                if tools.isEmpty { EmptyStateView(icon: "square.grid.2x2", title: "لا توجد أدوات هنا", text: "ارجع إلى الرئيسية واختر قسمًا آخر.") }
+                if tools.isEmpty { EmptyStateView(icon: "square.grid.2x2", title: "لا توجد أدوات هنا", text: "ارجع إلى الرئيسية واختر قسما آخر.") }
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Space.m), count: hsize == .regular ? 4 : 2), spacing: Space.m) {
                     ForEach(tools) { t in NavigationLink(value: t) { ToolCard(tool: t) }.buttonStyle(PressStyle()).accessibilityIdentifier("tool-\(t.id)") }
                 }

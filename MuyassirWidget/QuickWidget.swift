@@ -15,7 +15,7 @@ struct QuickWidgetView: View {
                                                      ("صور إلى PDF", "photo.on.rectangle", "muyassir://tool/img_pdf"), ("الوصفات", "wand.and.stars", "muyassir://recipes")]
     var body: some View {
         VStack(spacing: 8) {
-            Text("مُيسّر").font(.system(size: 15, weight: .bold)).foregroundStyle(Color(red: 0.08, green: 0.1, blue: 0.18))
+            Text("ميسر").font(.system(size: 15, weight: .bold)).foregroundStyle(Color(red: 0.08, green: 0.1, blue: 0.18))
             HStack(spacing: 6) {
                 ForEach(items, id: \.0) { label, icon, url in
                     Link(destination: URL(string: url)!) {
@@ -38,7 +38,7 @@ struct QuickWidgetView: View {
 struct QuickWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "quick", provider: QuickProvider()) { _ in QuickWidgetView() }
-            .configurationDisplayName("مُيسّر السريع")
+            .configurationDisplayName("ميسر السريع")
             .description("مسح وضغط وتحويل بلمسة، والوصفات.")
             .supportedFamilies([.systemMedium])
     }

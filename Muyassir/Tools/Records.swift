@@ -8,7 +8,7 @@ struct FieldSpec { let key: String; let label: String; var type: FType = .text; 
 let dayFmt: DateFormatter = { let f = DateFormatter(); f.locale = Locale(identifier: "ar"); f.dateFormat = "EEEE d/M/yyyy"; return f }()
 let dtFmt: DateFormatter = { let f = DateFormatter(); f.locale = Locale(identifier: "ar"); f.dateFormat = "EEEE d/M/yyyy  h:mm a"; return f }()
 func daysUntil(_ t: Double) -> Int { Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date()), to: Calendar.current.startOfDay(for: Date(timeIntervalSince1970: t))).day ?? 0 }
-func whenText(_ t: Double) -> String { let d = daysUntil(t); return d == 0 ? "اليوم" : d == 1 ? "غدًا" : d == -1 ? "أمس" : d > 0 ? "بعد \(d) يوم" : "منذ \(-d) يوم" }
+func whenText(_ t: Double) -> String { let d = daysUntil(t); return d == 0 ? "اليوم" : d == 1 ? "غدا" : d == -1 ? "أمس" : d > 0 ? "بعد \(d) يوم" : "منذ \(-d) يوم" }
 
 extension Dictionary where Key == String, Value == Any {
     func s(_ k: String) -> String { self[k] as? String ?? "" }
@@ -34,7 +34,7 @@ enum Notify {
         let c = UNUserNotificationCenter.current()
         c.getNotificationSettings { st in
             guard st.authorizationStatus == .authorized else { return }
-            let content = UNMutableNotificationContent(); content.title = "اكتملت العملية: \(tool)"; content.body = "\(n) \(n == 1 ? "ملف جاهز" : "ملفات جاهزة") في مُيسّر"
+            let content = UNMutableNotificationContent(); content.title = "اكتملت العملية: \(tool)"; content.body = "\(n) \(n == 1 ? "ملف جاهز" : "ملفات جاهزة") في ميسر"
             c.add(UNNotificationRequest(identifier: "done-\(UUID().uuidString)", content: content, trigger: nil))
         }
     }
@@ -218,7 +218,7 @@ struct ExamsTool: View {
     var body: some View {
         RecordList(tool: tool, storeName: "exams", fields: [FieldSpec(key: "subject", label: "المادة", required: true), FieldSpec(key: "at", label: "موعد الاختبار", type: .datetime, required: true), FieldSpec(key: "room", label: "القاعة/الملاحظات"), FieldSpec(key: "remind", label: "تذكير قبلها بيوم", type: .bool)],
             title: { $0.s("subject") }, subtitle: { $0.d("at") > 0 ? "\(dtFmt.string(from: Date(timeIntervalSince1970: $0.d("at")))) • \(whenText($0.d("at")))" : "" },
-            sort: { $0.sorted { $0.d("at") < $1.d("at") } }, reminder: { $0.b("remind") ? (Date(timeIntervalSince1970: $0.d("at") - 86400), "اختبارك غدًا") : nil },
+            sort: { $0.sorted { $0.d("at") < $1.d("at") } }, reminder: { $0.b("remind") ? (Date(timeIntervalSince1970: $0.d("at") - 86400), "اختبارك غدا") : nil },
             header: { list in
                 if let n = list.filter({ $0.d("at") > Date().timeIntervalSince1970 }).min(by: { $0.d("at") < $1.d("at") }) { ResultCard(main: ("أقرب اختبار", n.s("subject")), rows: [("الموعد", whenText(n.d("at")))]) }
             })
@@ -227,7 +227,7 @@ struct ExamsTool: View {
 
 struct HomeworkTool: View {
     let tool: Tool
-    var body: some View { RecordList(tool: tool, storeName: "homework", fields: [FieldSpec(key: "subject", label: "المادة", required: true), FieldSpec(key: "title", label: "الواجب", required: true), FieldSpec(key: "due", label: "موعد التسليم", type: .date), FieldSpec(key: "done", label: "سُلّم", type: .bool)],
+    var body: some View { RecordList(tool: tool, storeName: "homework", fields: [FieldSpec(key: "subject", label: "المادة", required: true), FieldSpec(key: "title", label: "الواجب", required: true), FieldSpec(key: "due", label: "موعد التسليم", type: .date), FieldSpec(key: "done", label: "سلم", type: .bool)],
         title: { "\($0.s("subject")): \($0.s("title"))" }, subtitle: { $0.d("due") > 0 ? "التسليم \(whenText($0.d("due")))" : "" }, doneKey: "done",
         sort: { $0.sorted { ($0.b("done") ? 1 : 0, $0.d("due")) < ($1.b("done") ? 1 : 0, $1.d("due")) } }) }
 }
@@ -239,9 +239,9 @@ struct DocumentsTool: View {
             FieldSpec(key: "kind", label: "النوع", type: .choice(["هوية وطنية", "جواز سفر", "إقامة", "رخصة قيادة", "استمارة مركبة", "تأمين", "عقد إيجار", "موعد", "أخرى"])),
             FieldSpec(key: "expiry", label: "تاريخ الانتهاء أو الموعد", type: .date, required: true), FieldSpec(key: "days", label: "التذكير قبل (أيام)", type: .num), FieldSpec(key: "note", label: "ملاحظة")],
             title: { $0.s("name") }, subtitle: { "\($0.s("kind")) • \(whenText($0.d("expiry")))" }, sort: { $0.sorted { $0.d("expiry") < $1.d("expiry") } },
-            reminder: { r in (Date(timeIntervalSince1970: r.d("expiry") - (r.s("days").num > 0 ? r.s("days").num : 30) * 86400).addingTimeInterval(9 * 3600), "تنتهي \(r.s("kind")) قريبًا — جدّدها عبر المنصة الرسمية") },
+            reminder: { r in (Date(timeIntervalSince1970: r.d("expiry") - (r.s("days").num > 0 ? r.s("days").num : 30) * 86400).addingTimeInterval(9 * 3600), "تنتهي \(r.s("kind")) قريبا — جددها عبر المنصة الرسمية") },
             header: { list in
-                if !list.isEmpty { ResultCard(main: nil, rows: [("تنتهي خلال 30 يومًا", "\(list.filter { (0...30).contains(daysUntil($0.d("expiry"))) }.count)"), ("منتهية", "\(list.filter { daysUntil($0.d("expiry")) < 0 }.count)")]) }
+                if !list.isEmpty { ResultCard(main: nil, rows: [("تنتهي خلال 30 يوما", "\(list.filter { (0...30).contains(daysUntil($0.d("expiry"))) }.count)"), ("منتهية", "\(list.filter { daysUntil($0.d("expiry")) < 0 }.count)")]) }
                 ExpiryFromPhoto()
                 Hint(text: "لا تكتب أرقام الوثائق الكاملة. البيانات تبقى على جهازك فقط. التجديد يتم عبر أبشر أو المنصة المختصة.")
             }) }
@@ -277,7 +277,7 @@ struct BudgetTool: View {
         let total = spent.values.reduce(0, +)
         ToolScreen(tool: tool) {
             Panel { NumField(label: "الدخل الشهري", text: $income, suffix: "ريال") }
-            ResultCard(main: ("المتبقي هذا الشهر", money(income.num - total)), rows: [("المصروف", money(total)), ("الحدود المخططة", money(limits.values.reduce(0) { $0 + $1.num }))], note: "المصروفات تُسجَّل من أداة «إدارة المصروفات».")
+            ResultCard(main: ("المتبقي هذا الشهر", money(income.num - total)), rows: [("المصروف", money(total)), ("الحدود المخططة", money(limits.values.reduce(0) { $0 + $1.num }))], note: "المصروفات تسجل من أداة «إدارة المصروفات».")
             Panel(title: "الحد الشهري لكل فئة") {
                 ForEach(expenseCats, id: \.self) { c in
                     let s = spent[c] ?? 0, lim = limits[c]?.num ?? 0
@@ -285,7 +285,7 @@ struct BudgetTool: View {
                         VStack(alignment: .leading) {
                             Text(c).font(.plex(.subheadline, .semibold))
                             if lim > 0 { ProgressView(value: min(s / lim, 1)).tint(s > lim ? .red : Brand.lapis) }
-                            Text("صُرف \(money(s))").font(.plex(.caption)).foregroundStyle(.secondary)
+                            Text("صرف \(money(s))").font(.plex(.caption)).foregroundStyle(.secondary)
                         }
                         NumField(label: "الحد", text: Binding(get: { limits[c] ?? "" }, set: { limits[c] = $0 })).frame(width: 130)
                     }
@@ -316,7 +316,7 @@ struct AttendanceTool: View {
             if !students.isEmpty {
                 Panel(title: "تسجيل حصة") {
                     DatePicker("التاريخ", selection: $date, displayedComponents: .date)
-                    Text("علّم الغائبين:").font(.plex(.subheadline, .semibold))
+                    Text("علم الغائبين:").font(.plex(.subheadline, .semibold))
                     ForEach(students, id: \.self) { s in
                         HStack {
                             Button { if absent.contains(s) { absent.remove(s) } else { absent.insert(s) } } label: { Label(s, systemImage: absent.contains(s) ? "xmark.circle.fill" : "checkmark.circle") }
@@ -378,10 +378,10 @@ struct ExpiryFromPhoto: View {
     var body: some View {
         VStack(spacing: Space.s) {
             PhotosPicker(selection: $item, matching: .images) {
-                Label(busy ? "جارٍ القراءة…" : "قراءة تاريخ الانتهاء من صورة الوثيقة", systemImage: "doc.viewfinder").font(.plex(.subheadline, .semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                Label(busy ? "جار القراءة…" : "قراءة تاريخ الانتهاء من صورة الوثيقة", systemImage: "doc.viewfinder").font(.plex(.subheadline, .semibold)).frame(maxWidth: .infinity, minHeight: 44)
             }.accessibilityIdentifier("expiryPhoto")
             if let found {
-                if found.isEmpty { Text("لم أجد تاريخًا واضحًا في الصورة. جرّب صورة أوضح أو أدخله يدويًا.").font(.plex(.caption)).foregroundStyle(.red) }
+                if found.isEmpty { Text("لم أجد تاريخا واضحا في الصورة. جرب صورة أوضح أو أدخله يدويا.").font(.plex(.caption)).foregroundStyle(.red) }
                 else {
                     Text("اختر تاريخ الانتهاء:").font(.plex(.caption, .semibold))
                     ForEach(found.sorted { $0.date > $1.date }, id: \.date) { f in
@@ -391,7 +391,7 @@ struct ExpiryFromPhoto: View {
                     }
                 }
             }
-            Text("تُقرأ الصورة على جهازك ولا تُحفظ؛ يُحفظ التاريخ فقط.").font(.plex(.caption2)).foregroundStyle(Brand.text3)
+            Text("تقرأ الصورة على جهازك ولا تحفظ؛ يحفظ التاريخ فقط.").font(.plex(.caption2)).foregroundStyle(Brand.text3)
         }
         .onChange(of: item) { _, it in
             guard let it else { return }

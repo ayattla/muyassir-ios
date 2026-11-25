@@ -83,25 +83,25 @@ struct RecipeRunView: View {
             FileTool(tool: Recipes.asTool(r), types: Recipes.types(r), multiple: true, pickLabel: "اختر \(Recipes.inputName(r.input))", actionLabel: "تشغيل الوصفة", options: { ins in
                 Panel(title: "الخطوات") {
                     ForEach(Array(r.steps.enumerated()), id: \.offset) { i, s in Text("\(i + 1). " + Recipes.describe([s])).font(.plex(.subheadline)) }
-                    Hint(text: "\(ins.count) ملف. تعمل كل الخطوات على جهازك، وتُحتسب الوصفة عملية واحدة.")
+                    Hint(text: "\(ins.count) ملف. تعمل كل الخطوات على جهازك، وتحتسب الوصفة عملية واحدة.")
                 }
             }) { ins, out, p in try Recipes.run(r, ins, out: out, p: p) }
         } else { Text("الوصفة غير موجودة") }
     }
 }
 
-/// «فتح في مُيسّر»: what to do with a file opened from another app.
+/// «فتح في ميسر»: what to do with a file opened from another app.
 struct IncomingView: View {
     @ObservedObject var incoming = Incoming.shared
     var body: some View {
         let kinds = Set(incoming.files.map(Incoming.kind))
         ScrollView {
             VStack(spacing: Space.m) {
-                Panel(title: "\(incoming.files.count) \(incoming.files.count == 1 ? "ملف" : "ملفات") وصلت إلى مُيسّر") {
+                Panel(title: "\(incoming.files.count) \(incoming.files.count == 1 ? "ملف" : "ملفات") وصلت إلى ميسر") {
                     ForEach(incoming.files, id: \.self) { u in
                         HStack { Thumb(url: u); VStack(alignment: .leading) { Text(u.lastPathComponent).font(.plex(.subheadline)).lineLimit(1); Text("\(Incoming.kindLabel[Incoming.kind(u)] ?? "") • \(FilesX.human(FilesX.size(u)))").font(.plex(.caption)).foregroundStyle(Brand.text3) }; Spacer() }
                     }
-                    Text("نُسخت إلى جهازك فقط ولم تُرفع إلى أي مكان.").font(.plex(.caption2)).foregroundStyle(Brand.text3).frame(maxWidth: .infinity)
+                    Text("نسخت إلى جهازك فقط ولم ترفع إلى أي مكان.").font(.plex(.caption2)).foregroundStyle(Brand.text3).frame(maxWidth: .infinity)
                 }
                 let recipes = Recipes.shared.forKinds(kinds)
                 if !recipes.isEmpty {
@@ -127,10 +127,10 @@ struct RoleCard: View {
     @AppStorage("role") private var role = ""
     var body: some View {
         VStack(spacing: Space.s) {
-            Text("لنرتّب مُيسّر لك").font(.plex(.headline, .semibold))
-            Text("اختر ما يصفك لنقدّم الأدوات التي تحتاجها أولًا. يمكنك تغييره من الإعدادات.").font(.plex(.caption)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
+            Text("لنرتب ميسر لك").font(.plex(.headline, .semibold))
+            Text("اختر ما يصفك لنقدم الأدوات التي تحتاجها أولا. يمكنك تغييره من الإعدادات.").font(.plex(.caption)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
             HStack { ForEach(Tools.roles, id: \.0) { r in Chip(text: r.1, selected: false) { role = r.0 } } }
-            Button("تخطٍّ") { role = "none" }.font(.plex(.subheadline))
+            Button("تخط") { role = "none" }.font(.plex(.subheadline))
         }
         .padding(Space.l).frame(maxWidth: .infinity).card().accessibilityIdentifier("roleCard")
     }

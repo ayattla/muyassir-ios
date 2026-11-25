@@ -8,7 +8,7 @@ enum Backup {
     static let magic = Data("MYSB1".utf8)
     static let rounds: UInt32 = 120_000
     enum Failure: LocalizedError { case notBackup, wrongPassword
-        var errorDescription: String? { switch self { case .notBackup: "هذا الملف ليس نسخة احتياطية من مُيسّر"; case .wrongPassword: "كلمة المرور غير صحيحة" } } }
+        var errorDescription: String? { switch self { case .notBackup: "هذا الملف ليس نسخة احتياطية من ميسر"; case .wrongPassword: "كلمة المرور غير صحيحة" } } }
 
     static var dataDir: URL { FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("data", isDirectory: true) }
 

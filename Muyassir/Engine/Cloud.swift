@@ -40,12 +40,12 @@ enum Cloud {
             case 5:
                 let its = Array(Edu.items(q.s("items")).prefix(8))
                 if its.count < 2 { skipped += 1; continue }
-                out.append(["text": text.isEmpty ? "رتّب العناصر ترتيبًا صحيحًا" : text, "type": "order", "options": its.sorted(), "answer": its, "mark": mark])
+                out.append(["text": text.isEmpty ? "رتب العناصر ترتيبا صحيحا" : text, "type": "order", "options": its.sorted(), "answer": its, "mark": mark])
             case 6:
                 let ps = Array(Edu.pairs(q.s("pairs")).filter { !$0.1.isEmpty }.prefix(20))
                 var cats: [String] = []; for c in ps.map(\.1) where !cats.contains(c) { cats.append(c) }
                 if ps.count < 2 || cats.count < 2 || cats.count > 8 { skipped += 1; continue }
-                out.append(["text": text.isEmpty ? "صنّف العناصر" : text, "type": "classify", "items": ps.map(\.0), "options": cats, "answer": ps.map(\.1), "mark": mark])
+                out.append(["text": text.isEmpty ? "صنف العناصر" : text, "type": "classify", "items": ps.map(\.0), "options": cats, "answer": ps.map(\.1), "mark": mark])
             default: skipped += 1
             }
         }
@@ -70,7 +70,7 @@ enum Cloud {
         guard (200..<300).contains(code) else {
             if code == 429 { throw Failure(message: "طلبات كثيرة خلال وقت قصير، حاول بعد قليل") }
             if let d = json["detail"] as? String, !d.isEmpty { throw Failure(message: d) }
-            if code == 404 { throw Failure(message: "الاختبار غير موجود على الخادم (ربما حُذف)") }
+            if code == 404 { throw Failure(message: "الاختبار غير موجود على الخادم (ربما حذف)") }
             throw Failure(message: "تعذر الاتصال بالخادم (\(code))")
         }
         return json

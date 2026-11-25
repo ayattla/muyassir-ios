@@ -28,7 +28,7 @@ struct PdfToWord: View {
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تحويل إلى Word", options: { _ in
             Panel { Toggle("إعادة بناء العناوين والجداول بالتعرف الضوئي (للمسح الضوئي والجداول، أبطأ)", isOn: $ocr).font(.plex(.subheadline))
-                Hint(text: "بدونه يُستخرج النص والفقرات من طبقة النص مع اتجاه عربي صحيح. معه تُقرأ كل صفحة كصورة ويُعاد بناء الجداول والعناوين، وتظهر الكلمات غير المؤكدة لمراجعتها قبل الحفظ.") }
+                Hint(text: "بدونه يستخرج النص والفقرات من طبقة النص مع اتجاه عربي صحيح. معه تقرأ كل صفحة كصورة ويعاد بناء الجداول والعناوين، وتظهر الكلمات غير المؤكدة لمراجعتها قبل الحفظ.") }
         }, after: { ReviewPanel(state: review) }) { ins, out, p in
             if await MainActor.run(body: { ocr }) {
                 let budget = await MainActor.run { min(Plus.shared.ocrPages, 80) }
@@ -53,7 +53,7 @@ struct PdfToWord: View {
 struct WordToPdf: View {
     let tool: Tool
     var body: some View {
-        FileTool(tool: tool, types: [docxType], pickLabel: "اختر ملف Word (DOCX)", actionLabel: "تحويل إلى PDF", options: { _ in Hint(text: "يدعم DOCX. ملفات DOC القديمة احفظها بصيغة DOCX أولًا.") }) { ins, out, _ in
+        FileTool(tool: tool, types: [docxType], pickLabel: "اختر ملف Word (DOCX)", actionLabel: "تحويل إلى PDF", options: { _ in Hint(text: "يدعم DOCX. ملفات DOC القديمة احفظها بصيغة DOCX أولا.") }) { ins, out, _ in
             let b = DocBuilder()
             for line in try Office.readDocx(ins[0]) {
                 if line.contains("\t") { b.add(.table(header: [], rows: [line.components(separatedBy: "\t")])) }
@@ -68,7 +68,7 @@ struct PdfToExcel: View {
     let tool: Tool; @State var ocr = false
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تحويل إلى Excel", options: { _ in
-            Panel { Toggle("التعرف الضوئي على الصفحات", isOn: $ocr).font(.plex(.subheadline)); Hint(text: "كل صفحة ورقة عمل، وكل سطر صف. الأعمدة تُفصل حيث توجد مسافات واسعة أو علامات جدولة.") }
+            Panel { Toggle("التعرف الضوئي على الصفحات", isOn: $ocr).font(.plex(.subheadline)); Hint(text: "كل صفحة ورقة عمل، وكل سطر صف. الأعمدة تفصل حيث توجد مسافات واسعة أو علامات جدولة.") }
         }) { ins, out, p in
             let sheets = try pdfLines(ins[0], ocr: ocr, p).enumerated().map { i, lines in
                 ("صفحة \(i + 1)", lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.map { l in
@@ -85,7 +85,7 @@ struct ExcelToPdf: View {
         FileTool(tool: tool, types: [xlsxType], pickLabel: "اختر ملف Excel (XLSX)", actionLabel: "تحويل إلى PDF", options: { _ in
             Panel { Toggle("صفحة أفقية", isOn: $landscape); Toggle("الصف الأول عناوين", isOn: $headerRow) }.font(.plex(.subheadline))
         }) { ins, out, _ in
-            let sheets = try Office.readXlsx(ins[0]); guard !sheets.isEmpty else { throw UserError("لم يُعثر على أوراق عمل في الملف") }
+            let sheets = try Office.readXlsx(ins[0]); guard !sheets.isEmpty else { throw UserError("لم يعثر على أوراق عمل في الملف") }
             let b = DocBuilder(landscape: landscape)
             for (i, s) in sheets.enumerated() {
                 if i > 0 { b.add(.pageBreak) }
@@ -102,7 +102,7 @@ struct ExcelToPdf: View {
 struct PdfToPpt: View {
     let tool: Tool
     var body: some View {
-        FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تحويل إلى PowerPoint", options: { _ in Hint(text: "كل صفحة تصبح شريحة بشكلها الأصلي تمامًا (صورة عالية الدقة).") }) { ins, out, p in
+        FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تحويل إلى PowerPoint", options: { _ in Hint(text: "كل صفحة تصبح شريحة بشكلها الأصلي تماما (صورة عالية الدقة).") }) { ins, out, p in
             let d = try PdfEngine.open(ins[0])
             let slides: [Office.Slide] = (0..<d.pageCount).compactMap { i in
                 p.update(i, d.pageCount, "الصفحة \(i + 1) من \(d.pageCount)")
@@ -118,7 +118,7 @@ struct PdfToPpt: View {
 struct PptToPdf: View {
     let tool: Tool
     var body: some View {
-        FileTool(tool: tool, types: [pptxType], pickLabel: "اختر عرض PowerPoint (PPTX)", actionLabel: "تحويل إلى PDF", options: { _ in Hint(text: "تُنقل نصوص كل شريحة إلى صفحة أفقية. الصور والأشكال لا تُنقل في هذا الإصدار.") }) { ins, out, _ in
+        FileTool(tool: tool, types: [pptxType], pickLabel: "اختر عرض PowerPoint (PPTX)", actionLabel: "تحويل إلى PDF", options: { _ in Hint(text: "تنقل نصوص كل شريحة إلى صفحة أفقية. الصور والأشكال لا تنقل في هذا الإصدار.") }) { ins, out, _ in
             let b = DocBuilder(landscape: true)
             for (i, s) in try Office.readPptx(ins[0]).enumerated() {
                 if i > 0 { b.add(.pageBreak) }
@@ -155,7 +155,7 @@ struct ImagesToPdf: View {
     let tool: Tool; @State var a4 = true
     var body: some View {
         FileTool(tool: tool, types: [.image], multiple: true, pickLabel: "اختر الصور", actionLabel: "إنشاء PDF", reorderable: true, options: { _ in
-            Panel { Toggle("ضبط على صفحات A4", isOn: $a4).font(.plex(.subheadline)); Text("رتّب الصور بالأسهم قبل الإنشاء.").font(.plex(.caption)) }
+            Panel { Toggle("ضبط على صفحات A4", isOn: $a4).font(.plex(.subheadline)); Text("رتب الصور بالأسهم قبل الإنشاء.").font(.plex(.caption)) }
         }) { ins, out, _ in
             [try PdfEngine.fromImages(ins.compactMap { ImageEngine.load($0, maxSide: 2400) }, a4: a4, to: out.appendingPathComponent("صور-\(ins.count).pdf"))]
         }
@@ -174,7 +174,7 @@ struct PdfMerge: View {
 struct PdfSplit: View {
     let tool: Tool; @State var mode = 0; @State var spec = ""
     var body: some View {
-        FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تقسيم", validate: { $0.isEmpty ? "اختر ملفًا" : (mode == 1 && spec.isEmpty ? "اكتب النطاقات" : nil) }, options: { ins in
+        FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "تقسيم", validate: { $0.isEmpty ? "اختر ملفا" : (mode == 1 && spec.isEmpty ? "اكتب النطاقات" : nil) }, options: { ins in
             Panel { PageCountLabel(url: ins[0]); Seg(options: ["كل صفحة ملف", "حسب النطاقات"], selection: $mode); if mode == 1 { Field(label: "النطاقات، كل نطاق ملف: 1-3, 4-6, 7-", text: $spec) } }
         }) { ins, out, _ in
             let d = try PdfEngine.open(ins[0])
@@ -188,7 +188,7 @@ struct PdfCompress: View {
     let tool: Tool; @State var level = 1
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "ضغط الملف", options: { _ in
-            Panel { Seg(options: ["خفيف", "متوازن", "قوي"], selection: $level); Hint(text: "يُعاد رسم الصفحات كصور مضغوطة فيصغر الحجم كثيرًا خاصة للملفات الممسوحة. النص يصبح غير قابل للتحديد.") }
+            Panel { Seg(options: ["خفيف", "متوازن", "قوي"], selection: $level); Hint(text: "يعاد رسم الصفحات كصور مضغوطة فيصغر الحجم كثيرا خاصة للملفات الممسوحة. النص يصبح غير قابل للتحديد.") }
         }) { ins, out, p in
             let (dpi, q): (CGFloat, CGFloat) = [(150, 0.8), (110, 0.65), (80, 0.45)][level]
             let o = try PdfEngine.compress(ins[0], dpi: dpi, quality: q, to: out.appendingPathComponent(FilesX.base(ins[0]) + "-مضغوط.pdf")) { i, n in p.update(i, n, "صفحة \(i + 1) من \(n)") }
@@ -203,7 +203,7 @@ struct PdfPages: View {
     @State var spec = ""; @State var reverse = 0; @State var deg = 0
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: title,
-                 validate: { $0.isEmpty ? "اختر ملفًا" : (needsSpec && spec.isEmpty ? "حدد الصفحات" : nil) }, options: { ins in
+                 validate: { $0.isEmpty ? "اختر ملفا" : (needsSpec && spec.isEmpty ? "حدد الصفحات" : nil) }, options: { ins in
             Panel {
                 PageCountLabel(url: ins[0])
                 switch mode {
@@ -238,12 +238,12 @@ struct PdfProtect: View {
     @ObservedObject private var plus = Plus.shared
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "حماية الملف",
-                 validate: { $0.isEmpty ? "اختر ملفًا" : pass.count < 4 ? "كلمة المرور 4 أحرف على الأقل" : pass != pass2 ? "كلمتا المرور غير متطابقتين" : nil }, options: { _ in
+                 validate: { $0.isEmpty ? "اختر ملفا" : pass.count < 4 ? "كلمة المرور 4 أحرف على الأقل" : pass != pass2 ? "كلمتا المرور غير متطابقتين" : nil }, options: { _ in
             Panel {
                 HStack(spacing: 6) { Text("علامة مائية (اختياري)").font(.plex(.subheadline, .semibold)); PlusBadge() }.frame(maxWidth: .infinity)
                 Field(label: "نص العلامة، مثل: سري أو نسخة للمراجعة", text: Binding(get: { mark }, set: { v in if v.isEmpty || plus.allow(.sign) { mark = v } }))
             }
-            Panel { Field(label: "كلمة المرور", text: $pass, secure: true); Field(label: "تأكيد كلمة المرور", text: $pass2, secure: true); Hint(text: "احتفظ بكلمة المرور؛ لا يمكن استرجاعها إن نُسيت.") }
+            Panel { Field(label: "كلمة المرور", text: $pass, secure: true); Field(label: "تأكيد كلمة المرور", text: $pass2, secure: true); Hint(text: "احتفظ بكلمة المرور؛ لا يمكن استرجاعها إن نسيت.") }
         }) { ins, out, _ in
             var src = ins[0]
             let open = await MainActor.run { Plus.shared.unlocked }

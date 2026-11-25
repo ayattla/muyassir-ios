@@ -7,12 +7,12 @@ struct ZakatTool: View {
     var body: some View {
         ToolScreen(tool: tool) {
             Panel(title: "أموالك التي حال عليها الحول") {
-                NumField(label: "النقد والأرصدة البنكية", text: $cash, suffix: "ريال"); NumField(label: "قيمة الذهب المُدّخر", text: $gold, suffix: "ريال")
+                NumField(label: "النقد والأرصدة البنكية", text: $cash, suffix: "ريال"); NumField(label: "قيمة الذهب المدخر", text: $gold, suffix: "ريال")
                 NumField(label: "قيمة الفضة", text: $silver, suffix: "ريال"); NumField(label: "عروض التجارة بسعر اليوم", text: $trade, suffix: "ريال")
-                NumField(label: "الديون المرجوّ سدادها لك", text: $recv, suffix: "ريال"); NumField(label: "الديون الحالّة عليك", text: $debts, suffix: "ريال")
+                NumField(label: "الديون المرجو سدادها لك", text: $recv, suffix: "ريال"); NumField(label: "الديون الحالة عليك", text: $debts, suffix: "ريال")
             }
             Panel(title: "النصاب") {
-                Seg(options: ["بالذهب (85 غرامًا)", "بالفضة (595 غرامًا)"], selection: $basis)
+                Seg(options: ["بالذهب (85 غراما)", "بالفضة (595 غراما)"], selection: $basis)
                 NumField(label: basis == 0 ? "سعر غرام الذهب عيار 24 اليوم" : "سعر غرام الفضة اليوم", text: $price, suffix: "ريال")
             }
             let nisab = price.num * (basis == 0 ? 85 : 595)
@@ -40,7 +40,7 @@ struct OvertimeTool: View {
                 ResultCard(main: ("أجر الساعات الإضافية", money(o.total)), rows: [("أجر الساعة الفعلي", money(o.hourly)), ("50% من أجر الساعة الأساسي", money(o.basicHourly * 0.5)), ("أجر الساعة الإضافية", money(o.perHour))])
                     .onAppear { store.used(tool.id) }
             }
-            Hint(text: "وفق المادة 107 من نظام العمل: أجر الساعة مضافًا إليه 50% من الأجر الأساسي. أجر الساعة = الأجر الشهري ÷ 30 ÷ ساعات العمل اليومية. يجوز باتفاق الطرفين احتساب أيام راحة تعويضية بدل الأجر.")
+            Hint(text: "وفق المادة 107 من نظام العمل: أجر الساعة مضافا إليه 50% من الأجر الأساسي. أجر الساعة = الأجر الشهري ÷ 30 ÷ ساعات العمل اليومية. يجوز باتفاق الطرفين احتساب أيام راحة تعويضية بدل الأجر.")
             RulePanel("overtime")
         }
     }
@@ -63,7 +63,7 @@ struct ElectricityTool: View {
                 ResultCard(main: ("الفاتورة التقديرية", money(p.total)), rows: [("حتى 6,000 ك.و.س (\(fmt(r1, 0)) هللة)", money(p.tier1)), ("ما زاد عن 6,000 (\(fmt(r2, 0)) هللة)", money(p.tier2)), ("الرسوم الثابتة", money(p.fixed)), ("ضريبة القيمة المضافة 15%", money(p.vat))])
                     .onAppear { store.used(tool.id) }
             }
-            Hint(text: "للقطاع السكني. ابتداءً من 1 يناير 2027 تصبح التعرفة 21 هللة حتى 6,000 ك.و.س و33 هللة لما زاد، ويُستبدل رسم الخدمة برسم ثابت حسب سعة القاطع؛ أدخل الرسم الظاهر في فاتورتك. التقدير لا يغني عن فاتورة الشركة السعودية للكهرباء.")
+            Hint(text: "للقطاع السكني. ابتداء من 1 يناير 2027 تصبح التعرفة 21 هللة حتى 6,000 ك.و.س و33 هللة لما زاد، ويستبدل رسم الخدمة برسم ثابت حسب سعة القاطع؛ أدخل الرسم الظاهر في فاتورتك. التقدير لا يغني عن فاتورة الشركة السعودية للكهرباء.")
         }
     }
 }

@@ -37,7 +37,7 @@ struct SalaryTool: View {
                 ResultCard(main: ("صافي الراتب الشهري", money(s.net)), rows: [("إجمالي الراتب", money(s.gross)), ("خصم التأمينات (\(fmt(g.employeeRate))%)", money(s.gosi)),
                     ("الأجر الخاضع للاشتراك", money(g.base)), ("حصة صاحب العمل (\(fmt(g.employerRate))%)", money(g.employer)), ("صافي سنوي", money(s.net * 12))])
             }
-            Hint(text: "الأجر الخاضع = الأساسي + السكن بحد أقصى 45,000 ريال. للسعودي في النظام السابق: 9% معاشات + 0.75% ساند على الموظف، ويضيف صاحب العمل 2% أخطار مهنية. في النظام الجديد ترتفع نسبة المعاشات 0.5% كل يوليو وفق جدول التأمينات (النسبة الحالية تُطبَّق تلقائيًا). تحقق من تطبيق «تأميناتي» لمعرفة نظامك.")
+            Hint(text: "الأجر الخاضع = الأساسي + السكن بحد أقصى 45,000 ريال. للسعودي في النظام السابق: 9% معاشات + 0.75% ساند على الموظف، ويضيف صاحب العمل 2% أخطار مهنية. في النظام الجديد ترتفع نسبة المعاشات 0.5% كل يوليو وفق جدول التأمينات (النسبة الحالية تطبق تلقائيا). تحقق من تطبيق «تأميناتي» لمعرفة نظامك.")
             RulePanel("salary")
         }
     }
@@ -69,9 +69,9 @@ struct LeaveTool: View {
                 NumField(label: "الأيام المستخدمة", text: $used, suffix: "يوم"); NumField(label: "الأجر الشهري", text: $wage, suffix: "ريال") }
             if !years.isEmpty {
                 let r = Calc.leave(serviceYears: years.num, monthsThisYear: months.num, usedDays: used.num, wage: wage.num)
-                ResultCard(main: ("الرصيد المتبقي", "\(fmt(r.remaining, 1)) يوم"), rows: [("الاستحقاق السنوي", "\(r.entitlement) يومًا"), ("المستحق حتى الآن", "\(fmt(r.accrued, 1)) يوم"), ("قيمة الرصيد", money(r.value))])
+                ResultCard(main: ("الرصيد المتبقي", "\(fmt(r.remaining, 1)) يوم"), rows: [("الاستحقاق السنوي", "\(r.entitlement) يوما"), ("المستحق حتى الآن", "\(fmt(r.accrued, 1)) يوم"), ("قيمة الرصيد", money(r.value))])
             }
-            Hint(text: "المادة 109 من نظام العمل: 21 يومًا سنويًا، تزيد إلى 30 يومًا بعد خمس سنوات متصلة لدى صاحب العمل.")
+            Hint(text: "المادة 109 من نظام العمل: 21 يوما سنويا، تزيد إلى 30 يوما بعد خمس سنوات متصلة لدى صاحب العمل.")
             RulePanel("leave")
         }
     }
@@ -103,7 +103,7 @@ struct DiscountTool: View {
             if price.num > 0 {
                 let r = Calc.discount(price.num, [d1.num, d2.num])
                 ResultCard(main: ("السعر بعد الخصم", money(vat ? r.final * 1.15 : r.final)), rows: [("التوفير", money(r.saving)), ("الخصم الفعلي", "\(fmt(r.effectivePct))%")] + (vat ? [("قبل الضريبة", money(r.final))] : []),
-                           note: d2.num > 0 ? "خصمان متتاليان لا يُجمعان: \(fmt(d1.num))% ثم \(fmt(d2.num))% = \(fmt(r.effectivePct))%" : nil)
+                           note: d2.num > 0 ? "خصمان متتاليان لا يجمعان: \(fmt(d1.num))% ثم \(fmt(d2.num))% = \(fmt(r.effectivePct))%" : nil)
             }
         }
     }
@@ -130,7 +130,7 @@ struct HijriTool: View {
             if let r = (dir == 0 ? Hijri.toHijri(Int(y.num), Int(m.num), Int(d.num)) : Hijri.toGregorian(Int(y.num), Int(m.num), Int(d.num))), (1...12).contains(Int(m.num)) {
                 ResultCard(main: ("النتيجة", "\(Hijri.days[r.weekday - 1]) \(r.d) \(dir == 0 ? Hijri.months[r.m - 1] : Hijri.gMonths[r.m - 1]) \(r.y) \(dir == 0 ? "هـ" : "م")"))
             }
-            Hint(text: "وفق تقويم أم القرى المعتمد في المملكة. بدايات الأشهر الشرعية تُعلن رسميًا بالرؤية وقد تختلف بيوم.")
+            Hint(text: "وفق تقويم أم القرى المعتمد في المملكة. بدايات الأشهر الشرعية تعلن رسميا بالرؤية وقد تختلف بيوم.")
         }
     }
 }
@@ -149,7 +149,7 @@ struct GovDirectory: View {
     ]
     var body: some View {
         ToolScreen(tool: tool) {
-            Hint(text: "روابط مباشرة للمواقع الرسمية. مُيسّر لا ينفذ معاملات حكومية ولا يطلب بيانات دخولك.")
+            Hint(text: "روابط مباشرة للمواقع الرسمية. ميسر لا ينفذ معاملات حكومية ولا يطلب بيانات دخولك.")
             ForEach(groups, id: \.0) { g in
                 Panel(title: g.0) {
                     ForEach(g.1, id: \.0) { l in
@@ -168,7 +168,7 @@ struct EmergencyTool: View {
     let tool: Tool
     private let nums = [("911", "الطوارئ الموحد (الرياض، مكة المكرمة، المدينة المنورة، الشرقية)"), ("999", "الشرطة"), ("997", "الإسعاف — الهلال الأحمر"), ("998", "الدفاع المدني"),
         ("993", "حوادث المرور"), ("996", "أمن الطرق"), ("112", "طوارئ دون شريحة"), ("937", "وزارة الصحة — استشارات"), ("933", "طوارئ الكهرباء"), ("994", "حرس الحدود"),
-        ("995", "مكافحة المخدرات (بلاغات سرية)"), ("920000560", "نجم — حوادث المركبات المؤمّنة")]
+        ("995", "مكافحة المخدرات (بلاغات سرية)"), ("920000560", "نجم — حوادث المركبات المؤمنة")]
     var body: some View {
         ToolScreen(tool: tool) {
             Panel {

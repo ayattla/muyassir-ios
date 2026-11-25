@@ -114,8 +114,8 @@ final class UiFlowTests: XCTestCase {
     func testTodaySetupPrayerDatesAndTasks() {
         launch(tab: "today", fresh: true)
         XCTAssertTrue(app.descendants(matching: .any)["todaySetup"].waitForExistence(timeout: 10))
-        waitText("نرتّب لك يومك")
-        app.buttons["role-teacher"].tap(); app.buttons["role-employee"].tap()
+        waitText("نرتب لك يومك")
+        reveal(app.buttons["role-teacher"]); app.buttons["role-teacher"].tap(); app.buttons["role-employee"].tap()
         let start = app.buttons.matching(NSPredicate(format: "identifier == 'todayStart' OR label == 'ابدأ يومي'")).firstMatch
         reveal(start); start.tap()
         XCTAssertFalse(app.descendants(matching: .any)["todaySetup"].waitForExistence(timeout: 2))
@@ -130,6 +130,8 @@ final class UiFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons["quick-scan"].exists)
         let field = app.textFields["quickTask"]; reveal(field); field.tap(); field.typeText("مهمة سريعة")
         app.buttons["quickTaskAdd"].tap(); waitText("مهمة سريعة")
+        reveal(app.buttons["day-1"]); app.buttons["day-1"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["budgetCard"].exists && app.descendants(matching: .any)["vatCard"].exists)
         reveal(app.buttons["space-files"]); reveal(app.buttons["toolOfDay"])
         let add = app.buttons.matching(NSPredicate(format: "label IN %@", ["أضف مهمة", "كل المهام"])).firstMatch; reveal(add); add.tap()
         XCTAssertTrue(app.navigationBars["المهام"].waitForExistence(timeout: 5))

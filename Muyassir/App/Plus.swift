@@ -3,10 +3,10 @@ import StoreKit
 import SwiftUI
 import UserNotifications
 
-/// «مُيسّر بلس»: one place that decides what is free and what needs the subscription, plus StoreKit 2.
+/// «ميسر بلس»: one place that decides what is free and what needs the subscription, plus StoreKit 2.
 ///
 /// Launch rule (from the monetization plan): the app ships fully free. Limits only start once the App Store
-/// actually offers the Plus products (`live`); until then every gate is open and the paywall says «قريبًا».
+/// actually offers the Plus products (`live`); until then every gate is open and the paywall says «قريبا».
 /// Everything is checked on the device (StoreKit 2 verifies the signed transactions); there is no server.
 @MainActor
 final class Plus: ObservableObject {
@@ -14,9 +14,9 @@ final class Plus: ObservableObject {
 
     // ---- the free tier, exactly as in the plan ----
     static let freeOpsPerDay = 5, freeFiles = 5, freeMB = 20, freeOcrPages = 3, plusFiles = 100, plusMB = 500
-    static let footer = "أُنشئ بمُيسّر"
+    static let footer = "أنشئ بميسر"
 
-    /// App Store Connect products (see docs/PLUS.md). Subscription group «مُيسّر بلس».
+    /// App Store Connect products (see docs/PLUS.md). Subscription group «ميسر بلس».
     static let monthlyID = "com.muyassir.app.plus.monthly", yearlyID = "com.muyassir.app.plus.yearly", dayID = "com.muyassir.app.plus.day"
 
     /// Tools whose runs count toward the daily free operations (files and images).
@@ -48,26 +48,26 @@ final class Plus: ObservableObject {
             case .recipe: "الوصفات المخصصة من ميزات بلس"
             case .ai: "المساعد الذكي من ميزات بلس"
             case .backup: "النسخ الاحتياطي من ميزات بلس"
-            case .menu: "مُيسّر بلس"
+            case .menu: "ميسر بلس"
             }
         }
         var body: String {
             switch self {
-            case .daily: "لديك \(Plus.freeOpsPerDay) عمليات مجانية يوميًا لأدوات الملفات والصور، وتتجدد غدًا. أو افتحها الآن بلا حدود مع بلس."
+            case .daily: "لديك \(Plus.freeOpsPerDay) عمليات مجانية يوميا لأدوات الملفات والصور، وتتجدد غدا. أو افتحها الآن بلا حدود مع بلس."
             case .files: "المجاني يعالج حتى \(Plus.freeFiles) ملفات في العملية الواحدة. مع بلس حتى \(Plus.plusFiles) ملف دفعة واحدة."
             case .size: "المجاني يقبل ملفات حتى \(Plus.freeMB) م.ب. مع بلس حتى \(Plus.plusMB) م.ب حسب ذاكرة جهازك."
             case .ocr: "المجاني يستخرج النص من \(Plus.freeOcrPages) صفحات في العملية. مع بلس ملف PDF كامل وملف PDF قابل للبحث."
-            case .template: "المجاني يشمل القالب الكلاسيكي. مع بلس أكثر من 20 قالبًا وشعار منشأتك ودون سطر «\(Plus.footer)»."
+            case .template: "المجاني يشمل القالب الكلاسيكي. مع بلس أكثر من 20 قالبا وشعار منشأتك ودون سطر «\(Plus.footer)»."
             case .quality: "المجاني يحفظ بدقة عادية. مع بلس دقة عالية وألوان خلفية مخصصة."
             case .sizes: "المجاني يشمل مقاسين. مع بلس كل المقاسات وورقة طباعة جاهزة."
-            case .sign: "احفظ توقيعك مرة واحدة، وأضف ختمًا أو علامة مائية لمستنداتك."
-            case .export: "صدّر المصاريف والحضور والمهام وغيرها إلى Excel وPDF."
-            case .lock: "احمِ ملاحظاتك ووثائقك ببصمة الوجه أو الإصبع."
-            case .look: "اختر لونًا مميزًا للتطبيق وأيقونة بديلة."
-            case .support: "رسائلك تصل بعلامة «بلس» ويُرد عليها أولًا."
+            case .sign: "احفظ توقيعك مرة واحدة، وأضف ختما أو علامة مائية لمستنداتك."
+            case .export: "صدر المصاريف والحضور والمهام وغيرها إلى Excel وPDF."
+            case .lock: "احم ملاحظاتك ووثائقك ببصمة الوجه أو الإصبع."
+            case .look: "اختر لونا مميزا للتطبيق وأيقونة بديلة."
+            case .support: "رسائلك تصل بعلامة «بلس» ويرد عليها أولا."
             case .recipe: "الوصفات الجاهزة مجانية للجميع. مع بلس اصنع وصفاتك الخاصة واحفظها."
-            case .ai: "جرّب التلخيص والتدقيق مرة يوميًا مجانًا. مع بلس بلا حدود."
-            case .backup: "احفظ نسخة مشفّرة من بياناتك في المكان الذي تختاره، واستعدها على جهاز جديد."
+            case .ai: "جرب التلخيص والتدقيق مرة يوميا مجانا. مع بلس بلا حدود."
+            case .backup: "احفظ نسخة مشفرة من بياناتك في المكان الذي تختاره، واستعدها على جهاز جديد."
             case .menu: ""
             }
         }
@@ -173,17 +173,17 @@ final class Plus: ObservableObject {
             if let o = y.subscription?.introductoryOffer, o.paymentMode == .freeTrial, await y.subscription?.isEligibleForIntroOffer == true { trial = Self.days(o.period) }
             let perMonth = ((y.price / 12) as NSDecimalNumber).doubleValue
             list.append(Plan(id: "yearly", title: "سنوي", price: y.displayPrice, period: "سنة",
-                             note: "يعادل \(String(format: "%.2f", perMonth)) \(y.priceFormatStyle.currencyCode == "SAR" ? "ر.س" : y.priceFormatStyle.currencyCode) شهريًا",
+                             note: "يعادل \(String(format: "%.2f", perMonth)) \(y.priceFormatStyle.currencyCode == "SAR" ? "ر.س" : y.priceFormatStyle.currencyCode) شهريا",
                              trialDays: trial, amount: y.price, product: y))
         }
-        if let m = monthly { list.append(Plan(id: "monthly", title: "شهري", price: m.displayPrice, period: "شهر", note: "يُلغى في أي وقت", trialDays: 0, amount: m.price, product: m)) }
+        if let m = monthly { list.append(Plan(id: "monthly", title: "شهري", price: m.displayPrice, period: "شهر", note: "يلغى في أي وقت", trialDays: 0, amount: m.price, product: m)) }
         if let d = ps.first(where: { $0.id == Self.dayID }) { list.append(Plan(id: "day", title: "مرور يوم", price: d.displayPrice, period: "24 ساعة", note: "كل ميزات بلس ليوم واحد، بلا اشتراك", trialDays: 0, amount: d.price, product: d)) }
         plans = list
         let was = live
         live = yearly != nil && monthly != nil
         if live && !was && notifyWhenLive {
             notifyWhenLive = false; save()
-            let c = UNMutableNotificationContent(); c.title = "مُيسّر بلس متاح الآن"; c.body = "افتح العمليات بلا حدود والقوالب الاحترافية وOCR للملفات الكاملة."
+            let c = UNMutableNotificationContent(); c.title = "ميسر بلس متاح الآن"; c.body = "افتح العمليات بلا حدود والقوالب الاحترافية وOCR للملفات الكاملة."
             try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "plus-live", content: c, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)))
         }
     }
@@ -220,23 +220,23 @@ final class Plus: ObservableObject {
         do {
             switch try await p.purchase() {
             case .success(let r):
-                guard case .verified(let t) = r else { message = "تعذّر التحقق من عملية الشراء. لم تُفعَّل بلس."; return }
+                guard case .verified(let t) = r else { message = "تعذر التحقق من عملية الشراء. لم تفعل بلس."; return }
                 await t.finish(); await refresh(); paywall = nil
-                message = plan.id == "day" ? "تم تفعيل مرور اليوم لمدة 24 ساعة" : "مرحبًا بك في مُيسّر بلس"
+                message = plan.id == "day" ? "تم تفعيل مرور اليوم لمدة 24 ساعة" : "مرحبا بك في ميسر بلس"
                 if plan.trialDays > 0, t.offerType == .introductory {
                     // remind one day before the free trial turns into a paid subscription
-                    let c = UNMutableNotificationContent(); c.title = "تجربة مُيسّر بلس تنتهي غدًا"
-                    c.body = "إن لم ترغب في الاستمرار ألغِ الاشتراك من إعدادات App Store قبل نهاية التجربة."
+                    let c = UNMutableNotificationContent(); c.title = "تجربة ميسر بلس تنتهي غدا"
+                    c.body = "إن لم ترغب في الاستمرار ألغ الاشتراك من إعدادات App Store قبل نهاية التجربة."
                     let at = t.purchaseDate.addingTimeInterval(Double(plan.trialDays - 1) * 86400)
                     let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: at)
                     try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
                     try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "trial-end", content: c, trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
                 }
-            case .pending: message = "عملية الدفع بانتظار الموافقة. ستُفعَّل بلس فور اكتمالها."
+            case .pending: message = "عملية الدفع بانتظار الموافقة. ستفعل بلس فور اكتمالها."
             case .userCancelled: break
             @unknown default: break
             }
-        } catch { message = "لم تكتمل عملية الشراء. لم يُخصم أي مبلغ." }
+        } catch { message = "لم تكتمل عملية الشراء. لم يخصم أي مبلغ." }
     }
 
     /// Restore purchases: syncs with the App Store, then re-reads entitlements.
@@ -244,7 +244,7 @@ final class Plus: ObservableObject {
         busy = true; defer { busy = false }
         try? await AppStore.sync()
         await refresh()
-        message = active ? "تمت استعادة اشتراكك" : "لم نجد اشتراكًا على حساب Apple هذا"
+        message = active ? "تمت استعادة اشتراكك" : "لم نجد اشتراكا على حساب Apple هذا"
     }
 
     // MARK: test states (DEBUG launch argument `-plus free|free-used|plus|off`)
@@ -252,8 +252,8 @@ final class Plus: ObservableObject {
     func testState(_ s: String) {
         testing = true
         let sample = [
-            Plan(id: "yearly", title: "سنوي", price: "SAR 49.99", period: "سنة", note: "يعادل 4.17 ر.س شهريًا", trialDays: 7, amount: 49.99, product: nil),
-            Plan(id: "monthly", title: "شهري", price: "SAR 7.99", period: "شهر", note: "يُلغى في أي وقت", trialDays: 0, amount: 7.99, product: nil),
+            Plan(id: "yearly", title: "سنوي", price: "SAR 49.99", period: "سنة", note: "يعادل 4.17 ر.س شهريا", trialDays: 7, amount: 49.99, product: nil),
+            Plan(id: "monthly", title: "شهري", price: "SAR 7.99", period: "شهر", note: "يلغى في أي وقت", trialDays: 0, amount: 7.99, product: nil),
             Plan(id: "day", title: "مرور يوم", price: "SAR 2.99", period: "24 ساعة", note: "كل ميزات بلس ليوم واحد، بلا اشتراك", trialDays: 0, amount: 2.99, product: nil),
         ]
         switch s {

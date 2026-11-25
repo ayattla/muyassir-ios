@@ -22,8 +22,13 @@ struct TodayView: View {
                     if daily.showPrayer { PrayerCard(now: now) }
                     QuickGrid(open: open, openTools: { openTab("home") })
                     if !daily.setupDone || editing { SetupCard(first: !daily.setupDone) { editing = false } }
+                    WeekStrip(now: now)
                     datesRow(now)
                     TasksCard(now: now, open: open, changed: { tick += 1 }).id(tick)
+                    if KSA.weekday(now) == 6 { FridayCard() }
+                    BudgetCard(now: now, open: open)
+                    VatCard()
+                    NoteCard(open: open, changed: { tick += 1 }).id(tick)
                     if daily.setupDone && daily.roles.isEmpty { RolePrompt() }
                     ForEach(daily.roles, id: \.self) { TodayRoleCard(role: $0, now: now, open: open) }
                     ContinueCard(open: open)
@@ -52,14 +57,14 @@ struct TodayView: View {
         let dues = upcoming(now)
         if !dues.isEmpty {
             VStack(spacing: Space.s) {
-                SectionTitle(title: "مواعيدك القادمة", sub: "رواتب ومناسبات ووثائق")
+                SectionTitle(title: "مواعيدك القادمة", sub: "رواتب ومناسبات ووثائق", icon: "calendar.badge.clock", hex: 0x14936B)
                 ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: Space.s) {
                     ForEach(dues) { d in
                         Button { if let t = d.tool { open(t) } } label: {
                             VStack(spacing: 2) {
                                 Text(d.days == 0 ? "اليوم" : "\(d.days)").font(.plex(d.days == 0 ? .title3 : .title, .bold))
                                     .foregroundStyle(d.warn ? Brand.dyn(0xA05A00, 0xF2B01E) : d.islamic ? Brand.dyn(0x0E7A57, 0x5FD3AE) : Brand.accent)
-                                if d.days > 0 { Text((3...10).contains(d.days) ? "أيام" : "يومًا").font(.plex(.caption2)).foregroundStyle(Brand.text2) }
+                                if d.days > 0 { Text((3...10).contains(d.days) ? "أيام" : "يوما").font(.plex(.caption2)).foregroundStyle(Brand.text2) }
                                 Text(d.title).font(.plex(.footnote, .semibold)).foregroundStyle(Brand.text1).multilineTextAlignment(.center).lineLimit(2)
                             }
                             .frame(width: 112).padding(.vertical, Space.m).padding(.horizontal, Space.s)
@@ -68,7 +73,7 @@ struct TodayView: View {
                         }.buttonStyle(PressStyle()).disabled(d.tool == nil)
                     }
                 } }.accessibilityElement(children: .contain).accessibilityIdentifier("dates")
-            }
+            }.padding(Space.l).card()
         }
     }
 
@@ -103,7 +108,7 @@ private struct SetupCard: View {
     @State private var day = ""
     var body: some View {
         VStack(spacing: Space.m) {
-            Text(first ? "نرتّب لك يومك" : "تخصيص يومي").font(.plex(.title3, .bold)).foregroundStyle(Brand.text1)
+            Text(first ? "نرتب لك يومك" : "تخصيص يومي").font(.plex(.title3, .bold)).foregroundStyle(Brand.text1)
             Text("اختر ما يصفك، ويمكنك اختيار أكثر من دور. كل ما تختاره يبقى على جهازك.").font(.plex(.subheadline)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
             LazyVGrid(columns: [GridItem(.flexible(), spacing: Space.s), GridItem(.flexible(), spacing: Space.s)], spacing: Space.s) {
                 ForEach(Tools.roles, id: \.0) { id, label in
@@ -211,7 +216,9 @@ private struct TasksCard: View {
         let doneCount = tasks.filter { $0.b("done") }.count
         VStack(spacing: Space.s) {
             HStack {
-                Text("مهامك اليوم").font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.text1)
+                Image(systemName: "checklist").font(.system(size: 17, weight: .semibold)).foregroundStyle(Brand.tone(0x0E7490))
+                    .frame(width: 40, height: 40).background(Brand.toneSoft(0x0E7490), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                Text("مهامك اليوم").font(.plex(.headline, .bold)).foregroundStyle(Brand.text1)
                 Spacer()
                 if !tasks.isEmpty { Text("\(doneCount) من \(tasks.count)").font(.plex(.caption, .medium)).foregroundStyle(Brand.text2) }
             }
@@ -267,7 +274,7 @@ private struct TodayRoleCard: View {
                     [("timetable", "الجدول"), ("flashcards", "المراجعة")])
         case "teacher":
             let q = Store.shared.list("published").first
-            return ("اختباراتك", q.map { "آخر اختبار منشور: \($0.s("title"))" } ?? "أنشئ اختبارًا وانشره برابط، وتصلك النتائج هنا",
+            return ("اختباراتك", q.map { "آخر اختبار منشور: \($0.s("title"))" } ?? "أنشئ اختبارا وانشره برابط، وتصلك النتائج هنا",
                     [("quiz_maker", "اختبار جديد"), ("attendance", "الحضور")])
         case "employee":
             return ("عملك", "احسب راتبك الصافي أو مكافأتك أو إجازاتك بالمواد النظامية", [("salary", "الراتب"), ("leave", "الإجازات")])
@@ -300,19 +307,38 @@ private struct AdhkarCard: View {
 
 // MARK: home layout pieces (mirrors Android's Today.kt)
 
+/// Section header in the card style: a coloured icon chip, the title and an optional pill action.
 private struct SectionTitle: View {
     let title: String
     var sub: String? = nil
     var action: (String, () -> Void)? = nil
+    var icon = "square.grid.2x2"
+    var hex: UInt32 = 0x3346D3
     var body: some View {
-        HStack {
+        HStack(spacing: Space.m) {
+            Image(systemName: icon).font(.system(size: 17, weight: .semibold)).foregroundStyle(Brand.tone(hex))
+                .frame(width: 40, height: 40).background(Brand.toneSoft(hex), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.plex(.headline, .bold)).foregroundStyle(Brand.text1)
-                if let sub { Text(sub).font(.plex(.caption)).foregroundStyle(Brand.text2) }
+                Text(title).font(.plex(.headline, .bold)).foregroundStyle(Brand.text1).lineLimit(1)
+                if let sub { Text(sub).font(.plex(.caption)).foregroundStyle(Brand.text2).lineLimit(1) }
             }
-            Spacer()
-            if let action { Button(action.0, action: action.1).font(.plex(.subheadline, .semibold)).tint(Brand.accent).frame(minHeight: 44) }
+            Spacer(minLength: 0)
+            if let action {
+                Button(action: action.1) {
+                    Text(action.0).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.accent).padding(.horizontal, 14).frame(minHeight: 36).background(Brand.accentSoft, in: Capsule())
+                }.buttonStyle(PressStyle()).frame(minHeight: 44)
+            }
         }
+    }
+}
+
+/// A home section: one card with its header inside.
+private struct HomeSection<C: View>: View {
+    var id: String? = nil
+    @ViewBuilder let content: () -> C
+    var body: some View {
+        VStack(spacing: Space.m) { content() }.padding(Space.l).frame(maxWidth: .infinity).card()
+            .accessibilityElement(children: .contain).accessibilityIdentifier(id ?? "")
     }
 }
 
@@ -393,7 +419,7 @@ private struct QuickGrid: View {
         let tools = (store.favorites + base + ["scan", "img_pdf", "pdf_merge", "pdf_compress", "translate", "salary", "invoice", "qr_make"])
             .filter { seen.insert($0).inserted }.compactMap { Tools.byId[$0] }.prefix(8)
         VStack(spacing: Space.s) {
-            SectionTitle(title: "اختصاراتك", sub: store.favorites.isEmpty ? "ثبّت أدواتك بالنجمة لتظهر هنا" : nil, action: ("كل الأدوات", openTools))
+            SectionTitle(title: "اختصاراتك", sub: store.favorites.isEmpty ? "ثبت أدواتك بالنجمة لتظهر هنا" : nil, action: ("كل الأدوات", openTools), icon: "bolt.fill", hex: 0x3346D3)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: Space.m) {
                 ForEach(Array(tools)) { t in
                     let hex = Tools.category(t.cats[0]).hex
@@ -406,9 +432,8 @@ private struct QuickGrid: View {
                     }.buttonStyle(PressStyle()).accessibilityIdentifier("quick-\(t.id)")
                 }
             }
-            .padding(.vertical, Space.m).padding(.horizontal, Space.s).card()
             .accessibilityElement(children: .contain).accessibilityIdentifier("quickGrid")
-        }
+        }.padding(Space.l).card()
     }
 }
 
@@ -464,11 +489,11 @@ private struct ContinueCard: View {
         let items = store.recents.prefix(3).compactMap { r in Tools.byId[r.tool].map { ($0, r) } }
         if !items.isEmpty {
             VStack(spacing: Space.s) {
-                SectionTitle(title: "أكمل من حيث توقفت")
+                SectionTitle(title: "أكمل من حيث توقفت", icon: "clock.arrow.circlepath", hex: 0x7A4FD0)
                 ForEach(items, id: \.1.id) { t, r in
                     Button { open(t.id) } label: { ActivityRow(icon: t.icon, hex: Tools.category(t.cats[0]).hex, title: t.title, detail: r.detail, date: r.time, action: "فتح") }.buttonStyle(PressStyle())
                 }
-            }.accessibilityElement(children: .contain).accessibilityIdentifier("continue")
+            }.padding(Space.l).card().accessibilityElement(children: .contain).accessibilityIdentifier("continue")
         }
     }
 }
@@ -478,7 +503,7 @@ private struct SpacesGrid: View {
     let openCat: (Category) -> Void
     var body: some View {
         VStack(spacing: Space.s) {
-            SectionTitle(title: "مساحاتك", sub: "\(Tools.all.count) أداة في \(Tools.categories.count) مساحات")
+            SectionTitle(title: "مساحاتك", sub: "\(Tools.all.count) أداة في \(Tools.categories.count) مساحات", icon: "square.grid.2x2.fill", hex: 0xC2410C)
             LazyVGrid(columns: [GridItem(.flexible(), spacing: Space.s), GridItem(.flexible(), spacing: Space.s)], spacing: Space.s) {
                 ForEach(Tools.categories) { c in
                     Button { openCat(c) } label: {
@@ -496,7 +521,7 @@ private struct SpacesGrid: View {
                     }.buttonStyle(PressStyle()).accessibilityIdentifier("space-\(c.id)")
                 }
             }
-        }
+        }.padding(Space.l).card()
     }
 }
 
@@ -515,7 +540,7 @@ private struct ToolOfDay: View {
                 Image(systemName: t.icon).font(.system(size: 20, weight: .semibold)).foregroundStyle(Brand.tone(hex))
                     .frame(width: 48, height: 48).background(Brand.toneSoft(hex), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("جرّب اليوم").font(.plex(.caption)).foregroundStyle(Brand.text2)
+                    Text("جرب اليوم").font(.plex(.caption)).foregroundStyle(Brand.text2)
                     Text(t.title).font(.plex(.subheadline, .bold)).foregroundStyle(Brand.text1)
                     Text(t.sub).font(.plex(.caption)).foregroundStyle(Brand.text2).lineLimit(2)
                 }
@@ -524,5 +549,137 @@ private struct ToolOfDay: View {
             .padding(Space.l)
             .overlay(RoundedRectangle(cornerRadius: Radius.l, style: .continuous).stroke(Brand.border, lineWidth: 1))
         }.buttonStyle(PressStyle()).accessibilityIdentifier("toolOfDay")
+    }
+}
+
+// MARK: daily widgets (mirrors Android)
+
+private func fmt(_ v: Double) -> String {
+    let f = NumberFormatter(); f.locale = Locale(identifier: "en_US"); f.numberStyle = .decimal; f.maximumFractionDigits = v.rounded() == v ? 0 : 2; f.minimumFractionDigits = f.maximumFractionDigits
+    return f.string(from: NSNumber(value: v)) ?? "\(v)"
+}
+
+private struct Stat: View {
+    let label: String; let value: String
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(value).font(.plex(.subheadline, .bold)).foregroundStyle(Brand.text1).lineLimit(1).minimumScaleFactor(0.8)
+            Text(label).font(.plex(.caption2)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
+        }.frame(maxWidth: .infinity)
+    }
+}
+
+/// The coming seven days at a glance; a dot marks a day with a task, exam, pay day or occasion.
+private struct WeekStrip: View {
+    let now: Date
+    @ObservedObject private var daily = Daily.shared
+    @State private var sel = 0
+    var body: some View {
+        let cal = KSA.cal, start = cal.startOfDay(for: now)
+        let tasks = Store.shared.list("tasks").filter { !$0.b("done") }
+        let exams = Store.shared.list("exams")
+        let pays = daily.payRules().map { (PayDays.next($0, now).0, $0.title) }
+        let occ = Occasions.upcoming(now, within: 7)
+        func range(_ i: Int) -> ClosedRange<Double> { let a = cal.date(byAdding: .day, value: i, to: start)!.timeIntervalSince1970; return a...(a + 86_399) }
+        func items(_ i: Int) -> [String] {
+            let r = range(i)
+            return tasks.filter { r.contains($0.d("due")) }.map { "مهمة: \($0.s("title"))" } + exams.filter { r.contains($0.d("at")) }.map { "اختبار \($0.s("subject"))" }
+                + pays.filter { $0.0 == i }.map(\.1) + occ.filter { $0.days == i }.map(\.title)
+        }
+        return HomeSection(id: "week") {
+            SectionTitle(title: "أسبوعك", sub: "اضغط على يوم لتشوف ما فيه", icon: "calendar", hex: 0x0E7490)
+            HStack(spacing: 4) {
+                ForEach(0..<7, id: \.self) { i in
+                    let d = cal.date(byAdding: .day, value: i, to: start)!
+                    let on = i == sel, busy = !items(i).isEmpty
+                    Button { sel = i } label: {
+                        VStack(spacing: 2) {
+                            Text(String(Hijri.days[KSA.weekday(d) - 1].prefix(3))).font(.plex(.caption2)).foregroundStyle(on ? Brand.onAccent : Brand.text2)
+                            Text("\(cal.component(.day, from: d))").font(.plex(.headline, .bold)).foregroundStyle(on ? Brand.onAccent : Brand.text1)
+                            Circle().fill(busy ? (on ? Brand.onAccent : Brand.accent) : .clear).frame(width: 5, height: 5)
+                        }.frame(maxWidth: .infinity).padding(.vertical, 8).background(on ? Brand.accent : .clear, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }.buttonStyle(.plain).accessibilityIdentifier("day-\(i)")
+                }
+            }
+            let list = items(sel)
+            Text(list.isEmpty ? "يوم فاضي، ما فيه مواعيد" : list.prefix(4).joined(separator: "\n")).font(.plex(.subheadline))
+                .foregroundStyle(list.isEmpty ? Brand.text2 : Brand.text1).multilineTextAlignment(.center)
+        }
+    }
+}
+
+/// This month's spending against income, and how much is left per day until the next salary.
+private struct BudgetCard: View {
+    let now: Date
+    let open: (String) -> Void
+    @ObservedObject private var daily = Daily.shared
+    var body: some View {
+        let income = Double(Store.shared.obj("budget").s("income")) ?? 0
+        let spent = thisMonth(Store.shared.list("expenses")).reduce(0) { $0 + (Double($1.s("amount")) ?? 0) }
+        HomeSection(id: "budgetCard") {
+            SectionTitle(title: "مصروف الشهر", sub: income > 0 ? "من دخل \(fmt(income)) ريال" : "تابع مصروفك قبل يخلص الراتب", action: ("سجل مصروف", { open("expenses") }), icon: "wallet.pass", hex: 0xB45309)
+            if income <= 0 {
+                Text("حدد دخلك الشهري مرة وحدة، ونحسب لك كم يبقى لك كل يوم حتى الراتب.").font(.plex(.subheadline)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
+                SecondaryButton(title: "حدد دخلك") { open("budget") }
+            } else {
+                let left = income - spent
+                let days = max(daily.payRules().first.map { PayDays.next($0, now).0 } ?? 30, 1)
+                ProgressView(value: min(max(spent / income, 0), 1)).tint(left < 0 ? Color(hex: 0xC0392B) : Color(hex: 0xB45309)).scaleEffect(x: 1, y: 2.2)
+                HStack { Stat(label: "صرفت", value: "\(fmt(spent)) ريال"); Stat(label: "باقي", value: "\(fmt(left)) ريال"); Stat(label: "لكل يوم", value: left > 0 ? "\(fmt(left / Double(days))) ريال" : "0") }
+            }
+        }
+    }
+}
+
+/// Saudi VAT (15%) both ways, right on the home screen.
+private struct VatCard: View {
+    @State private var amount = ""
+    var body: some View {
+        HomeSection(id: "vatCard") {
+            SectionTitle(title: "حاسبة الضريبة", sub: "ضريبة القيمة المضافة 15%", icon: "percent", hex: 0x3346D3)
+            NumField(label: "اكتب المبلغ", text: $amount, suffix: "ريال").accessibilityIdentifier("vatAmount")
+            if let v = Double(amount), v > 0 {
+                HStack { Stat(label: "مع الضريبة", value: fmt(v * 1.15)); Stat(label: "الضريبة", value: fmt(v * 0.15)); Stat(label: "قبل الضريبة لو شامل", value: fmt(v / 1.15)) }
+            }
+        }
+    }
+}
+
+/// Friday: a reminder to read Surat al-Kahf, opening it in آيات تتلى.
+private struct FridayCard: View {
+    @Environment(\.openURL) private var openURL
+    var body: some View {
+        HomeSection(id: "fridayCard") {
+            SectionTitle(title: "جمعة مباركة", sub: "سورة الكهف والصلاة على النبي ﷺ", icon: "book.fill", hex: 0x14936B)
+            PrimaryButton(title: "اقرأ سورة الكهف في آيات تتلى") { if let u = URL(string: "https://ayattla.com/surah/18-al-kahf") { openURL(u) } }
+        }
+    }
+}
+
+/// The latest note and a quick way to jot a new one.
+private struct NoteCard: View {
+    let open: (String) -> Void
+    let changed: () -> Void
+    @State private var draft = ""
+    var body: some View {
+        let last = Store.shared.list("notes").max { $0.id < $1.id }
+        HomeSection(id: "noteCard") {
+            SectionTitle(title: "ملاحظة سريعة", sub: last.map { "آخر ملاحظة: \($0.s("title"))" }, action: ("كل الملاحظات", { open("notes") }), icon: "square.and.pencil", hex: 0x7A4FD0)
+            HStack(spacing: Space.s) {
+                TextField("اكتب فكرة قبل تنساها", text: $draft, axis: .vertical).lineLimit(1...3).font(.plex(.body))
+                    .padding(.horizontal, Space.m).padding(.vertical, 12)
+                    .background(Brand.bg, in: RoundedRectangle(cornerRadius: Radius.m, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Radius.m, style: .continuous).stroke(Brand.border, lineWidth: 1))
+                    .accessibilityIdentifier("quickNote")
+                Button {
+                    let text = draft.trimmingCharacters(in: .whitespacesAndNewlines); guard !text.isEmpty else { return }
+                    let rec: Rec = ["id": Date().timeIntervalSince1970 * 1000, "title": String((text.split(separator: "\n").first ?? "").prefix(40)), "body": text]
+                    Store.shared.saveList("notes", Store.shared.list("notes") + [rec]); draft = ""; changed()
+                } label: {
+                    Image(systemName: "checkmark").font(.system(size: 18, weight: .bold)).foregroundStyle(Brand.onAccent)
+                        .frame(width: 48, height: 48).background(Brand.accent, in: RoundedRectangle(cornerRadius: Radius.m, style: .continuous))
+                }.accessibilityLabel("حفظ الملاحظة").accessibilityIdentifier("quickNoteAdd")
+            }
+        }
     }
 }

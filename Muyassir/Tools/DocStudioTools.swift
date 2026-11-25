@@ -14,7 +14,7 @@ func ocrPages(_ ins: [URL], _ p: Progress, max: Int) throws -> [DocLayout.Result
             }
         } else if pages.count < max {
             p.update(i, ins.count, "التعرف على الصورة \(i + 1) من \(ins.count)")
-            guard let img = ImageEngine.load(u, maxSide: 3000) else { throw UserError("تعذّر فتح الصورة \(u.lastPathComponent)") }
+            guard let img = ImageEngine.load(u, maxSide: 3000) else { throw UserError("تعذر فتح الصورة \(u.lastPathComponent)") }
             pages.append(DocLayout.analyze(try DocLayout.recognizeWords(img)))
         }
     }
@@ -32,9 +32,9 @@ struct ReviewPanel: View {
     var body: some View {
         if state.ready {
             Panel(title: "راجع النص قبل الحفظ") {
-                if state.unsure.isEmpty { Hint(text: "لم يجد المحرك كلمات منخفضة الثقة، لكن راجع الأسماء والأرقام دائمًا.") }
+                if state.unsure.isEmpty { Hint(text: "لم يجد المحرك كلمات منخفضة الثقة، لكن راجع الأسماء والأرقام دائما.") }
                 else {
-                    Text("كلمات غير مؤكدة (\(state.unsure.count)): تحقّق منها في النص").font(.plex(.subheadline, .semibold)).foregroundStyle(.red)
+                    Text("كلمات غير مؤكدة (\(state.unsure.count)): تحقق منها في النص").font(.plex(.subheadline, .semibold)).foregroundStyle(.red)
                     ScrollView(.horizontal, showsIndicators: false) { HStack { ForEach(state.unsure.prefix(40), id: \.self) { Text($0).font(.plex(.caption)).padding(.horizontal, 10).padding(.vertical, 6).background(Color.red.opacity(0.1), in: Capsule()) } } }
                 }
                 Field(label: "النص المستخرج (الجداول: أعمدة مفصولة بـ |)", text: $state.text, lines: 10).accessibilityIdentifier("reviewText")
@@ -52,12 +52,12 @@ struct ImagesToWord: View {
     let tool: Tool
     @StateObject private var review = ReviewState()
     var body: some View {
-        FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "اختر صورًا أو ملف PDF مصوّر", actionLabel: "تحويل إلى Word", reorderable: true, options: { _ in
-            Hint(text: "يتعرّف على النص العربي والإنجليزي على جهازك ويعيد بناء العناوين والفقرات والجداول في ملف Word قابل للتعديل. الدقة تعتمد على وضوح الصورة، وستظهر لك الكلمات غير المؤكدة لمراجعتها.")
+        FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "اختر صورا أو ملف PDF مصور", actionLabel: "تحويل إلى Word", reorderable: true, options: { _ in
+            Hint(text: "يتعرف على النص العربي والإنجليزي على جهازك ويعيد بناء العناوين والفقرات والجداول في ملف Word قابل للتعديل. الدقة تعتمد على وضوح الصورة، وستظهر لك الكلمات غير المؤكدة لمراجعتها.")
         }, after: { ReviewPanel(state: review) }) { ins, out, p in
             let budget = await MainActor.run { min(Plus.shared.ocrPages, 60) }
             let pages = try ocrPages(ins, p, max: budget)
-            if pages.allSatisfy({ $0.blocks.isEmpty }) { throw UserError("لم يُعثر على نص. جرّب صورة أوضح أو أقرب.") }
+            if pages.allSatisfy({ $0.blocks.isEmpty }) { throw UserError("لم يعثر على نص. جرب صورة أوضح أو أقرب.") }
             let n = FilesX.base(ins[0]); let o = out.appendingPathComponent("\(n).docx"); try Office.writeDocx(o, docxFrom(pages))
             let text = pages.map { $0.plain() }.joined(separator: "\n\n"); var seen = Set<String>(); let un = pages.flatMap(\.unsure).filter { seen.insert($0).inserted }
             await MainActor.run { review.name = n; review.text = text; review.unsure = un; review.ready = true }
@@ -77,11 +77,11 @@ struct ExamToDoc: View {
     @EnvironmentObject var store: Store
     @State private var qs: [ExamParser.Q] = []; @State private var msg: String?
     var body: some View {
-        FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "صوّر الاختبار أو اختر صوره", actionLabel: "استخراج الأسئلة", reorderable: true, options: { _ in
-            Hint(text: "يتعرّف على الأسئلة المرقمة واختياراتها (أ، ب، ج، د) وأسئلة الصح والخطأ، ثم يبني منها ملف Word قابلًا للتعديل. راجع النتيجة قبل الطباعة.")
+        FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "صور الاختبار أو اختر صوره", actionLabel: "استخراج الأسئلة", reorderable: true, options: { _ in
+            Hint(text: "يتعرف على الأسئلة المرقمة واختياراتها (أ، ب، ج، د) وأسئلة الصح والخطأ، ثم يبني منها ملف Word قابلا للتعديل. راجع النتيجة قبل الطباعة.")
         }, after: {
             if !qs.isEmpty {
-                Panel(title: "\(qs.count) سؤالًا") {
+                Panel(title: "\(qs.count) سؤالا") {
                     ForEach(Array(qs.prefix(30).enumerated()), id: \.offset) { i, q in
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(i + 1)) \(q.text)").font(.plex(.subheadline, .semibold))
@@ -92,7 +92,7 @@ struct ExamToDoc: View {
                     SecondaryButton(title: "أضفها لبنك الأسئلة", icon: "archivebox") {
                         let bank = store.list("qbank"), have = Set(bank.map { $0.s("q") })
                         let add = qs.filter { !have.contains($0.text) }.map { var r = quizRecord($0); r["subject"] = "مستخرج من صورة"; return r }
-                        store.saveList("qbank", bank + add); msg = "أُضيف \(add.count) سؤالًا إلى البنك"
+                        store.saveList("qbank", bank + add); msg = "أضيف \(add.count) سؤالا إلى البنك"
                     }
                     if let msg { Text(msg).font(.plex(.caption)).foregroundStyle(Brand.mint) }
                 }.accessibilityIdentifier("examQuestions")
@@ -122,7 +122,7 @@ struct PdfHeaderFooter: View {
     @State var header = ""; @State var footer = ""; @State var numbers = true; @State var style = 0; @State var skipFirst = false
     var body: some View {
         FileTool(tool: tool, types: [.pdf], pickLabel: "اختر ملف PDF", actionLabel: "إضافة إلى الصفحات",
-                 validate: { $0.isEmpty ? "اختر ملفًا أولًا" : (header.isEmpty && footer.isEmpty && !numbers) ? "أضف ترويسة أو تذييلًا أو فعّل الترقيم" : nil },
+                 validate: { $0.isEmpty ? "اختر ملفا أولا" : (header.isEmpty && footer.isEmpty && !numbers) ? "أضف ترويسة أو تذييلا أو فعل الترقيم" : nil },
                  options: { _ in
             Panel {
                 Field(label: "الترويسة (أعلى كل صفحة)", text: $header); Field(label: "التذييل (أسفل كل صفحة)", text: $footer)
@@ -133,7 +133,7 @@ struct PdfHeaderFooter: View {
         }, after: { EmptyView() }) { ins, out, p in
             let d = try PdfEngine.open(ins[0]); let n = d.pageCount
             let (h, f, num, st, skip) = await MainActor.run { (header, footer, numbers, style, skipFirst) }
-            let o = out.appendingPathComponent(FilesX.base(ins[0]) + "-مرقّم.pdf")
+            let o = out.appendingPathComponent(FilesX.base(ins[0]) + "-مرقم.pdf")
             let first = d.page(at: 0)?.bounds(for: .mediaBox) ?? CGRect(x: 0, y: 0, width: 595, height: 842)
             let r = UIGraphicsPDFRenderer(bounds: first)
             try r.writePDF(to: o) { ctx in

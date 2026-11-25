@@ -3,7 +3,7 @@ import UIKit
 
 enum PdfEngine {
     enum Failure: LocalizedError { case open, password, empty
-        var errorDescription: String? { switch self { case .open: "تعذّر فتح ملف PDF"; case .password: "الملف محمي بكلمة مرور أو كلمة المرور غير صحيحة"; case .empty: "لا يمكن حذف جميع الصفحات" } }
+        var errorDescription: String? { switch self { case .open: "تعذر فتح ملف PDF"; case .password: "الملف محمي بكلمة مرور أو كلمة المرور غير صحيحة"; case .empty: "لا يمكن حذف جميع الصفحات" } }
     }
 
     /// Page text with Arabic presentation forms folded back to normal letters (NFKC).

@@ -45,7 +45,7 @@ final class CalcTests: XCTestCase {
         let t = Units.kinds.first { $0.name == "الحرارة" }!; near(212, Units.convert(t, 100, from: t.units[0], to: t.units[1]))
     }
     func testTextTools() {
-        XCTAssertEqual(4, TextTools.count("مرحبا بك في مُيسّر").words)
+        XCTAssertEqual(4, TextTools.count("مرحبا بك في ميسر").words)
         XCTAssertEqual(1, TextTools.dedupe("أ\nب\nأ", ignoreCase: true, trim: true, keepBlank: false).1)
         XCTAssertEqual([.same, .removed, .added, .same], TextTools.diff("a b c", "a x c", byWord: true).map { $0.op })
     }
@@ -100,8 +100,8 @@ final class FileEngineTests: XCTestCase {
         XCTAssert(txt.contains("صفحة") || txt.contains("ةحفص"), "extracted: \(txt)")
     }
     func testImagesAndQr() throws {
-        let q = ImageEngine.qr("https://example.com/مُيسّر")
-        XCTAssertEqual(["https://example.com/مُيسّر"], try ImageEngine.readCodes(q))
+        let q = ImageEngine.qr("https://example.com/ميسر")
+        XCTAssertEqual(["https://example.com/ميسر"], try ImageEngine.readCodes(q))
         let big = ImageEngine.resize(q, w: 400, h: 400, keep: true); XCTAssertEqual(400, big.size.width, accuracy: 1)
         XCTAssertEqual(400, ImageEngine.rotate(ImageEngine.resize(q, w: 400, h: 200, keep: false), degrees: 90).size.height, accuracy: 1)
         let j = try ImageEngine.compressToSize(ImageEngine.autoEnhance(big), kb: 30, to: dir.appendingPathComponent("c.jpg")); XCTAssertLessThan(FilesX.size(j), 31 * 1024)

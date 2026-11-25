@@ -16,10 +16,10 @@ struct OnlineQuizPanel: View {
 
     var body: some View {
         Panel(title: "اختبار إلكتروني برابط ورمز QR") {
-            Hint(text: "يفتحه الطلاب من الجوال أو الحاسب دون حساب، ويُصحح تلقائيًا وتصلك النتائج هنا. تُرسل الأسئلة وإجاباتها فقط إلى خادم مُيسّر، ولا يُطلب من الطالب إلا اسمه.")
-            Text("يبقى مفتوحًا").font(.plex(.caption, .medium)).foregroundStyle(Brand.text2)
+            Hint(text: "يفتحه الطلاب من الجوال أو الحاسب دون حساب، ويصحح تلقائيا وتصلك النتائج هنا. ترسل الأسئلة وإجاباتها فقط إلى خادم ميسر، ولا يطلب من الطالب إلا اسمه.")
+            Text("يبقى مفتوحا").font(.plex(.caption, .medium)).foregroundStyle(Brand.text2)
             Seg(options: ["يوم", "3 أيام", "أسبوع", "أسبوعان"], selection: $days)
-            PrimaryButton(title: busy ? "جارٍ النشر…" : "انشر برابط ورمز QR", icon: "globe", enabled: !qs.isEmpty && !busy) {
+            PrimaryButton(title: busy ? "جار النشر…" : "انشر برابط ورمز QR", icon: "globe", enabled: !qs.isEmpty && !busy) {
                 if Cloud.consented { publish() } else { ask = true }
             }.accessibilityIdentifier("publishOnline")
             if let error { Text(error).font(.plex(.footnote)).foregroundStyle(.red).accessibilityIdentifier("onlineError") }
@@ -46,7 +46,7 @@ struct OnlineQuizPanel: View {
             Button("موافق، انشر") { Cloud.consent(); publish() }.accessibilityIdentifier("consentOk")
             Button("إلغاء", role: .cancel) {}
         } message: {
-            Text("سيُرسل عنوان الاختبار وأسئلته وإجاباتها الصحيحة ومدته إلى خادم مُيسّر (ayattla.com) لإنشاء صفحة للطلاب. لا تُرسل ملفاتك ولا أي بيانات شخصية عنك. يُغلق الاختبار في الموعد الذي اخترته، وتُحذف نتائجه بعد 90 يومًا من إغلاقه، ويمكنك حذفه متى شئت.")
+            Text("سيرسل عنوان الاختبار وأسئلته وإجاباتها الصحيحة ومدته إلى خادم ميسر (ayattla.com) لإنشاء صفحة للطلاب. لا ترسل ملفاتك ولا أي بيانات شخصية عنك. يغلق الاختبار في الموعد الذي اخترته، وتحذف نتائجه بعد 90 يوما من إغلاقه، ويمكنك حذفه متى شئت.")
         }
         if !published.isEmpty { PublishedList(items: published) { published = Store.shared.list("published") } }
     }
@@ -54,13 +54,13 @@ struct OnlineQuizPanel: View {
     private func publish() {
         let m = Cloud.toActivity(title: title, qs: qs, minutes: Int(Double(minutes) ?? 0), days: dayOptions[days])
         guard !((m.activity["questions"] as? [Rec]) ?? []).isEmpty else {
-            error = "لا توجد أسئلة تُصحح آليًا. أضف سؤال اختيار أو صح وخطأ أو إكمال أو توصيل مكتملًا."; return
+            error = "لا توجد أسئلة تصحح آليا. أضف سؤال اختيار أو صح وخطأ أو إكمال أو توصيل مكتملا."; return
         }
         busy = true; error = nil; qrFile = []
         Task { @MainActor in
             do {
                 last = try await Cloud.publish(m.activity); published = Store.shared.list("published")
-                note = m.skipped > 0 ? "لم يُنشر \(m.skipped) سؤال: الأسئلة المقالية أو غير المكتملة لا تُصحح آليًا." : nil
+                note = m.skipped > 0 ? "لم ينشر \(m.skipped) سؤال: الأسئلة المقالية أو غير المكتملة لا تصحح آليا." : nil
             } catch { self.error = error.localizedDescription }
             busy = false
         }
@@ -97,14 +97,14 @@ private struct PublishedList: View {
             }
             Button("حذف كل اختباراتي ونتائجها من الخادم", role: .destructive) { forget = true }.font(.plex(.footnote)).frame(maxWidth: .infinity)
         }
-        .confirmationDialog("حذف الاختبار نهائيًا؟", isPresented: Binding(get: { confirm != nil }, set: { if !$0 { confirm = nil } }), titleVisibility: .visible) {
+        .confirmationDialog("حذف الاختبار نهائيا؟", isPresented: Binding(get: { confirm != nil }, set: { if !$0 { confirm = nil } }), titleVisibility: .visible) {
             Button("حذف نهائي", role: .destructive) { if let c = confirm { remove(c) } }
-        } message: { Text("سيُحذف الاختبار ونتائج الطلاب من الخادم نهائيًا، ولن يفتح رابطه بعد الآن.") }
+        } message: { Text("سيحذف الاختبار ونتائج الطلاب من الخادم نهائيا، ولن يفتح رابطه بعد الآن.") }
         .confirmationDialog("حذف بياناتك من الخادم؟", isPresented: $forget, titleVisibility: .visible) {
             Button("حذف نهائي", role: .destructive) {
                 Task { @MainActor in do { try await Cloud.forgetMe(); open = nil; changed() } catch { self.error = error.localizedDescription } }
             }
-        } message: { Text("ستُحذف كل اختباراتك المنشورة ونتائج طلابها ومعرّف جهازك من خادم مُيسّر نهائيًا. ملفاتك على الجهاز لا تتأثر.") }
+        } message: { Text("ستحذف كل اختباراتك المنشورة ونتائج طلابها ومعرف جهازك من خادم ميسر نهائيا. ملفاتك على الجهاز لا تتأثر.") }
     }
 
     @ViewBuilder private func results(_ code: String) -> some View {
@@ -117,7 +117,7 @@ private struct PublishedList: View {
                 ("متوسط الدرجة", att.isEmpty ? "—" : "\(fmt(r["average"] as? Double ?? 0)) من \(fmt(total))"),
                 ("الحالة", (r["closed"] as? Bool ?? false) ? "مغلق" : "مفتوح"),
             ])
-            if att.isEmpty { Text("لم يُرسل أي طالب إجابته بعد.").font(.plex(.caption)).foregroundStyle(Brand.text2).accessibilityIdentifier("noAttempts") }
+            if att.isEmpty { Text("لم يرسل أي طالب إجابته بعد.").font(.plex(.caption)).foregroundStyle(Brand.text2).accessibilityIdentifier("noAttempts") }
             ForEach(att.indices, id: \.self) { k in LabelValue(label: att[k].s("name"), value: "\(fmt(att[k]["score"] as? Double ?? 0)) / \(fmt(att[k]["total"] as? Double ?? 0))") }
             if !att.isEmpty, let pq = r["per_question"] as? [Rec] {
                 Text("الإجابات الصحيحة لكل سؤال").font(.plex(.caption, .semibold))

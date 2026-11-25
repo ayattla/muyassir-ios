@@ -22,6 +22,11 @@ final class P0ToolsTests: XCTestCase {
         while !(e.exists && e.isHittable) && n < 6 { app.swipeDown(velocity: .slow); n += 1 }
         n = 0
         while !(e.exists && e.isHittable) && n < 10 { app.swipeUp(velocity: .slow); n += 1 }
+        // Some screens have a draggable preview in the middle that swallows a centred swipe; drag along the edge instead.
+        n = 0
+        while !(e.exists && e.isHittable) && n < 10 {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.78)).press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.35))); n += 1
+        }
         XCTAssertTrue(e.exists && e.isHittable, "not reachable: \(e)", file: file, line: line)
     }
     func waitText(_ s: String, _ t: TimeInterval = 10, file: StaticString = #filePath, line: UInt = #line) {
@@ -67,7 +72,7 @@ final class P0ToolsTests: XCTestCase {
     }
 
     // MARK: Saudi services and calculators
-    func testLeaveBalance() { launch("leave"); type("سنوات الخدمة", "6"); waitText("30 يومًا") }
+    func testLeaveBalance() { launch("leave"); type("سنوات الخدمة", "6"); waitText("30 يوما") }
     func testZakatDue() { launch("zakat"); type("النقد والأرصدة البنكية", "100000"); type("سعر غرام الذهب عيار 24 اليوم", "300"); waitText("2,500.00") }
     func testOvertimePay() { launch("overtime"); type("الراتب الأساسي", "6000"); type("عدد الساعات الإضافية", "10"); waitText("375.00") }
     func testElectricityBill() { launch("electricity"); app.buttons["حتى 31 ديسمبر 2026"].firstMatch.tap(); type("الاستهلاك الشهري", "1000"); waitText("207.00") }
@@ -95,7 +100,7 @@ final class P0ToolsTests: XCTestCase {
     func testStudyTimerCounts() { launch("study_timer"); tap("ابدأ"); waitText("24:5", 6) }
     func testQuizMakerPdf() { launch("quiz_maker"); tap("إضافة سؤال"); type("نص السؤال", "كم عدد أيام الأسبوع؟"); type("الخيار أ", "سبعة"); type("الخيار ب", "خمسة"); tap("إنشاء PDF"); waitResults() }
     func testWorksheetPdf() { launch("worksheet"); tap("إنشاء PDF"); waitResults() }
-    func testCertificateSingle() { launch("certificate"); type("اسم المكرَّم", "سارة أحمد"); tap("إنشاء الشهادة"); waitResults() }
+    func testCertificateSingle() { launch("certificate"); type("اسم المكرم", "سارة أحمد"); tap("إنشاء الشهادة"); waitResults() }
     func testCertificateBulk() {
         launch("certificate"); let t = app.switches["bulkToggle"]; reveal(t); t.tap()
         type("الأسماء (اسم في كل سطر)", "سارة\nمحمد\nنورة"); tap("إنشاء الشهادات"); waitResults(); waitText("شهادات-")
@@ -107,7 +112,7 @@ final class P0ToolsTests: XCTestCase {
         let chip = app.buttons[item]; reveal(chip); chip.tap()
         type("من 50", "45"); waitText("45 / 50")
     }
-    func testQuizGenerator() { launch("quiz_gen"); type("ملاحظاتك أو درسك", lesson); tap("action"); waitText("سؤالًا", 20) }
+    func testQuizGenerator() { launch("quiz_gen"); type("ملاحظاتك أو درسك", lesson); tap("action"); waitText("سؤالا", 20) }
     func testSummarizer() { launch("summarize"); type("النص المراد تلخيصه", lesson); tap("action"); waitText("الملخص", 20) }
 
     // MARK: documents
@@ -168,7 +173,7 @@ final class P0ToolsTests: XCTestCase {
 
     // MARK: P2 Saudi services
     func testNoticeCompensation() {
-        launch("notice"); type("أيام الإشعار التي أُعطيت", "20"); type("الأجر الشهري", "9000"); waitText("12,000.00")
+        launch("notice"); type("أيام الإشعار التي أعطيت", "20"); type("الأجر الشهري", "9000"); waitText("12,000.00")
         let b = app.buttons["ruleToggle"]; reveal(b); b.tap(); waitText("آخر مراجعة")
     }
     func testFinalSettlement() { launch("settlement"); type("آخر أجر شهري (الأساسي + البدلات الثابتة)", "10000"); waitText("إجمالي التسوية التقديرية"); waitText("تفاصيل الحساب") }

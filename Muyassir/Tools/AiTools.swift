@@ -39,7 +39,7 @@ struct TextSource: View {
         Panel {
             Field(label: label, text: $text, lines: 8)
             HStack {
-                SecondaryButton(title: loading ? "جارٍ القراءة…" : "من ملف أو صورة", icon: "doc.text.viewfinder") { picking = true }
+                SecondaryButton(title: loading ? "جار القراءة…" : "من ملف أو صورة", icon: "doc.text.viewfinder") { picking = true }
                 if !text.isEmpty { SecondaryButton(title: "مسح", icon: "xmark") { text = "" } }
             }
             if let error { Text(error).font(.plex(.caption)).foregroundStyle(.red) }
@@ -52,7 +52,7 @@ struct TextSource: View {
                 let res = Result { try readText(u, ocrPages: budget) }
                 await MainActor.run {
                     loading = false
-                    switch res { case .success(let t): if t.isEmpty { error = "لم يُعثر على نص في الملف" } else { text = t }
+                    switch res { case .success(let t): if t.isEmpty { error = "لم يعثر على نص في الملف" } else { text = t }
                     case .failure(let e): error = e.localizedDescription }
                 }
             }
@@ -75,14 +75,14 @@ struct TranslateTool: View {
                     busy = false
                     switch r {
                     case .success(let t): out = t; error = nil; save(t); store.used(tool.id); ReviewAsk.success()
-                    case .failure(let e): error = "تعذّرت الترجمة: \(e.localizedDescription)"
+                    case .failure(let e): error = "تعذرت الترجمة: \(e.localizedDescription)"
                     }
                 }
                 PrimaryButton(title: busy ? "يترجم…" : "ترجمة", icon: "translate", enabled: !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !busy) { busy = true; run += 1 }
                     .accessibilityIdentifier("action")
                 Hint(text: "تعمل الترجمة على جهازك. في أول مرة قد يطلب iOS تنزيل لغة الترجمة، وبعدها تعمل دون إنترنت.")
             } else {
-                Hint(text: "الترجمة على الجهاز تتطلب iOS 18 أو أحدث. حدّث نظام جهازك لاستخدامها.")
+                Hint(text: "الترجمة على الجهاز تتطلب iOS 18 أو أحدث. حدث نظام جهازك لاستخدامها.")
             }
             if let error { Text(error).font(.plex(.caption)).foregroundStyle(.red).accessibilityIdentifier("error") }
             if !out.isEmpty { TextResult(text: out, label: "الترجمة").accessibilityIdentifier("results"); ResultFiles(files: files) }
@@ -148,15 +148,15 @@ struct SummarizeTool: View {
         ToolScreen(tool: tool) {
             TextSource(label: "النص المراد تلخيصه", text: $text)
             if DeviceModel.arabicReady { Toggle("صياغة الملخص بنموذج Apple على الجهاز", isOn: $smart).font(.plex(.subheadline)) }
-            PrimaryButton(title: busy ? "يلخّص…" : "لخّص", icon: "text.badge.star", enabled: words >= 30 && !busy) { run() }.accessibilityIdentifier("action")
-            if words > 0 && words < 30 { Text("أضف نصًا أطول (30 كلمة على الأقل).").font(.plex(.caption)).foregroundStyle(Brand.text2) }
+            PrimaryButton(title: busy ? "يلخص…" : "لخص", icon: "text.badge.star", enabled: words >= 30 && !busy) { run() }.accessibilityIdentifier("action")
+            if words > 0 && words < 30 { Text("أضف نصا أطول (30 كلمة على الأقل).").font(.plex(.caption)).foregroundStyle(Brand.text2) }
             if let error { Text(error).font(.plex(.caption)).foregroundStyle(.red) }
             if !smartText.isEmpty { TextResult(text: smartText, label: "الملخص المصاغ") }
             if !points.isEmpty {
                 TextResult(text: points.map { "• \($0)" }.joined(separator: "\n"), label: "الملخص (\(points.count) نقاط)").accessibilityIdentifier("results")
                 if !keys.isEmpty { Panel(title: "كلمات مفتاحية") { Text(keys.joined(separator: " • ")).font(.plex(.subheadline)) } }
             }
-            Hint(text: "يختار أهم الجمل من نصك على جهازك ويعرضها بترتيبها، فلا يضيف معلومة ليست في النص.\(plus.unlocked ? "" : " المجاني: تلخيص واحد يوميًا.")")
+            Hint(text: "يختار أهم الجمل من نصك على جهازك ويعرضها بترتيبها، فلا يضيف معلومة ليست في النص.\(plus.unlocked ? "" : " المجاني: تلخيص واحد يوميا.")")
         }
     }
     private func run() {
@@ -166,8 +166,8 @@ struct SummarizeTool: View {
         guard smart else { return }
         busy = true; let src = text
         Task {
-            do { let r = try await DeviceModel.ask("لخّص النص التالي بالعربية في نقاط قصيرة دون إضافة أي معلومة غير موجودة فيه.", src); await MainActor.run { smartText = r; busy = false } }
-            catch { await MainActor.run { self.error = "تعذّرت الصياغة بالنموذج، والملخص أدناه من جملك."; busy = false } }
+            do { let r = try await DeviceModel.ask("لخص النص التالي بالعربية في نقاط قصيرة دون إضافة أي معلومة غير موجودة فيه.", src); await MainActor.run { smartText = r; busy = false } }
+            catch { await MainActor.run { self.error = "تعذرت الصياغة بالنموذج، والملخص أدناه من جملك."; busy = false } }
         }
     }
 }
@@ -185,7 +185,7 @@ struct QuizGenTool: View {
             NumField(label: "عدد الأسئلة", text: $count)
             PrimaryButton(title: "أنشئ أسئلة المراجعة", icon: "questionmark.bubble", enabled: TextAi.sentences(text).count >= 3) { run() }.accessibilityIdentifier("action")
             if !qs.isEmpty {
-                Panel(title: "\(qs.count) سؤالًا") {
+                Panel(title: "\(qs.count) سؤالا") {
                     ForEach(Array(qs.enumerated()), id: \.element.id) { i, q in
                         VStack(alignment: .leading, spacing: 4) {
                             Text("\(i + 1)) \(q.text)").font(.plex(.subheadline, .semibold))
@@ -195,7 +195,7 @@ struct QuizGenTool: View {
                     SecondaryButton(title: "أضفها إلى بطاقات المراجعة", icon: "rectangle.on.rectangle.angled") {
                         let now = Date().timeIntervalSince1970 * 1000
                         store.saveList("flashcards", store.list("flashcards") + qs.enumerated().map { ["id": now + Double($0.offset), "f": $0.element.text, "b": $0.element.answer, "box": 1.0] as Rec })
-                        msg = "أُضيفت \(qs.count) بطاقة إلى بطاقات المراجعة"
+                        msg = "أضيفت \(qs.count) بطاقة إلى بطاقات المراجعة"
                     }
                     if let msg { Text(msg).font(.plex(.caption)).foregroundStyle(Brand.mint) }
                 }.accessibilityIdentifier("results")
@@ -203,13 +203,13 @@ struct QuizGenTool: View {
             } else if !text.isEmpty && TextAi.sentences(text).count < 3 {
                 Text("أضف ثلاث جمل كاملة على الأقل.").font(.plex(.caption)).foregroundStyle(Brand.text2)
             }
-            Hint(text: "تُبنى الأسئلة من جملك نفسها على جهازك (أكمل الفراغ بأربعة اختيارات). راجعها قبل توزيعها.\(plus.unlocked ? "" : " المجاني: مرة واحدة يوميًا.")")
+            Hint(text: "تبنى الأسئلة من جملك نفسها على جهازك (أكمل الفراغ بأربعة اختيارات). راجعها قبل توزيعها.\(plus.unlocked ? "" : " المجاني: مرة واحدة يوميا.")")
         }
     }
     private func run() {
         guard plus.useAi() else { return }
         qs = TextAi.quiz(text, count: min(max(Int(count.num), 1), 30)); msg = nil
-        guard !qs.isEmpty else { msg = "لم أجد مصطلحات كافية لبناء أسئلة. جرّب نصًا أطول."; return }
+        guard !qs.isEmpty else { msg = "لم أجد مصطلحات كافية لبناء أسئلة. جرب نصا أطول."; return }
         let out = FilesX.outDir()
         func doc(_ key: Bool) -> URL? {
             let b = Templates.apply(DocBuilder()); b.add(.title(key ? "أسئلة المراجعة — الإجابات" : "أسئلة المراجعة"))
@@ -250,7 +250,7 @@ struct ReadAloudTool: View {
     var body: some View {
         ToolScreen(tool: tool) {
             TextSource(label: "النص المراد قراءته", text: $text)
-            SecondaryButton(title: "صوّر ورقة", icon: "camera.viewfinder") { scanning = true }
+            SecondaryButton(title: "صور ورقة", icon: "camera.viewfinder") { scanning = true }
             Seg(options: ["بطيء", "عادي", "سريع"], selection: $speed)
             HStack {
                 PrimaryButton(title: speaker.speaking ? "يقرأ الآن…" : "اقرأ لي", icon: "speaker.wave.2", enabled: !text.isEmpty && !speaker.speaking) {
@@ -258,7 +258,7 @@ struct ReadAloudTool: View {
                 }.accessibilityIdentifier("action")
                 if speaker.speaking { SecondaryButton(title: "إيقاف", icon: "stop.fill") { speaker.stop() } }
             }
-            Hint(text: "يستخدم صوت iOS المدمج. لصوت أوضح نزّل صوتًا عربيًا محسّنًا من الإعدادات ← تسهيلات الاستخدام ← المحتوى المنطوق ← الأصوات.")
+            Hint(text: "يستخدم صوت iOS المدمج. لصوت أوضح نزل صوتا عربيا محسنا من الإعدادات ← تسهيلات الاستخدام ← المحتوى المنطوق ← الأصوات.")
         }
         .onDisappear { speaker.stop() }
         .fullScreenCover(isPresented: $scanning) {

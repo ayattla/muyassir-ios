@@ -77,13 +77,13 @@ struct QrRead: View {
                 TextResult(text: value, label: "المحتوى")
                 if let u = URL(string: value), ["http", "https"].contains(u.scheme?.lowercased() ?? "") { Link(destination: u) { Label("فتح الرابط", systemImage: "safari") }.frame(maxWidth: .infinity) }
             }
-            Hint(text: "القراءة تتم على جهازك بالكامل. لا تُفتح الروابط إلا عند ضغطك.")
+            Hint(text: "القراءة تتم على جهازك بالكامل. لا تفتح الروابط إلا عند ضغطك.")
         }
         .onChange(of: item) {
             Task {
                 guard let d = try? await item?.loadTransferable(type: Data.self), let img = UIImage(data: d) else { return }
                 let codes = (try? ImageEngine.readCodes(img)) ?? []
-                if let f = codes.first { value = f; error = nil; store.used(tool.id) } else { error = "لم يُعثر على رمز في الصورة" }
+                if let f = codes.first { value = f; error = nil; store.used(tool.id) } else { error = "لم يعثر على رمز في الصورة" }
             }
         }
         .sheet(isPresented: $scanning) {
@@ -95,7 +95,7 @@ struct QrRead: View {
             if let spec = ProcessInfo.processInfo.environment["MYS_TEST_INPUTS"], let u = TestInputs.make(spec).first { img = UIImage(contentsOfFile: u.path) }
             #endif
             if img == nil, let u = Incoming.shared.take()?.first { img = ImageEngine.load(u, maxSide: 2000) }
-            if let img { let codes = (try? ImageEngine.readCodes(img)) ?? []; if let f = codes.first { value = f; store.used(tool.id) } else { error = "لم يُعثر على رمز في الصورة" } }
+            if let img { let codes = (try? ImageEngine.readCodes(img)) ?? []; if let f = codes.first { value = f; store.used(tool.id) } else { error = "لم يعثر على رمز في الصورة" } }
         }
     }
 }
@@ -193,7 +193,7 @@ struct TtsTool: View {
                 VStack(alignment: .leading) { Text("السرعة \(fmt(rate, 1))×").font(.plex(.caption)); Slider(value: $rate, in: 0.5...1.6).environment(\.layoutDirection, .leftToRight) } }
             HStack {
                 PrimaryButton(title: tts.speaking ? "إيقاف" : "استماع", icon: tts.speaking ? "stop.fill" : "play.fill", enabled: !text.isEmpty) { tts.speaking ? tts.stop() : tts.speak(text, ar: lang == 0, rate: rate) }
-                SecondaryButton(title: busy ? "جارٍ الحفظ…" : "حفظ ملف صوتي", icon: "waveform") {
+                SecondaryButton(title: busy ? "جار الحفظ…" : "حفظ ملف صوتي", icon: "waveform") {
                     busy = true
                     tts.export(text, ar: lang == 0, rate: rate, to: FilesX.outDir().appendingPathComponent("نص-مقروء.m4a")) { u in busy = false; result = [u].compactMap { $0 }; store.used(tool.id) }
                 }.disabled(text.isEmpty || busy)
@@ -242,7 +242,7 @@ final class SttEngine: ObservableObject {
                     if err != nil || (res?.isFinal ?? false) { self.stop() }
                 }
             }
-        } catch { self.error = "تعذّر تشغيل الميكروفون."; stop() }
+        } catch { self.error = "تعذر تشغيل الميكروفون."; stop() }
     }
     func stop() {
         if engine.isRunning { engine.stop(); engine.inputNode.removeTap(onBus: 0) }
@@ -376,13 +376,13 @@ struct CurrencyTool: View {
                     Picker("إلى", selection: $to) { ForEach(codes, id: \.self) { Text("\(names[$0]!) \($0)").tag($0) } }.pickerStyle(.menu)
                 }
             }
-            SecondaryButton(title: busy ? "جارٍ التحديث…" : rates.isEmpty ? "جلب أسعار اليوم" : "تحديث الأسعار", icon: "arrow.clockwise") { Task { await fetch() } }.disabled(busy)
+            SecondaryButton(title: busy ? "جار التحديث…" : rates.isEmpty ? "جلب أسعار اليوم" : "تحديث الأسعار", icon: "arrow.clockwise") { Task { await fetch() } }.disabled(busy)
             if let error { Text(error).font(.plex(.footnote)).foregroundStyle(.red) }
             if let a = rates[from], let b = rates[to], a > 0 {
                 let r = amount.num / a * b
                 ResultCard(main: ("\(fmt(amount.num)) \(from) =", "\(fmt(r, 4)) \(to)"), rows: [("سعر الوحدة", "1 \(from) = \(fmt(b / a, 6)) \(to)"), ("آخر تحديث", updated)])
             }
-            Hint(text: "الأسعار إرشادية من الخدمة المجانية open.er-api.com وتُجلب فقط عند ضغطك الزر، وتُحفظ لاستخدامها دون إنترنت. لا يُرسل أي من بياناتك. الريال مربوط بالدولار عند 3.75.")
+            Hint(text: "الأسعار إرشادية من الخدمة المجانية open.er-api.com وتجلب فقط عند ضغطك الزر، وتحفظ لاستخدامها دون إنترنت. لا يرسل أي من بياناتك. الريال مربوط بالدولار عند 3.75.")
         }
         .onAppear {
             let o = store.obj("rates"); rates = (o["rates"] as? [String: Double]) ?? [:]; updated = o.s("updated")
@@ -396,6 +396,6 @@ struct CurrencyTool: View {
             guard let j = try JSONSerialization.jsonObject(with: d) as? [String: Any], let r = j["rates"] as? [String: Double] else { throw UserError("رد غير متوقع") }
             rates = r; updated = (j["time_last_update_utc"] as? String) ?? dtFmt.string(from: Date()); error = nil
             store.saveObj("rates", ["rates": r, "updated": updated]); store.used(tool.id)
-        } catch { self.error = "تعذّر جلب الأسعار. تحقق من الاتصال وحاول مجددًا." }
+        } catch { self.error = "تعذر جلب الأسعار. تحقق من الاتصال وحاول مجددا." }
     }
 }

@@ -24,7 +24,7 @@ final class DocBuilder {
     let margin: CGFloat = 42
     var cw: CGFloat { pw - 2 * margin }
     var border: UIColor? = nil
-    /// Text before the page number (free document tools: «أُنشئ بمُيسّر»); nil = page number only.
+    /// Text before the page number (free document tools: «أنشئ بميسر»); nil = page number only.
     var footer: String? = nil
     var pageNumbers = true
     /// Template: accent colour and layout (0 classic, 1 coloured header band, 2 side stripe, 3 formal centred).

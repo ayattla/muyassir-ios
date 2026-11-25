@@ -42,7 +42,7 @@ struct TodayProvider: TimelineProvider {
         }
     }
     private func days(_ from: Date, _ to: Date) -> Int { KSA.cal.dateComponents([.day], from: KSA.cal.startOfDay(for: from), to: KSA.cal.startOfDay(for: to)).day ?? 0 }
-    private func label(_ title: String, _ d: Int) -> String? { d < 0 ? nil : d == 0 ? "\(title) اليوم" : "\(title) بعد \(d) \((3...10).contains(d) ? "أيام" : "يومًا")" }
+    private func label(_ title: String, _ d: Int) -> String? { d < 0 ? nil : d == 0 ? "\(title) اليوم" : "\(title) بعد \(d) \((3...10).contains(d) ? "أيام" : "يوما")" }
 }
 
 struct TodayWidgetView: View {

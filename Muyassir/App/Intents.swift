@@ -1,7 +1,7 @@
 import AppIntents
 import SwiftUI
 
-/// Siri and Shortcuts: open a common tool or the recipes directly ("امسح مستند في مُيسّر").
+/// Siri and Shortcuts: open a common tool or the recipes directly ("امسح مستند في ميسر").
 @MainActor
 final class DeepLink: ObservableObject {
     static let shared = DeepLink()
@@ -33,7 +33,7 @@ struct MuyassirShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: ScanIntent(), phrases: ["امسح مستند في \(.applicationName)", "Scan a document with \(.applicationName)"], shortTitle: "مسح مستند", systemImageName: "doc.viewfinder")
         AppShortcut(intent: CompressPdfIntent(), phrases: ["اضغط PDF في \(.applicationName)", "Compress a PDF with \(.applicationName)"], shortTitle: "ضغط PDF", systemImageName: "arrow.down.right.and.arrow.up.left")
-        AppShortcut(intent: ImagesToPdfIntent(), phrases: ["حوّل الصور إلى PDF في \(.applicationName)", "Images to PDF with \(.applicationName)"], shortTitle: "صور إلى PDF", systemImageName: "photo.on.rectangle")
+        AppShortcut(intent: ImagesToPdfIntent(), phrases: ["حول الصور إلى PDF في \(.applicationName)", "Images to PDF with \(.applicationName)"], shortTitle: "صور إلى PDF", systemImageName: "photo.on.rectangle")
         AppShortcut(intent: RecipesIntent(), phrases: ["افتح الوصفات في \(.applicationName)", "Open recipes in \(.applicationName)"], shortTitle: "الوصفات", systemImageName: "wand.and.stars")
     }
 }

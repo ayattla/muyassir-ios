@@ -19,13 +19,13 @@ struct FileTool<Options: View, After: View>: View {
     let pickLabel: String
     let actionLabel: String
     var reorderable = false
-    var validate: ([URL]) -> String? = { $0.isEmpty ? "اختر ملفًا أولًا" : nil }
+    var validate: ([URL]) -> String? = { $0.isEmpty ? "اختر ملفا أولا" : nil }
     @ViewBuilder var options: ([URL]) -> Options
     @ViewBuilder var after: () -> After
     let run: ([URL], URL, Progress) async throws -> [URL]
 
     init(tool: Tool, types: [UTType], multiple: Bool = false, pickLabel: String, actionLabel: String, reorderable: Bool = false,
-         validate: @escaping ([URL]) -> String? = { $0.isEmpty ? "اختر ملفًا أولًا" : nil },
+         validate: @escaping ([URL]) -> String? = { $0.isEmpty ? "اختر ملفا أولا" : nil },
          @ViewBuilder options: @escaping ([URL]) -> Options, @ViewBuilder after: @escaping () -> After,
          run: @escaping ([URL], URL, Progress) async throws -> [URL]) {
         self.tool = tool; self.types = types; self.multiple = multiple; self.pickLabel = pickLabel; self.actionLabel = actionLabel
@@ -49,8 +49,8 @@ struct FileTool<Options: View, After: View>: View {
                         Image(systemName: "square.and.arrow.down.on.square").font(.system(size: 24, weight: .semibold)).foregroundStyle(Brand.accent)
                             .frame(width: 52, height: 52).background(Brand.surface, in: RoundedRectangle(cornerRadius: 16))
                         Text(inputs.isEmpty ? pickLabel : (multiple ? "إضافة ملفات أخرى" : "تغيير الملف")).font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.accent)
-                        Text(multiple ? "يمكنك اختيار عدة ملفات دفعة واحدة" : "اختر ملفًا من جهازك أو من iCloud").font(.plex(.caption)).foregroundStyle(Brand.text2)
-                        Label("تتم المعالجة على جهازك ولا تُرفع ملفاتك", systemImage: "lock.fill").font(.plex(.caption2)).foregroundStyle(Brand.text3)
+                        Text(multiple ? "يمكنك اختيار عدة ملفات دفعة واحدة" : "اختر ملفا من جهازك أو من iCloud").font(.plex(.caption)).foregroundStyle(Brand.text2)
+                        Label("تتم المعالجة على جهازك ولا ترفع ملفاتك", systemImage: "lock.fill").font(.plex(.caption2)).foregroundStyle(Brand.text3)
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 24)
                     .background(Brand.accentSoft.opacity(0.6), in: RoundedRectangle(cornerRadius: Radius.l))
@@ -65,7 +65,7 @@ struct FileTool<Options: View, After: View>: View {
                 }
                 if Plus.isMetered(tool.id) && !plus.unlocked {
                     HStack(spacing: 6) {
-                        Text(plus.opsLeft > 0 ? "متبقٍ لك اليوم \(plus.opsLeft) من \(Plus.freeOpsPerDay) عمليات مجانية" : "انتهت عملياتك المجانية لليوم").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
+                        Text(plus.opsLeft > 0 ? "متبق لك اليوم \(plus.opsLeft) من \(Plus.freeOpsPerDay) عمليات مجانية" : "انتهت عملياتك المجانية لليوم").font(.plex(.caption, .semibold)).foregroundStyle(Brand.text2)
                         Button("بلا حدود مع بلس") { plus.paywall = .menu }.font(.plex(.caption, .semibold))
                     }.frame(maxWidth: .infinity).accessibilityElement(children: .combine).accessibilityIdentifier("opsLeft")
                 }
@@ -89,7 +89,7 @@ struct FileTool<Options: View, After: View>: View {
             if let error { Text(error).font(.plex(.subheadline)).foregroundStyle(.red).accessibilityIdentifier("error") }
             if busy {
                 Panel {
-                    HStack(spacing: 8) { ProgressView(); Text(progress.label.isEmpty ? "جارٍ المعالجة على جهازك…" : progress.label).font(.plex(.subheadline)).foregroundStyle(Brand.text1) }.frame(maxWidth: .infinity)
+                    HStack(spacing: 8) { ProgressView(); Text(progress.label.isEmpty ? "جار المعالجة على جهازك…" : progress.label).font(.plex(.subheadline)).foregroundStyle(Brand.text1) }.frame(maxWidth: .infinity)
                     if progress.value >= 0 {
                         ProgressView(value: progress.value).tint(Brand.accent).animation(.easeOut, value: progress.value)
                         Text("\(Int(progress.value * 100))%").font(.plex(.caption)).foregroundStyle(Brand.text3).frame(maxWidth: .infinity)
@@ -133,7 +133,7 @@ struct FileTool<Options: View, After: View>: View {
                 let started = Date()
                 let r = try await Task.detached(priority: .userInitiated) { try await run(ins, out, progress) }.value
                 // Nothing came out: the inputs could not be read (broken or of another type). Say so instead of an empty result.
-                if r.isEmpty { throw UserError("تعذّر فتح الملف. تأكد أنه سليم ومن النوع المطلوب.") }
+                if r.isEmpty { throw UserError("تعذر فتح الملف. تأكد أنه سليم ومن النوع المطلوب.") }
                 results = r
                 store.used(tool.id, results.first?.lastPathComponent ?? "")
                 plus.counted(tool.id)
@@ -147,7 +147,7 @@ struct FileTool<Options: View, After: View>: View {
 
 extension FileTool where After == EmptyView {
     init(tool: Tool, types: [UTType], multiple: Bool = false, pickLabel: String, actionLabel: String, reorderable: Bool = false,
-         validate: @escaping ([URL]) -> String? = { $0.isEmpty ? "اختر ملفًا أولًا" : nil },
+         validate: @escaping ([URL]) -> String? = { $0.isEmpty ? "اختر ملفا أولا" : nil },
          @ViewBuilder options: @escaping ([URL]) -> Options, run: @escaping ([URL], URL, Progress) async throws -> [URL]) {
         self.init(tool: tool, types: types, multiple: multiple, pickLabel: pickLabel, actionLabel: actionLabel, reorderable: reorderable, validate: validate, options: options, after: { EmptyView() }, run: run)
     }
@@ -155,7 +155,7 @@ extension FileTool where After == EmptyView {
 
 extension FileTool where After == EmptyView, Options == EmptyView {
     init(tool: Tool, types: [UTType], multiple: Bool = false, pickLabel: String, actionLabel: String, reorderable: Bool = false,
-         validate: @escaping ([URL]) -> String? = { $0.isEmpty ? "اختر ملفًا أولًا" : nil }, run: @escaping ([URL], URL, Progress) async throws -> [URL]) {
+         validate: @escaping ([URL]) -> String? = { $0.isEmpty ? "اختر ملفا أولا" : nil }, run: @escaping ([URL], URL, Progress) async throws -> [URL]) {
         self.init(tool: tool, types: types, multiple: multiple, pickLabel: pickLabel, actionLabel: actionLabel, reorderable: reorderable, validate: validate, options: { _ in EmptyView() }, after: { EmptyView() }, run: run)
     }
 }
@@ -163,7 +163,7 @@ extension FileTool where After == EmptyView, Options == EmptyView {
 func friendly(_ e: Error) -> String {
     let m = e.localizedDescription
     if m.unicodeScalars.contains(where: { (0x0600...0x06FF).contains($0.value) }) { return m }
-    return "تعذّرت المعالجة: تأكد أن الملف سليم ومن النوع الصحيح."
+    return "تعذرت المعالجة: تأكد أن الملف سليم ومن النوع الصحيح."
 }
 
 struct UserError: LocalizedError { let message: String; init(_ m: String) { message = m }; var errorDescription: String? { message } }
@@ -185,12 +185,12 @@ struct ResultFiles: View {
                     }
                 }.buttonStyle(.plain)
             }
-            if files.count > 60 { Text("و\(files.count - 60) ملفًا آخر").font(.plex(.caption)) }
+            if files.count > 60 { Text("و\(files.count - 60) ملفا آخر").font(.plex(.caption)) }
             HStack {
                 SecondaryButton(title: "مشاركة", icon: "square.and.arrow.up") { sharing = true }
                 SecondaryButton(title: "حفظ في الملفات", icon: "folder") { exportCopies = files.map { copy($0) }; exporting = true }
             }
-            Text("تجدها أيضًا في تطبيق «الملفات» ← على الـiPhone ← مُيسّر.").font(.plex(.caption)).foregroundStyle(.secondary)
+            Text("تجدها أيضا في تطبيق «الملفات» ← على الـiPhone ← ميسر.").font(.plex(.caption)).foregroundStyle(.secondary)
         }
         .sheet(isPresented: $sharing) { ShareSheet(items: files) }
         .fileMover(isPresented: $exporting, files: exportCopies) { _ in }

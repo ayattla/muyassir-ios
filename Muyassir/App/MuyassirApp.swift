@@ -154,7 +154,7 @@ struct RootView: View {
             if let t = arg("-tab") { tab = t == "search" ? "home" : t; if t == "search" { homePath.append(SearchRoute()) } }
             if arg("-screen") == "recipes" { tab = "home"; homePath.append(RecipesRoute()) }
         }
-        // «فتح في مُيسّر» from Files/Mail/WhatsApp, and muyassir://tool/<id> links from the widget and shortcuts.
+        // «فتح في ميسر» from Files/Mail/WhatsApp, and muyassir://tool/<id> links from the widget and shortcuts.
         .onOpenURL { open($0) }
         .onChange(of: incoming.version) { _, _ in tab = "home"; homePath.append(IncomingRoute()) }
         .onChange(of: deepLink.target) { _, t in

@@ -3,7 +3,7 @@ import Foundation
 /// Versioned rules behind every Saudi calculator: formula, article, official source and last review date.
 /// Other Gulf countries are declared but stay disabled until their rules are reviewed.
 enum SaudiRules {
-    enum Country: String, CaseIterable { case sa = "السعودية", ae = "الإمارات", kw = "الكويت", qa = "قطر", bh = "البحرين", om = "عُمان"
+    enum Country: String, CaseIterable { case sa = "السعودية", ae = "الإمارات", kw = "الكويت", qa = "قطر", bh = "البحرين", om = "عمان"
         var enabled: Bool { self == .sa } }
 
     struct Rule { let id, title, formula, articles, source, sourceURL, reviewed: String }
@@ -12,14 +12,14 @@ enum SaudiRules {
     static let reviewed = "22 نوفمبر 2026"
 
     static let rules: [String: Rule] = Dictionary(uniqueKeysWithValues: [
-        Rule(id: "eos", title: "مكافأة نهاية الخدمة", formula: "نصف أجر شهر عن كل سنة من الخمس الأولى، وأجر شهر عن كل سنة بعدها، وتُحسب كسور السنة بنسبتها. عند الاستقالة: لا شيء قبل سنتين، ثلث المكافأة من 2 إلى أقل من 5، ثلثاها من 5 إلى أقل من 10، وكاملة بعد 10 سنوات.", articles: "المادتان 84 و85 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
-        Rule(id: "leave", title: "رصيد الإجازة السنوية", formula: "21 يومًا سنويًا، و30 يومًا إذا أمضى العامل خمس سنوات متصلة لدى صاحب العمل. قيمة الرصيد = الأيام المتبقية × (الأجر الشهري ÷ 30)، ويستحق العامل أجر ما لم يتمتع به عند انتهاء العقد.", articles: "المادتان 109 و111 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
+        Rule(id: "eos", title: "مكافأة نهاية الخدمة", formula: "نصف أجر شهر عن كل سنة من الخمس الأولى، وأجر شهر عن كل سنة بعدها، وتحسب كسور السنة بنسبتها. عند الاستقالة: لا شيء قبل سنتين، ثلث المكافأة من 2 إلى أقل من 5، ثلثاها من 5 إلى أقل من 10، وكاملة بعد 10 سنوات.", articles: "المادتان 84 و85 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
+        Rule(id: "leave", title: "رصيد الإجازة السنوية", formula: "21 يوما سنويا، و30 يوما إذا أمضى العامل خمس سنوات متصلة لدى صاحب العمل. قيمة الرصيد = الأيام المتبقية × (الأجر الشهري ÷ 30)، ويستحق العامل أجر ما لم يتمتع به عند انتهاء العقد.", articles: "المادتان 109 و111 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
         Rule(id: "salary", title: "اشتراكات التأمينات الاجتماعية", formula: "الأجر الخاضع = الأساسي + السكن (بحد أعلى 45,000 ريال). السعودي في النظام السابق: 9% معاشات + 0.75% ساند على الموظف. النظام الجديد (المسجلون لأول مرة من 3 يوليو 2024): المعاشات 9.5% من 1 يوليو 2025، و10% من 1 يوليو 2026، و10.5% من 1 يوليو 2027، و11% من 1 يوليو 2028، على كل من الموظف وصاحب العمل، إضافة إلى ساند 0.75%. غير السعودي: 2% أخطار مهنية على صاحب العمل فقط.", articles: "نظام التأمينات الاجتماعية (م/273)", source: "المؤسسة العامة للتأمينات الاجتماعية — نسب الاشتراك", sourceURL: gosiURL, reviewed: reviewed),
         Rule(id: "overtime", title: "أجر العمل الإضافي", formula: "أجر الساعة الإضافية = أجر الساعة الفعلي + 50% من أجر الساعة الأساسي. أجر الساعة = الأجر الشهري ÷ 30 ÷ ساعات العمل اليومية.", articles: "المادة 107 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
         Rule(id: "service", title: "مدة الخدمة", formula: "الفرق بين تاريخ المباشرة وتاريخ انتهاء العلاقة بالسنوات والأشهر والأيام، وهو أساس المكافأة والإجازة والتعويض.", articles: "المادة 84 (حساب المدة)", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
-        Rule(id: "notice", title: "التعويض عن مهلة الإشعار", formula: "في العقد غير محدد المدة وأجره شهري: مهلة 30 يومًا إن أنهاه العامل، و60 يومًا إن أنهاه صاحب العمل؛ ولغير الشهري 30 يومًا. من لم يلتزم بالمهلة يدفع للطرف الآخر أجر العامل عن المهلة أو ما تبقى منها. العقد محدد المدة لا مهلة إشعار فيه.", articles: "المادتان 75 و76 من نظام العمل (بعد تعديل م/44 النافذ في 19 فبراير 2025)", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
-        Rule(id: "art77", title: "تعويض الإنهاء لسبب غير مشروع", formula: "ما لم يحدد العقد تعويضًا: أجر 15 يومًا عن كل سنة خدمة في العقد غير محدد المدة، وأجر المدة الباقية في العقد محدد المدة، وبحد أدنى أجر شهرين في الحالتين. يُضاف إلى المكافأة ولا يحل محلها.", articles: "المادة 77 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
-        Rule(id: "deduct", title: "الاستقطاع من الأجر", formula: "لا يجوز أن يزيد ما يُستقطع من أجر العامل وفاءً للقروض والجزاءات ونحوها على نصف الأجر المستحق. للنظام استثناءات محددة (مثل دين النفقة) تُراجع فيها المادة نفسها.", articles: "المادة 92 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
+        Rule(id: "notice", title: "التعويض عن مهلة الإشعار", formula: "في العقد غير محدد المدة وأجره شهري: مهلة 30 يوما إن أنهاه العامل، و60 يوما إن أنهاه صاحب العمل؛ ولغير الشهري 30 يوما. من لم يلتزم بالمهلة يدفع للطرف الآخر أجر العامل عن المهلة أو ما تبقى منها. العقد محدد المدة لا مهلة إشعار فيه.", articles: "المادتان 75 و76 من نظام العمل (بعد تعديل م/44 النافذ في 19 فبراير 2025)", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
+        Rule(id: "art77", title: "تعويض الإنهاء لسبب غير مشروع", formula: "ما لم يحدد العقد تعويضا: أجر 15 يوما عن كل سنة خدمة في العقد غير محدد المدة، وأجر المدة الباقية في العقد محدد المدة، وبحد أدنى أجر شهرين في الحالتين. يضاف إلى المكافأة ولا يحل محلها.", articles: "المادة 77 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
+        Rule(id: "deduct", title: "الاستقطاع من الأجر", formula: "لا يجوز أن يزيد ما يستقطع من أجر العامل وفاء للقروض والجزاءات ونحوها على نصف الأجر المستحق. للنظام استثناءات محددة (مثل دين النفقة) تراجع فيها المادة نفسها.", articles: "المادة 92 من نظام العمل", source: "وزارة الموارد البشرية — نظام العمل", sourceURL: labor, reviewed: reviewed),
         Rule(id: "vat", title: "ضريبة القيمة المضافة", formula: "النسبة الأساسية 15%. السعر شامل الضريبة = السعر × 1.15، والضريبة من سعر شامل = السعر × 15 ÷ 115.", articles: "نظام ضريبة القيمة المضافة", source: "هيئة الزكاة والضريبة والجمارك", sourceURL: "https://zatca.gov.sa", reviewed: reviewed),
     ].map { ($0.id, $0) })
 
@@ -72,7 +72,7 @@ enum SaudiRules {
         if reason == .employerLawful || reason == .employerUnlawful {
             if reason == .employerUnlawful { out.append(Line(label: "تعويض الإنهاء غير المشروع", amount: art77(contract, years: years, remainingMonths: remainingMonths, wage: wage), note: "المادة 77، بحد أدنى أجر شهرين")) }
             let n = notice(contract, .employer, monthlyPaid: true, given: noticeGiven, wage: wage)
-            if n.amount > 0 { out.append(Line(label: "تعويض مهلة الإشعار", amount: n.amount, note: "المادة 76: \(n.missingDays) يومًا من \(n.requiredDays)")) }
+            if n.amount > 0 { out.append(Line(label: "تعويض مهلة الإشعار", amount: n.amount, note: "المادة 76: \(n.missingDays) يوما من \(n.requiredDays)")) }
         }
         return out
     }

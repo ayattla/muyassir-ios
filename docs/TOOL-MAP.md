@@ -1,10 +1,10 @@
 # الخريطة المركزية للأدوات
 
-كل أداة: التصنيف، المعرّف، المسار، المكوّن المسؤول في كل منصة، والاختبار الآلي الذي يغطيها.
+كل أداة: التصنيف، المعرف، المسار، المكون المسؤول في كل منصة، والاختبار الآلي الذي يغطيها.
 
-المسارات: Android `tool/<id>` و `cat/<id>` (وأيضًا عبر Intent extra `tool` / `cat`). iOS: قيمة `Tool` في NavigationStack (وأيضًا وسيط التشغيل `-tool <id>` / `-cat <id>`).
+المسارات: Android `tool/<id>` و `cat/<id>` (وأيضا عبر Intent extra `tool` / `cat`). iOS: قيمة `Tool` في NavigationStack (وأيضا وسيط التشغيل `-tool <id>` / `-cat <id>`).
 
-| التصنيف | المعرّف | الأداة | مكوّن Android | مكوّن iOS | اختبار وظيفي Android | اختبار وظيفي iOS |
+| التصنيف | المعرف | الأداة | مكون Android | مكون iOS | اختبار وظيفي Android | اختبار وظيفي iOS |
 |---|---|---|---|---|---|---|
 | files | `pdf_word` | PDF إلى Word | `PdfToWord` | `PdfToWord` | `pdfToWord` | `testPdfToWord` |
 | files | `word_pdf` | Word إلى PDF | `WordToPdf` | `WordToPdf` | `wordToPdf` | `testWordToPdf` |
@@ -81,6 +81,6 @@
 | smart | `tts` | تحويل النص إلى صوت | `TtsTool` | `TtsTool` | التنقل | التنقل |
 | smart | `stt` | تحويل الصوت إلى نص | `SttTool` | `SttTool` | التنقل | التنقل |
 
-الأدوات: 74 — غير مربوطة بمكوّن: 0 
+الأدوات: 74 — غير مربوطة بمكون: 0 
 
 «التنقل» = الاختبار `everyCategoryShowsItsToolsAndEveryToolOpens` / `testEveryCategoryShowsItsToolsAndEveryToolOpens` الذي يفتح الأداة من تصنيفها ويتحقق من ظهور شاشتها ومن زر الرجوع، إضافة إلى اختبارات المحركات.

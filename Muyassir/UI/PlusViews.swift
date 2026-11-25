@@ -29,7 +29,7 @@ struct PaywallView: View {
 
     private let benefits = [("infinity", "بلا حدود يومية", "كل أدوات الملفات والصور متى شئت"),
                             ("square.stack.3d.up.fill", "دفعة واحدة حتى \(Plus.plusFiles) ملف", "وملفات حتى \(Plus.plusMB) م.ب"),
-                            ("doc.richtext.fill", "قوالب احترافية", "أكثر من 20 قالبًا بشعار منشأتك"),
+                            ("doc.richtext.fill", "قوالب احترافية", "أكثر من 20 قالبا بشعار منشأتك"),
                             ("text.viewfinder", "OCR لملفات كاملة", "وملف PDF قابل للبحث")]
     private let extras = ["إزالة الخلفية بدقة عالية وألوان مخصصة", "كل مقاسات صور الوثائق وورقة طباعة", "توقيع محفوظ وأختام وعلامة مائية",
                           "تصدير السجلات إلى Excel وPDF", "قفل الملاحظات والوثائق ببصمة الوجه", "ألوان وأيقونات مميزة", "أولوية في الدعم"]
@@ -40,7 +40,7 @@ struct PaywallView: View {
                 VStack(spacing: Space.m) {
                     Image(systemName: "crown.fill").font(.system(size: 30)).foregroundStyle(Brand.saffron)
                         .frame(width: 64, height: 64).background(Brand.ink, in: RoundedRectangle(cornerRadius: 20))
-                    Text("مُيسّر بلس").font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.accent)
+                    Text("ميسر بلس").font(.plex(.subheadline, .semibold)).foregroundStyle(Brand.accent)
                     Text(plus.active ? "أنت مشترك في بلس" : "أنجز أكثر بلا حدود").font(.plex(.title2, .bold)).foregroundStyle(Brand.text1).multilineTextAlignment(.center)
                     if reason != .menu && !plus.active {
                         VStack(spacing: 4) {
@@ -62,7 +62,7 @@ struct PaywallView: View {
                     }
                     offer
                     if !plus.active { SchoolCodeButton() }
-                    Label("ملفاتك تبقى على جهازك. ألغِ في أي وقت من المتجر.", systemImage: "lock.fill").font(.plex(.caption)).foregroundStyle(Brand.text3)
+                    Label("ملفاتك تبقى على جهازك. ألغ في أي وقت من المتجر.", systemImage: "lock.fill").font(.plex(.caption)).foregroundStyle(Brand.text3)
                     HStack {
                         Button("شروط الاستخدام") { openURL(termsURL) }
                         Button("سياسة الخصوصية") { openURL(privacyURL) }
@@ -80,27 +80,27 @@ struct PaywallView: View {
                     ToolbarItem(placement: .primaryAction) { Button("استعادة المشتريات") { Task { await plus.restore() } }.disabled(plus.busy) }
                 }
             }
-            .alert(plus.message ?? "", isPresented: Binding(get: { plus.message != nil }, set: { if !$0 { plus.message = nil } })) { Button("حسنًا") {} }
+            .alert(plus.message ?? "", isPresented: Binding(get: { plus.message != nil }, set: { if !$0 { plus.message = nil } })) { Button("حسنا") {} }
         }
         .onChange(of: plus.active) { _, on in if on && reason != .menu { dismiss() } }
     }
 
     @ViewBuilder private var offer: some View {
         if !plus.school.isEmpty && plus.schoolUntil > Date() {
-            Text("بلس مفعّل ضمن باقة \(plus.school) حتى \(plus.schoolUntil.formatted(.dateTime.day().month(.defaultDigits).year().locale(Locale(identifier: "en_US"))))")
+            Text("بلس مفعل ضمن باقة \(plus.school) حتى \(plus.schoolUntil.formatted(.dateTime.day().month(.defaultDigits).year().locale(Locale(identifier: "en_US"))))")
                 .font(.plex(.body)).foregroundStyle(Brand.text1).multilineTextAlignment(.center).accessibilityIdentifier("schoolActive")
         } else if plus.active {
-            Text(plus.subscribed ? "\(plus.planName)\(plus.renews ? " • يتجدد تلقائيًا" : " • لن يتجدد")" : "مرور اليوم مفعّل حتى \(plus.dayPassUntil.formatted(date: .omitted, time: .shortened))")
+            Text(plus.subscribed ? "\(plus.planName)\(plus.renews ? " • يتجدد تلقائيا" : " • لن يتجدد")" : "مرور اليوم مفعل حتى \(plus.dayPassUntil.formatted(date: .omitted, time: .shortened))")
                 .font(.plex(.body)).foregroundStyle(Brand.text1)
             if plus.subscribed { SecondaryButton(title: "إدارة الاشتراك أو إلغاؤه", icon: "person.crop.circle") { openURL(Plus.manageURL) } }
         } else if !plus.live {
             VStack(spacing: Space.s) {
-                Text("قريبًا").font(.plex(.headline, .semibold)).foregroundStyle(Brand.text1)
-                Text("كل الأدوات مفتوحة لك مجانًا الآن خلال فترة الإطلاق. سيُطرح بلس قريبًا بسعر رمزي.").font(.plex(.footnote)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
-                Toggle("نبّهني عند إطلاق بلس", isOn: Binding(get: { plus.notifyWhenLive }, set: { _ in plus.toggleNotify() })).font(.plex(.subheadline))
+                Text("قريبا").font(.plex(.headline, .semibold)).foregroundStyle(Brand.text1)
+                Text("كل الأدوات مفتوحة لك مجانا الآن خلال فترة الإطلاق. سيطرح بلس قريبا بسعر رمزي.").font(.plex(.footnote)).foregroundStyle(Brand.text2).multilineTextAlignment(.center)
+                Toggle("نبهني عند إطلاق بلس", isOn: Binding(get: { plus.notifyWhenLive }, set: { _ in plus.toggleNotify() })).font(.plex(.subheadline))
             }.padding(Space.l).card()
         } else if plus.plans.isEmpty {
-            Text("تعذّر تحميل الأسعار من App Store. تأكد من الاتصال وحاول لاحقًا.").font(.plex(.footnote)).foregroundStyle(Brand.text2)
+            Text("تعذر تحميل الأسعار من App Store. تأكد من الاتصال وحاول لاحقا.").font(.plex(.footnote)).foregroundStyle(Brand.text2)
         } else {
             let monthly = plus.plans.first { $0.id == "monthly" }
             ForEach(plus.plans.filter { $0.id != "day" || pick == "day" }) { p in
@@ -115,8 +115,8 @@ struct PaywallView: View {
                 Task { await plus.buy(chosen) }
             }.accessibilityIdentifier("subscribe")
             Text(chosen.id == "day" ? "دفعة واحدة \(chosen.price)، بلا اشتراك ولا تجديد."
-                 : chosen.trialDays > 0 ? "مجانًا \(chosen.trialDays) أيام، ثم \(chosen.price) كل \(chosen.period) ويتجدد تلقائيًا. نذكّرك قبل نهاية التجربة بيوم، ويمكنك الإلغاء في أي وقت من إعدادات App Store."
-                 : "\(chosen.price) كل \(chosen.period)، ويتجدد تلقائيًا حتى تلغيه من إعدادات App Store.")
+                 : chosen.trialDays > 0 ? "مجانا \(chosen.trialDays) أيام، ثم \(chosen.price) كل \(chosen.period) ويتجدد تلقائيا. نذكرك قبل نهاية التجربة بيوم، ويمكنك الإلغاء في أي وقت من إعدادات App Store."
+                 : "\(chosen.price) كل \(chosen.period)، ويتجدد تلقائيا حتى تلغيه من إعدادات App Store.")
                 .font(.plex(.caption)).foregroundStyle(Brand.text3).multilineTextAlignment(.center)
             if let d = plus.plans.first(where: { $0.id == "day" }), pick != "day" {
                 Button("تحتاجه مرة واحدة؟ مرور يوم بـ \(d.price)") { pick = "day" }.font(.plex(.subheadline, .semibold))
@@ -134,9 +134,9 @@ private struct PlanCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(plan.title).font(.plex(.headline, .semibold)).foregroundStyle(Brand.text1)
-                        if save > 0 { Text("وفّر \(save)%").font(.plex(.caption2, .semibold)).foregroundStyle(.white).padding(.horizontal, 7).padding(.vertical, 2).background(Brand.mint, in: Capsule()) }
+                        if save > 0 { Text("وفر \(save)%").font(.plex(.caption2, .semibold)).foregroundStyle(.white).padding(.horizontal, 7).padding(.vertical, 2).background(Brand.mint, in: Capsule()) }
                     }
-                    Text(plan.trialDays > 0 ? "\(plan.trialDays) أيام مجانًا • \(plan.note)" : plan.note).font(.plex(.caption)).foregroundStyle(Brand.text2)
+                    Text(plan.trialDays > 0 ? "\(plan.trialDays) أيام مجانا • \(plan.note)" : plan.note).font(.plex(.caption)).foregroundStyle(Brand.text2)
                 }
                 Spacer()
                 VStack(alignment: .trailing) { Text(plan.price).font(.plex(.subheadline, .semibold)); Text("/ \(plan.period)").font(.plex(.caption)).foregroundStyle(Brand.text3) }.foregroundStyle(Brand.text1)
@@ -159,9 +159,9 @@ struct PlusCard: View {
             HStack(spacing: Space.m) {
                 Image(systemName: "crown.fill").foregroundStyle(Brand.saffron).frame(width: 44, height: 44).background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(plus.active ? "أنت مشترك في مُيسّر بلس" : "مُيسّر بلس").font(.plex(.subheadline, .semibold)).foregroundStyle(.white)
-                    Text(plus.active && !plus.school.isEmpty ? "مفعّل ضمن باقة \(plus.school)." : plus.active ? "كل الميزات مفتوحة. اضغط لإدارة اشتراكك."
-                         : !plus.live ? "قريبًا: بلا حدود يومية وقوالب احترافية وOCR لملفات كاملة"
+                    Text(plus.active ? "أنت مشترك في ميسر بلس" : "ميسر بلس").font(.plex(.subheadline, .semibold)).foregroundStyle(.white)
+                    Text(plus.active && !plus.school.isEmpty ? "مفعل ضمن باقة \(plus.school)." : plus.active ? "كل الميزات مفتوحة. اضغط لإدارة اشتراكك."
+                         : !plus.live ? "قريبا: بلا حدود يومية وقوالب احترافية وOCR لملفات كاملة"
                          : "استخدمت اليوم \(plus.usedToday) من \(Plus.freeOpsPerDay) عمليات مجانية. افتحها بلا حدود.")
                         .font(.plex(.caption)).foregroundStyle(.white.opacity(0.78)).multilineTextAlignment(.leading)
                 }
@@ -176,9 +176,9 @@ struct PlusCard: View {
 
 // MARK: - Templates
 
-/// Document templates: 4 layouts × 6 colours = 24. Free: the classic one with the «أُنشئ بمُيسّر» line.
+/// Document templates: 4 layouts × 6 colours = 24. Free: the classic one with the «أنشئ بميسر» line.
 enum Templates {
-    static let layouts = ["كلاسيكي", "ترويسة ملوّنة", "شريط جانبي", "رسمي متوسط"]
+    static let layouts = ["كلاسيكي", "ترويسة ملونة", "شريط جانبي", "رسمي متوسط"]
     static let palettes: [(String, UInt32)] = [("نيلي", 0x2F4BFF), ("زمردي", 0x0B7F7A), ("عنابي", 0x8E1F3C), ("فحمي", 0x2A2F3A), ("ذهبي", 0xA86A06), ("بنفسجي", 0x6A3FC4)]
     static var count: Int { layouts.count * palettes.count }
     static var selected: Int {
@@ -237,8 +237,8 @@ struct TemplatePanel: View {
                 }.frame(maxWidth: .infinity)
             }
             Text(!styles ? (plus.unlocked ? "يظهر شعارك أعلى المستند" : "مع بلس: شعارك دون سطر «\(Plus.footer)».")
-                 : plus.unlocked ? "\(Templates.count) قالبًا: \(Templates.name(shown))"
-                 : "المجاني: القالب الكلاسيكي مع سطر «\(Plus.footer)». بلس: \(Templates.count) قالبًا وشعارك دون السطر.")
+                 : plus.unlocked ? "\(Templates.count) قالبا: \(Templates.name(shown))"
+                 : "المجاني: القالب الكلاسيكي مع سطر «\(Plus.footer)». بلس: \(Templates.count) قالبا وشعارك دون السطر.")
                 .font(.plex(.caption)).foregroundStyle(Brand.text3).frame(maxWidth: .infinity).multilineTextAlignment(.center)
             if useLogo {
                 HStack {
@@ -330,7 +330,7 @@ struct LockGate<Content: View>: View {
 
 @MainActor func contactSupport(_ openURL: OpenURLAction) {
     let plus = Plus.shared.active
-    let subject = (plus ? "[بلس] " : "") + "ملاحظة على تطبيق مُيسّر"
+    let subject = (plus ? "[بلس] " : "") + "ملاحظة على تطبيق ميسر"
     let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
     let body = "\n\n—\nالإصدار \(v) • iOS \(UIDevice.current.systemVersion)\(plus ? " • مشترك بلس" : "")"
     func enc(_ s: String) -> String { s.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "" }
@@ -359,7 +359,7 @@ struct SchoolCodeButton: View {
                             TextField("MSR-XXXX-XXXX", text: $code).textInputAutocapitalization(.characters).autocorrectionDisabled()
                                 .environment(\.layoutDirection, .leftToRight).accessibilityIdentifier("schoolCodeField")
                         } footer: {
-                            Text("اكتب الكود الذي وصلك من إدارة مدرستك. يُرسل الكود فقط إلى خادم مُيسّر للتحقق منه، ويُربط بهذا الجهاز.")
+                            Text("اكتب الكود الذي وصلك من إدارة مدرستك. يرسل الكود فقط إلى خادم ميسر للتحقق منه، ويربط بهذا الجهاز.")
                         }
                         if let error { Text(error).foregroundStyle(.red).accessibilityIdentifier("schoolCodeError") }
                     }
@@ -367,7 +367,7 @@ struct SchoolCodeButton: View {
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) { Button("إلغاء") { open = false }.disabled(busy) }
                         ToolbarItem(placement: .confirmationAction) {
-                            Button(busy ? "جارٍ التحقق…" : "تفعيل") { redeem() }
+                            Button(busy ? "جار التحقق…" : "تفعيل") { redeem() }
                                 .disabled(busy || code.filter { $0.isLetter || $0.isNumber }.count < 8).accessibilityIdentifier("redeemCode")
                         }
                     }
@@ -378,7 +378,7 @@ struct SchoolCodeButton: View {
     private func redeem() {
         busy = true; error = nil
         Task { @MainActor in
-            do { try await Cloud.redeem(code); if Plus.shared.schoolUntil > Date() { open = false } else { error = "تعذّر تفعيل الكود" } }
+            do { try await Cloud.redeem(code); if Plus.shared.schoolUntil > Date() { open = false } else { error = "تعذر تفعيل الكود" } }
             catch { self.error = error.localizedDescription }
             busy = false
         }

@@ -42,7 +42,7 @@ struct ImgCompress: View {
         FileTool(tool: tool, types: [.image], multiple: true, pickLabel: "اختر الصور", actionLabel: "ضغط", options: { _ in
             Panel { Seg(options: ["حسب الجودة", "حجم مستهدف"], selection: $mode)
                 if mode == 0 { Text("الجودة \(Int(q))%"); Slider(value: $q, in: 20...95) } else { NumField(label: "الحجم الأقصى لكل صورة", text: $kb, suffix: "ك.ب") }
-                Hint(text: "مفيد لرفع الصور على المنصات التي تحدد حجمًا أقصى للمرفقات.") }
+                Hint(text: "مفيد لرفع الصور على المنصات التي تحدد حجما أقصى للمرفقات.") }
         }) { ins, out, p in
             try ins.enumerated().compactMap { i, u in
                 p.update(i, ins.count); guard let img = ImageEngine.load(u) else { return nil }
@@ -88,7 +88,7 @@ struct ImgCrop: View {
                 }
             }
         }) { ins, out, _ in
-            guard let img = ImageEngine.load(ins[0], maxSide: 8000) else { throw UserError("تعذّر فتح الصورة") }
+            guard let img = ImageEngine.load(ins[0], maxSide: 8000) else { throw UserError("تعذر فتح الصورة") }
             let res = ratio == 0 ? ImageEngine.cropRect(img, l: l, t: t, r: r, b: b) : ImageEngine.cropRatio(img, ratios[ratio].1, 1)
             return [try ImageEngine.save(res, .png, quality: 1, to: out.appendingPathComponent(name(ins[0], "-مقصوص", .png)))]
         }
@@ -119,7 +119,7 @@ struct ImgEnhance: View {
                     Text("السطوع \(fmt(br, 2))"); Slider(value: $br, in: -0.4...0.4)
                     Text("التباين \(fmt(ct, 2))"); Slider(value: $ct, in: 0.5...2)
                     Text("التشبع \(fmt(sat, 2))"); Slider(value: $sat, in: 0...2)
-                    Toggle("زيادة الحدّة", isOn: $sharp); Toggle("أبيض وأسود", isOn: $gray)
+                    Toggle("زيادة الحدة", isOn: $sharp); Toggle("أبيض وأسود", isOn: $gray)
                 }
             }
         }) { ins, out, p in
@@ -214,8 +214,8 @@ struct IdPhoto: View {
             }
         }) { ins, out, p in
             let open = await MainActor.run { Plus.shared.unlocked }
-            guard var img = ImageEngine.load(ins[0], maxSide: 2400) else { throw UserError("تعذّر فتح الصورة") }
-            if removeBg { if let cut = try? ImageEngine.removeBackground(img) { img = ImageEngine.flatten(cut, bgs[bg].1) } else { p.say("لم يُعثر على شخص واضح، فحُفظت الصورة بخلفيتها الأصلية") } }
+            guard var img = ImageEngine.load(ins[0], maxSide: 2400) else { throw UserError("تعذر فتح الصورة") }
+            if removeBg { if let cut = try? ImageEngine.removeBackground(img) { img = ImageEngine.flatten(cut, bgs[bg].1) } else { p.say("لم يعثر على شخص واضح، فحفظت الصورة بخلفيتها الأصلية") } }
             let s = sizes[size >= 2 && !open ? 0 : size]
             let photo = ImageEngine.idPhoto(img, wMm: s.1, hMm: s.2, bg: bgs[bg].1)
             var list = [try ImageEngine.save(photo, .jpg, quality: 0.97, to: out.appendingPathComponent("صورة-وثيقة-\(Int(s.1))x\(Int(s.2)).jpg"))]
@@ -229,18 +229,18 @@ struct OcrTool: View {
     let tool: Tool; @State var lang = 0; @State var text = ""; @State var limited = 0; @State var searchable = true
     @ObservedObject private var plus = Plus.shared
     var body: some View {
-        FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "اختر صورًا أو ملف PDF", actionLabel: "استخراج النص", options: { _ in
+        FileTool(tool: tool, types: [.image, .pdf], multiple: true, pickLabel: "اختر صورا أو ملف PDF", actionLabel: "استخراج النص", options: { _ in
             Panel {
                 Seg(options: Ocr.Lang.allCases.map(\.rawValue), selection: $lang)
-                HStack { Toggle("إنشاء PDF قابل للبحث أيضًا", isOn: Binding(get: { searchable && plus.unlocked }, set: { v in if plus.allow(.ocr) { searchable = v } })); PlusBadge() }
+                HStack { Toggle("إنشاء PDF قابل للبحث أيضا", isOn: Binding(get: { searchable && plus.unlocked }, set: { v in if plus.allow(.ocr) { searchable = v } })); PlusBadge() }
                 Hint(text: plus.unlocked ? "يعمل دون إنترنت. للحصول على أفضل نتيجة استخدم صورة واضحة ومستقيمة."
-                     : "يعمل دون إنترنت. المجاني يستخرج النص من \(Plus.freeOcrPages) صفحات في العملية، ومع بلس من الملف كاملًا.")
+                     : "يعمل دون إنترنت. المجاني يستخرج النص من \(Plus.freeOcrPages) صفحات في العملية، ومع بلس من الملف كاملا.")
             }
         }, after: {
             if limited > 0 {
                 Panel {
-                    Text("استُخرج النص من أول \(Plus.freeOcrPages) صفحات، وبقيت \(limited) \(limited == 1 ? "صفحة" : "صفحات").").font(.plex(.subheadline)).frame(maxWidth: .infinity).multilineTextAlignment(.center).accessibilityIdentifier("ocrLimited")
-                    SecondaryButton(title: "استخرج الملف كاملًا مع بلس", icon: "crown.fill") { plus.paywall = .ocr }
+                    Text("استخرج النص من أول \(Plus.freeOcrPages) صفحات، وبقيت \(limited) \(limited == 1 ? "صفحة" : "صفحات").").font(.plex(.subheadline)).frame(maxWidth: .infinity).multilineTextAlignment(.center).accessibilityIdentifier("ocrLimited")
+                    SecondaryButton(title: "استخرج الملف كاملا مع بلس", icon: "crown.fill") { plus.paywall = .ocr }
                 }
             }
             if !text.isEmpty { TextResult(text: text, label: "النص المستخرج") }
@@ -296,12 +296,12 @@ struct ScanTool: View {
     var body: some View {
         ToolScreen(tool: tool) {
             Panel {
-                Text("صوّر المستند وسيُقص ويُحسَّن تلقائيًا، ويمكنك إضافة عدة صفحات.").font(.plex(.subheadline))
-                Toggle("استخراج النص وتسمية الملف تلقائيًا", isOn: $autoText).font(.plex(.subheadline))
+                Text("صور المستند وسيقص ويحسن تلقائيا، ويمكنك إضافة عدة صفحات.").font(.plex(.subheadline))
+                Toggle("استخراج النص وتسمية الملف تلقائيا", isOn: $autoText).font(.plex(.subheadline))
                 PrimaryButton(title: "بدء المسح", icon: "doc.viewfinder") { if VNDocumentCameraViewController.isSupported { showing = true } else { error = "الماسح غير متاح على هذا الجهاز (يتطلب كاميرا)." } }
                 Hint(text: "الماسح من Apple ويعمل على الجهاز دون رفع الصور.")
             }
-            if working { HStack { ProgressView(); Text("جارٍ قراءة النص على جهازك…").font(.plex(.subheadline)) }.frame(maxWidth: .infinity) }
+            if working { HStack { ProgressView(); Text("جار قراءة النص على جهازك…").font(.plex(.subheadline)) }.frame(maxWidth: .infinity) }
             if let error { Text(error).foregroundStyle(.red).font(.plex(.subheadline)) }
             if !results.isEmpty { ResultFiles(files: results) }
         }
