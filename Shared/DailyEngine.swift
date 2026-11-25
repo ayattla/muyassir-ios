@@ -122,3 +122,25 @@ enum PayDays {
         let d = inMonth(r, y, m); return (cal.dateComponents([.day], from: t0, to: cal.startOfDay(for: d)).day!, d)
     }
 }
+
+/// Islamic occasions on the Umm al-Qura calendar: days from today to the next one (0 = today). Same list as Android.
+enum Occasions {
+    struct O: Equatable { let title: String; let days: Int }
+    private static let fixed: [(Int, Int, String)] = [(9, 1, "رمضان"), (10, 1, "عيد الفطر"), (12, 9, "يوم عرفة"), (12, 10, "عيد الأضحى"), (1, 1, "السنة الهجرية"), (1, 10, "عاشوراء")]
+    private static var hcal: Calendar { var u = Calendar(identifier: .islamicUmmAlQura); u.timeZone = TimeZone(identifier: "Asia/Riyadh")!; return u }
+
+    static func upcoming(_ today: Date, within: Int = 90) -> [O] {
+        let g = KSA.cal, u = hcal
+        let t0 = g.startOfDay(for: today)
+        let h = u.dateComponents([.year, .month, .day], from: g.date(byAdding: .hour, value: 12, to: t0)!)
+        func to(_ y: Int, _ m: Int, _ d: Int) -> Int {
+            guard let date = u.date(from: DateComponents(year: y, month: m, day: d, hour: 12)) else { return -1 }
+            return g.dateComponents([.day], from: t0, to: g.startOfDay(for: date)).day ?? -1
+        }
+        let (y, m, d) = (h.year!, h.month!, h.day!)
+        var out = fixed.map { fm, fd, title -> O in var n = to(y, fm, fd); if n < 0 { n = to(y + 1, fm, fd) }; return O(title: title, days: n) }
+        let white = (13...15).contains(d) ? 0 : d < 13 ? to(y, m, 13) : (m == 12 ? to(y + 1, 1, 13) : to(y, m + 1, 13))
+        out.append(O(title: "الأيام البيض", days: white))
+        return out.filter { (0...within).contains($0.days) }.sorted { $0.days < $1.days }
+    }
+}

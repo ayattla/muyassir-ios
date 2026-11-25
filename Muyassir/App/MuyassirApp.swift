@@ -122,8 +122,9 @@ struct RootView: View {
     var body: some View {
         TabView(selection: $tab) {
             NavigationStack(path: $todayPath) {
-                TodayView(open: { id in if let t = Tools.byId[id] { todayPath.append(t) } }, openTab: { tab = $0 })
+                TodayView(open: { id in if let t = Tools.byId[id] { todayPath.append(t) } }, openTab: { tab = $0 }, openCat: { todayPath.append($0) })
                     .navigationDestination(for: Tool.self) { ToolHost(tool: $0) }
+                    .navigationDestination(for: Category.self) { CategoryView(cat: $0) }
             }
             .tabItem { Label("اليوم", systemImage: "sun.max") }.tag("today")
             NavigationStack(path: $homePath) {

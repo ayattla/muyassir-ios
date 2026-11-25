@@ -126,6 +126,11 @@ final class UiFlowTests: XCTestCase {
         reveal(app.descendants(matching: .any)["roleCard-teacher"]); waitText("اختباراتك")
         reveal(app.descendants(matching: .any)["roleCard-employee"])
         let tasks = app.descendants(matching: .any)["todayTasks"]; XCTAssertTrue(tasks.exists)
+        // The redesigned home: shortcuts, a task typed straight into «اليوم», the spaces and the daily tool.
+        XCTAssertTrue(app.buttons["quick-scan"].exists)
+        let field = app.textFields["quickTask"]; reveal(field); field.tap(); field.typeText("مهمة سريعة")
+        app.buttons["quickTaskAdd"].tap(); waitText("مهمة سريعة")
+        reveal(app.buttons["space-files"]); reveal(app.buttons["toolOfDay"])
         let add = app.buttons.matching(NSPredicate(format: "label IN %@", ["أضف مهمة", "كل المهام"])).firstMatch; reveal(add); add.tap()
         XCTAssertTrue(app.navigationBars["المهام"].waitForExistence(timeout: 5))
     }
